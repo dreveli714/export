@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export · Shipping</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --paper:#faf7f2;--paper-2:#f4efe6;--paper-3:#ebe4d4;
+  --ink:#1a1814;--ink-soft:#4a4540;--ink-mute:#8a8278;--ink-fade:#b8b0a3;
+  --line:#e6dfd2;--line-soft:#f0e9dc;
+  --tomato:#e85a3c;--tomato-soft:#fef0eb;
+  --honey:#d99c20;--honey-soft:#fdf4e0;
+  --moss:#4d7a3a;--moss-soft:#ecf3e5;
+  --plum:#7c4d8f;--plum-soft:#f3ecf6;
+  --ocean:#2d6987;--ocean-soft:#e8f1f5;
+  --r-md:10px;--r-lg:16px;--r-xl:24px;--r-full:999px;
+  --sh-md:0 2px 4px rgba(26,24,20,.04),0 4px 12px rgba(26,24,20,.08);
+  --sh-lg:0 4px 8px rgba(26,24,20,.04),0 12px 32px rgba(26,24,20,.12);
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --bounce:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Bricolage Grotesque',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(232,90,60,.04) 0%,transparent 40%),radial-gradient(circle at 80% 70%,rgba(45,105,135,.04) 0%,transparent 40%);pointer-events:none;z-index:0}
+.lock-screen{position:fixed;inset:0;background:var(--paper);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column}
+.lock-screen.hidden{display:none}
+.lock-box{text-align:center;max-width:380px;width:100%}
+.lock-logo{font-size:40px;font-weight:800;margin-bottom:8px;letter-spacing:-.04em}
+.lock-title{font-size:18px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+.lock-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);letter-spacing:.1em;margin-bottom:40px;text-transform:uppercase}
+.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.pin-dot{width:50px;height:60px;border:2px solid var(--line);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;background:var(--paper-2);transition:all .2s var(--ease)}
+.pin-dot.filled{border-color:var(--ink);background:var(--paper)}
+.pin-dot.error{border-color:var(--tomato);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,80px);gap:12px;justify-content:center;margin-bottom:20px}
+.pin-btn{width:80px;height:80px;border:1px solid var(--line);border-radius:var(--r-full);font-family:inherit;font-size:24px;font-weight:600;color:var(--ink);background:var(--paper);cursor:pointer;transition:all .15s var(--ease)}
+.pin-btn:hover{background:var(--ink);color:var(--paper);transform:scale(1.05)}
+.pin-btn:active{transform:scale(.95)}
+.pin-btn.delete{background:var(--paper-2);font-size:18px}
+.pin-error-msg{font-size:13px;color:var(--tomato);margin-top:14px;height:18px;font-weight:500}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh;position:relative;z-index:1}
+.sidebar{background:var(--paper);border-right:1px solid var(--line);padding:24px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+.brand{display:flex;align-items:baseline;gap:8px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.brand-mark{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.brand-dot{width:8px;height:8px;background:var(--tomato);border-radius:50%;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+.brand-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);letter-spacing:.1em;text-transform:uppercase}
+.id-card{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px}
+.id-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.id-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.id-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:var(--r-md);padding:8px 10px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s var(--ease)}
+.id-btn:hover{background:var(--paper);border-color:var(--ink-fade)}
+.id-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.id-btn:not(.active) .av{background:var(--paper-3);color:var(--ink-soft)}
+.id-btn.active .av{background:rgba(255,255,255,.15);color:var(--paper)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px;padding:0 8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-md);cursor:pointer;font-size:14px;font-weight:500;color:var(--ink-soft);transition:all .2s var(--ease);position:relative;user-select:none}
+.nav-item:hover{background:var(--paper-2);color:var(--ink)}
+.nav-item.active{background:var(--ink);color:var(--paper)}
+.nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:4px;height:20px;background:var(--tomato);border-radius:var(--r-full)}
+.nav-icon{width:18px;font-size:16px;text-align:center}
+.nav-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:var(--r-full);background:var(--paper-3);color:var(--ink-soft)}
+.nav-item.active .nav-count{background:rgba(255,255,255,.15);color:var(--paper)}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.live-badge{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--moss-soft);border-radius:var(--r-md);font-size:11px;color:var(--moss);font-weight:600}
+.live-badge.offline{background:var(--tomato-soft);color:var(--tomato)}
+.live-dot{width:6px;height:6px;background:currentColor;border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+.logout-btn{width:100%;margin-top:8px;padding:8px;background:transparent;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--r-md);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s var(--ease);font-family:inherit}
+.logout-btn:hover{border-color:var(--tomato);color:var(--tomato)}
+.main{padding:32px 40px;overflow-y:auto;max-height:100vh}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;gap:24px;flex-wrap:wrap}
+.greeting{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px}
+.page-title{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.accent{color:var(--tomato);font-style:italic}
+.page-sub{font-size:14px;color:var(--ink-soft);margin-top:8px}
+.add-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);padding:14px 24px;border:none;border-radius:var(--r-full);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:all .3s var(--ease);box-shadow:var(--sh-md)}
+.add-btn:hover{background:var(--tomato);transform:translateY(-2px)}
+.add-icon{width:18px;height:18px;background:var(--paper);color:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all .3s var(--ease)}
+.add-btn:hover .add-icon{color:var(--tomato);transform:rotate(90deg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;position:relative;overflow:hidden;transition:all .3s var(--ease);cursor:pointer}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--ink-fade)}
+.stat::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08;transition:all .3s var(--ease)}
+.stat:hover::after{transform:scale(1.5);opacity:.15}
+.stat-pending::after{background:var(--tomato)}
+.stat-delivered::after{background:var(--moss)}
+.stat-issue::after{background:var(--honey)}
+.stat-total::after{background:var(--ocean)}
+.stat-icon{font-size:24px;margin-bottom:12px}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.stat-trend{font-size:11px;color:var(--moss);margin-top:6px;font-weight:600}
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:28px}
+.chart-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.chart-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
+.chart-box{position:relative;height:220px}
+.date-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.date-btn{padding:7px 14px;border-radius:var(--r-full);font-size:12px;font-weight:600;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);transition:all .2s var(--ease);font-family:inherit}
+.date-btn:hover{border-color:var(--ink-fade)}
+.date-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.toolbar{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.search{flex:1;min-width:240px;max-width:380px;position:relative}
+.search-input{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-full);padding:11px 16px 11px 40px;font-family:inherit;font-size:14px;color:var(--ink);outline:none;transition:all .2s var(--ease)}
+.search-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,24,20,.05)}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--ink-mute);font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r-full);font-size:13px;font-weight:500;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);transition:all .2s var(--ease);font-family:inherit}
+.chip:hover{border-color:var(--ink-fade);transform:translateY(-1px)}
+.chip-count{font-family:'JetBrains Mono',monospace;font-size:10px;padding:1px 6px;border-radius:var(--r-full);background:var(--paper-2);color:var(--ink-mute)}
+.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip.active .chip-count{background:rgba(255,255,255,.2);color:var(--paper)}
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:all .3s var(--ease);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px}
+.card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);border-color:var(--ink-fade)}
+.card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--ink);transition:width .3s var(--ease)}
+.card.s-pending::before{background:var(--tomato)}
+.card.s-delivered::before{background:var(--moss)}
+.card.s-issue::before{background:var(--honey)}
+.card:hover::before{width:8px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.card-ref{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pdf-count{background:var(--tomato-soft);color:var(--tomato);font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:var(--r-full);font-weight:700}
+.card-client{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.card-docs{display:flex;gap:6px;padding:8px;background:var(--paper-2);border-radius:var(--r-md)}
+.doc-tick{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;flex:1;justify-content:center}
+.doc-tick.on{background:var(--moss-soft);color:var(--moss)}
+.doc-tick.off{background:var(--paper-3);color:var(--ink-fade)}
+.card-meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap}
+.meta-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute)}
+.card-comment{background:var(--paper-2);border-radius:var(--r-md);padding:10px 12px 10px 28px;font-size:12px;color:var(--ink-soft);border-left:3px solid var(--line);font-style:italic;position:relative;min-height:38px;display:flex;align-items:center}
+.card-comment::before{content:'"';font-family:serif;font-size:26px;position:absolute;top:-2px;left:8px;color:var(--ink-fade)}
+.card-comment.empty{color:var(--ink-fade);font-style:normal;padding-left:12px}
+.card-comment.empty::before{display:none}
+.card-comment span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line-soft)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--r-full);font-size:11px;font-weight:600}
+.pill-dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.s-pending .pill{background:var(--tomato-soft);color:var(--tomato)}
+.s-pending .pill-dot{background:var(--tomato)}
+.s-delivered .pill{background:var(--moss-soft);color:var(--moss)}
+.s-delivered .pill-dot{background:var(--moss)}
+.s-issue .pill{background:var(--honey-soft);color:var(--honey)}
+.s-issue .pill-dot{background:var(--honey)}
+.assn-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;border:2px solid var(--paper)}
+.av-DI{background:var(--ocean-soft);color:var(--ocean)}
+.av-DA{background:var(--honey-soft);color:var(--honey)}
+.av-MA{background:var(--moss-soft);color:var(--moss)}
+.av-CA{background:var(--plum-soft);color:var(--plum)}
+.av-OT{background:var(--tomato-soft);color:var(--tomato)}
+.quick-btn{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:6px 12px;font-size:11px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all .2s var(--ease);font-family:inherit}
+.quick-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.empty{text-align:center;padding:48px 24px;background:var(--paper);border:2px dashed var(--line);border-radius:var(--r-lg);grid-column:1/-1}
+.empty-emoji{font-size:56px;margin-bottom:14px;animation:float 3s ease-in-out infinite;display:inline-block}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.empty-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--ink-mute);margin-bottom:20px}
+.modal-bg{position:fixed;inset:0;background:rgba(26,24,20,.5);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--paper);border-radius:var(--r-xl);width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:modalIn .3s var(--bounce)}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-head{padding:28px 28px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.modal-title{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.2}
+.modal-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);margin-top:4px}
+.modal-x{background:var(--paper-2);border:none;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--ink-soft);transition:all .2s var(--ease);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-x:hover{background:var(--tomato);color:var(--paper);transform:rotate(90deg)}
+.modal-body{padding:14px 28px 28px}
+.sect{margin-bottom:20px}
+.sect-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sect-lbl::before{content:'';width:12px;height:1px;background:var(--ink-fade)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fgrid .full{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld-lbl{font-size:12px;color:var(--ink-soft);font-weight:500}
+.inp{background:var(--paper-2);border:1px solid transparent;border-radius:var(--r-md);padding:11px 14px;font-family:inherit;font-size:14px;color:var(--ink);outline:none;transition:all .2s var(--ease)}
+.inp:focus{background:var(--paper);border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,24,20,.05)}
+.inp::placeholder{color:var(--ink-fade)}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8278' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
+.docs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.doc-pick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .2s var(--ease)}
+.doc-pick:hover{transform:translateY(-2px)}
+.doc-pick.checked{border-color:var(--moss);background:var(--moss-soft)}
+.doc-pick-emoji{font-size:22px}
+.doc-pick-lbl{font-size:11px;font-weight:600}
+.doc-pick-state{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute)}
+.doc-pick.checked .doc-pick-state{color:var(--moss)}
+.sp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.spo{background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);padding:14px;cursor:pointer;text-align:center;transition:all .2s var(--ease)}
+.spo:hover{transform:translateY(-2px)}
+.spo.sel{background:var(--paper);box-shadow:var(--sh-md)}
+.spo[data-s="pending"].sel{border-color:var(--tomato)}
+.spo[data-s="delivered"].sel{border-color:var(--moss)}
+.spo[data-s="issue"].sel{border-color:var(--honey)}
+.spo-emoji{font-size:22px;margin-bottom:6px}
+.spo-lbl{font-size:11px;font-weight:600}
+.ap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.apo{background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);padding:14px 6px;cursor:pointer;text-align:center;transition:all .2s var(--ease)}
+.apo:hover{transform:translateY(-2px)}
+.apo.sel{background:var(--paper);box-shadow:var(--sh-md);border-color:var(--ink)}
+.apo .assn-av{width:36px;height:36px;font-size:13px;margin:0 auto 6px}
+.apo-name{font-size:11px;font-weight:600}
+.modal-foot{padding:14px 28px 24px;display:flex;gap:8px;justify-content:flex-end}
+.btn{padding:11px 22px;border-radius:var(--r-full);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all .2s var(--ease);display:inline-flex;align-items:center;gap:6px}
+.btn-pri{background:var(--ink);color:var(--paper)}
+.btn-pri:hover{background:var(--tomato);transform:translateY(-2px)}
+.btn-pri:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-gh{background:transparent;color:var(--ink-soft)}
+.btn-gh:hover{background:var(--paper-2)}
+.btn-dng{background:transparent;color:var(--tomato)}
+.btn-dng:hover{background:var(--tomato-soft)}
+.uz{border:2px dashed var(--line);border-radius:var(--r-lg);padding:20px;text-align:center;cursor:pointer;transition:all .3s var(--ease);position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.uz:hover,.uz.drag{border-color:var(--tomato);background:var(--tomato-soft)}
+.uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.uz-emoji{font-size:24px}
+.uz-title{font-size:13px;font-weight:700}
+.uz-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute)}
+.pdf-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.pdf-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
+.pdf-item.uploaded{background:var(--moss-soft);color:var(--moss)}
+.pdf-item.uploading{background:var(--honey-soft);color:var(--honey)}
+.pdf-item.error{background:var(--tomato-soft);color:var(--tomato)}
+.pdf-item-icon{font-size:16px;flex-shrink:0}
+.pdf-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.pdf-item-size{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7}
+.pdf-item-x{background:none;border:none;cursor:pointer;color:inherit;opacity:.5;font-size:14px;padding:2px 6px}
+.pdf-item-x:hover{opacity:1}
+.drive-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--ocean-soft);color:var(--ocean);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s var(--ease);margin-right:6px;margin-bottom:6px}
+.drive-link:hover{background:var(--ocean);color:var(--paper);transform:translateY(-1px)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--paper);padding:14px 20px;border-radius:var(--r-lg);font-size:13px;font-weight:500;z-index:9999;box-shadow:var(--sh-lg);transform:translateY(120px);opacity:0;transition:all .3s var(--bounce);max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--moss)}
+.toast.error{background:var(--tomato)}
+.view{display:none}
+.view.active{display:block}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--paper);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:20px}.charts-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">Export<span style="color:var(--tomato)">.</span></div>
+    <div class="lock-title">Shipping Dashboard</div>
+    <div class="lock-sub">Enter 6-digit access code</div>
+    <div class="pin-row" id="pin-row">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinDigit(1)">1</button>
+      <button class="pin-btn" onclick="pinDigit(2)">2</button>
+      <button class="pin-btn" onclick="pinDigit(3)">3</button>
+      <button class="pin-btn" onclick="pinDigit(4)">4</button>
+      <button class="pin-btn" onclick="pinDigit(5)">5</button>
+      <button class="pin-btn" onclick="pinDigit(6)">6</button>
+      <button class="pin-btn" onclick="pinDigit(7)">7</button>
+      <button class="pin-btn" onclick="pinDigit(8)">8</button>
+      <button class="pin-btn" onclick="pinDigit(9)">9</button>
+      <button class="pin-btn delete" onclick="pinClear()">CLR</button>
+      <button class="pin-btn" onclick="pinDigit(0)">0</button>
+      <button class="pin-btn delete" onclick="pinDelete()">⌫</button>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+  </div>
+</div>
+
+<div class="app" id="app-shell" style="display:none">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">Export<span style="color:var(--tomato)">.</span></div>
+    <div class="brand-dot"></div>
+  </div>
+  <div class="brand-sub">Shipping Dashboard</div>
+  <div class="id-card">
+    <div class="id-label">Who am I?</div>
+    <div class="id-opts" id="id-opts"></div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Operations</div>
+    <div class="nav-item active" onclick="switchView('today',this)"><span class="nav-icon">⚡</span><span>Active</span><span class="nav-count" id="nav-today">0</span></div>
+    <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon">📦</span><span>All orders</span><span class="nav-count" id="nav-all">0</span></div>
+    <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon">📊</span><span>Analytics</span></div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Actions</div>
+    <div class="nav-item" onclick="openAdd()"><span class="nav-icon">✨</span><span>New order</span></div>
+    <div class="nav-item" onclick="syncNow()"><span class="nav-icon">🔄</span><span>Sync now</span></div>
+    <div class="nav-item" onclick="openDriveFolder()"><span class="nav-icon">📁</span><span>PDF folder</span></div>
+  </div>
+  <div class="sidebar-foot">
+    <div class="live-badge" id="live-badge">
+      <div class="live-dot"></div>
+      <span id="sync-text">Connecting…</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">🔒 Lock dashboard</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div id="view-today" class="view active">
+    <div class="page-head">
+      <div>
+        <div class="greeting" id="greeting">Good morning</div>
+        <h1 class="page-title" id="user-greet">Hello <span class="accent">Diana</span></h1>
+        <div class="page-sub" id="page-date">—</div>
+      </div>
+      <button class="add-btn" onclick="openAdd()"><span class="add-icon">+</span>New order</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search" placeholder="Search…" oninput="render()">
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="orders" id="orders"></div>
+  </div>
+
+  <div id="view-all" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Archive</div>
+        <h1 class="page-title">All <span class="accent">orders</span></h1>
+        <div class="page-sub">Complete order history</div>
+      </div>
+    </div>
+    <div class="date-filter" id="date-filter-all"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-all" placeholder="Search…" oninput="renderAll()">
+      </div>
+    </div>
+    <div class="orders" id="orders-all"></div>
+  </div>
+
+  <div id="view-analytics" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Insights</div>
+        <h1 class="page-title">Analytics <span class="accent">dashboard</span></h1>
+        <div class="page-sub">Performance overview</div>
+      </div>
+    </div>
+    <div class="date-filter" id="date-filter-analytics"></div>
+    <div class="stats" id="stats-analytics"></div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Orders over time</div><div class="chart-box"><canvas id="chart-timeline"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Status breakdown</div><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">By carrier</div><div class="chart-box"><canvas id="chart-carrier"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">By assignee</div><div class="chart-box"><canvas id="chart-assignee"></canvas></div></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="modal-bg" id="m-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">New order ✨</div><div class="modal-sub">All fields optional · Up to 4 PDFs</div></div>
+      <button class="modal-x" onclick="closeModal('m-add')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">PDF files (up to 4)</div>
+        <div class="uz" id="uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <input type="file" accept=".pdf,image/*" multiple onchange="handleFiles(this)">
+          <div class="uz-emoji">📄</div>
+          <div class="uz-title">Drop files or click</div>
+          <div class="uz-sub">Maximum 4 files</div>
+        </div>
+        <div class="pdf-list" id="pdf-list"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Order details (all optional)</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Reference</label><input class="inp" id="a-ref" placeholder="RF2026/005124"></div>
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="a-client" placeholder="MAEGIS BV"></div>
+          <div class="fld"><label class="fld-lbl">Carrier</label>
+            <select class="inp" id="a-carrier"><option>UPS</option><option>Dascher</option><option>Lyseo</option><option>Hecny</option><option>Other</option></select>
+          </div>
+          <div class="fld"><label class="fld-lbl">Tracking</label><input class="inp" id="a-tracking" placeholder="1Z…"></div>
+        </div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Documents ready</div>
+        <div class="docs-row">
+          <div class="doc-pick" id="dp-pdf" onclick="toggleDoc('pdf')"><div class="doc-pick-emoji">📄</div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="dp-pdf-st">pending</div></div>
+          <div class="doc-pick" id="dp-bl" onclick="toggleDoc('bl')"><div class="doc-pick-emoji">📋</div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="dp-bl-st">pending</div></div>
+          <div class="doc-pick" id="dp-label" onclick="toggleDoc('label')"><div class="doc-pick-emoji">🏷️</div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="dp-label-st">pending</div></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="a-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Assign to</div><div class="ap" id="a-assn-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="a-note" placeholder="Notes, instructions…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-add')">Cancel</button>
+      <button class="btn btn-pri" id="add-save-btn" onclick="addOrder()">Save order →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-det">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title" id="d-client">—</div><div class="modal-sub" id="d-ref">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-det')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sect" id="d-pdf-sect" style="display:none">
+        <div class="sect-lbl">Attached PDFs</div>
+        <div id="d-pdf-links"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Documents</div>
+        <div class="docs-row">
+          <div class="doc-pick" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji">📄</div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="ddp-pdf-st">pending</div></div>
+          <div class="doc-pick" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji">📋</div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">pending</div></div>
+          <div class="doc-pick" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji">🏷️</div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="ddp-label-st">pending</div></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="d-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Assigned</div><div class="ap" id="d-assn-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Tracking number"></div>
+      <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="d-note" placeholder="Update notes…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-dng" onclick="deleteOrder()">Delete</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-gh" onclick="closeModal('m-det')">Cancel</button>
+      <button class="btn btn-pri" id="det-save-btn" onclick="saveOrder()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
+const SCRIPT_URL = 'https://script.google.com/a/macros/reflectiv.com/s/AKfycbxKgPtLysZ5AJMydVlLi_XSxrdpUIuSyG9uJNDcbuTv8FLIXwIZVOC-lEGGYFeFKGjunQ/exec';
+
+const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
+const DRIVE_URL = `https://drive.google.com/drive/folders/${FOLDER_ID}`;
+const ACCESS_PIN = '220202';
+const PIN_VALID_HOURS = 8;
+const MAX_PDFS = 4;
+
+const USERS = [
+  {id:'DI',name:'Diana'},{id:'DA',name:'Daniel'},{id:'MA',name:'Martina'},
+  {id:'CA',name:'Carla'},{id:'OT',name:'Other'}
+];
+const STATUSES = [
+  {id:'pending',label:'Pending',icon:'🖨️'},
+  {id:'delivered',label:'Delivered',icon:'✅'},
+  {id:'issue',label:'Issue',icon:'⚠️'}
+];
+const DATE_RANGES = [
+  {id:'today',label:'Today'},{id:'week',label:'7 days'},
+  {id:'month',label:'30 days'},{id:'quarter',label:'90 days'},{id:'all',label:'All time'}
+];
+
+let state = {
+  orders:[], currentUser:localStorage.getItem('export_user')||'DI',
+  filter:'all', dateRange:'all', analyticsDateRange:'month',
+  currentId:null, addStatus:'pending', addAssn:'DI',
+  detStatus:'pending', detAssn:'DI',
+  addDocs:{pdf:false,bl:false,label:false},
+  detDocs:{pdf:false,bl:false,label:false},
+  pdfFiles:[], pinInput:'', charts:{}
+};
+
+const $ = id => document.getElementById(id);
+const userName = id => USERS.find(u=>u.id===id)?.name || id;
+const getStatus = id => STATUSES.find(s=>s.id===id);
+const fmtAgo = ts => {
+  const d = Date.now() - ts;
+  const m = Math.floor(d/60000), h = Math.floor(d/3600000), days = Math.floor(d/86400000);
+  if (m < 1) return 'now';
+  if (m < 60) return `${m}min ago`;
+  if (h < 24) return `${h}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString('en-US',{day:'2-digit',month:'short'});
+};
+const esc = s => !s?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).substring(2,7);
+
+function toast(msg, type='success') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+function openDriveFolder() { window.open(DRIVE_URL, '_blank'); }
+
+// AUTH
+function checkAuth() {
+  const a = localStorage.getItem('export_auth');
+  if (!a) return false;
+  if (Date.now() > parseInt(a)) { localStorage.removeItem('export_auth'); return false; }
+  return true;
+}
+function unlock() {
+  localStorage.setItem('export_auth', (Date.now() + PIN_VALID_HOURS*3600000).toString());
+  $('lock-screen').classList.add('hidden');
+  $('app-shell').style.display = 'grid';
+  init();
+}
+function logout() {
+  if (!confirm('Lock the dashboard?')) return;
+  localStorage.removeItem('export_auth');
+  location.reload();
+}
+function updatePinDots() {
+  document.querySelectorAll('#pin-row .pin-dot').forEach((dot, i) => {
+    if (i < state.pinInput.length) { dot.classList.add('filled'); dot.textContent = '•'; }
+    else { dot.classList.remove('filled'); dot.textContent = ''; }
+  });
+}
+function pinDigit(n) {
+  if (state.pinInput.length >= 6) return;
+  state.pinInput += n;
+  updatePinDots();
+  $('pin-error').textContent = '';
+  if (state.pinInput.length === 6) {
+    if (state.pinInput === ACCESS_PIN) setTimeout(unlock, 200);
+    else {
+      document.querySelectorAll('#pin-row .pin-dot').forEach(d => d.classList.add('error'));
+      $('pin-error').textContent = '⚠ Invalid access code';
+      setTimeout(() => {
+        state.pinInput = '';
+        updatePinDots();
+        document.querySelectorAll('#pin-row .pin-dot').forEach(d => d.classList.remove('error'));
+      }, 600);
+    }
+  }
+}
+function pinDelete() { state.pinInput = state.pinInput.slice(0,-1); updatePinDots(); }
+function pinClear() { state.pinInput = ''; updatePinDots(); $('pin-error').textContent = ''; }
+
+document.addEventListener('keydown', e => {
+  if ($('lock-screen').classList.contains('hidden')) return;
+  if (e.key >= '0' && e.key <= '9') pinDigit(parseInt(e.key));
+  else if (e.key === 'Backspace') pinDelete();
+  else if (e.key === 'Escape') pinClear();
+});
+
+// ═══ API — text/plain to avoid CORS preflight ═══
+async function callScript(payload) {
+  const resp = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const result = await resp.json();
+  if (result.error) throw new Error(result.error);
+  return result;
+}
+
+async function loadFromSheets() {
+  try {
+    $('sync-text').textContent = 'Loading…';
+    $('live-badge').classList.remove('offline');
+    
+    const resp = await fetch(SCRIPT_URL + '?action=list', {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    
+    const rows = data.data || [];
+    // Skip header (row 0), filter empty rows
+    state.orders = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map(row => ({
+      id: row[0] || uid(),
+      ref: row[1]||'',
+      client: row[2]||'',
+      carrier: row[3]||'UPS',
+      tracking: row[4]||'',
+      status: row[5]||'pending',
+      note: row[6]||'',
+      user: row[7]||'DI',
+      createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
+      pdf: row[9]==='TRUE'||row[9]===true,
+      bl: row[10]==='TRUE'||row[10]===true,
+      label: row[11]==='TRUE'||row[11]===true,
+      pdfUrls: row[12] ? String(row[12]).split('|').filter(Boolean) : []
+    }));
+    
+    render();
+    $('sync-text').textContent = `Live · ${state.orders.length} orders`;
+  } catch(e) {
+    console.error('Load error:', e);
+    $('sync-text').textContent = 'Offline';
+    $('live-badge').classList.add('offline');
+    toast('Connection error: ' + e.message, 'error');
+  }
+}
+
+async function saveAllToSheets() {
+  const orders = state.orders.map(o => ({
+    id: o.id,
+    ref: o.ref || '',
+    client: o.client || '',
+    carrier: o.carrier || '',
+    tracking: o.tracking || '',
+    status: o.status || 'pending',
+    note: o.note || '',
+    user: o.user || 'DI',
+    createdAt: new Date(o.createdAt).toISOString(),
+    pdf: o.pdf?'TRUE':'FALSE',
+    bl: o.bl?'TRUE':'FALSE',
+    label: o.label?'TRUE':'FALSE',
+    pdfUrls: (o.pdfUrls||[]).join('|')
+  }));
+  
+  await callScript({action: 'save', orders});
+}
+
+async function uploadPDF(file, refName) {
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+  
+  const filename = `${refName || 'order'}_${Date.now()}_${file.name}`;
+  
+  const result = await callScript({
+    action: 'upload',
+    fileData: base64,
+    mime: file.type || 'application/pdf',
+    filename: filename
+  });
+  
+  return result.url;
+}
+
+function syncNow() {
+  loadFromSheets().then(() => toast('Synced ✅'));
+}
+
+// FILTERING
+function inDateRange(ts, range) {
+  const now = Date.now(), day = 86400000;
+  switch(range) {
+    case 'today': const start = new Date(); start.setHours(0,0,0,0); return ts >= start.getTime();
+    case 'week': return now - ts < 7*day;
+    case 'month': return now - ts < 30*day;
+    case 'quarter': return now - ts < 90*day;
+    default: return true;
+  }
+}
+function filterByDate(orders, range) { return orders.filter(o => inDateRange(o.createdAt, range)); }
+
+// RENDER
+function renderIdentity() {
+  $('id-opts').innerHTML = USERS.map(u => `
+    <button class="id-btn ${state.currentUser===u.id?'active':''}" onclick="setUser('${u.id}')">
+      <span class="av av-${u.id}">${u.id}</span><span>${u.name}</span>
+    </button>
+  `).join('');
+  $('user-greet').innerHTML = `Hello <span class="accent">${userName(state.currentUser)}</span>`;
+  const h = new Date().getHours();
+  $('greeting').textContent = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
+  $('page-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function setUser(id) { state.currentUser=id; localStorage.setItem('export_user',id); renderIdentity(); toast(`Hello ${userName(id)} 👋`); }
+
+function renderStats() {
+  const active = state.orders.filter(o => o.status !== 'delivered');
+  $('nav-today').textContent = active.length;
+  $('nav-all').textContent = state.orders.length;
+  
+  const todayDel = state.orders.filter(o => o.status==='delivered' && inDateRange(o.createdAt,'today')).length;
+  const weekDel = state.orders.filter(o => o.status==='delivered' && inDateRange(o.createdAt,'week')).length;
+  
+  const stats = [
+    {id:'pending',label:'Pending',icon:'🖨️',count:state.orders.filter(o=>o.status==='pending').length},
+    {id:'delivered',label:'Delivered',icon:'✅',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} today`},
+    {id:'issue',label:'Issues',icon:'⚠️',count:state.orders.filter(o=>o.status==='issue').length},
+    {id:'total',label:'Total',icon:'📦',count:state.orders.length,trend:`${weekDel} this week`}
+  ];
+  
+  $('stats').innerHTML = stats.map(s => `
+    <div class="stat stat-${s.id}" onclick="filterBy('${s.id}')">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.count}</div>
+      ${s.trend?`<div class="stat-trend">${s.trend}</div>`:''}
+    </div>
+  `).join('');
+}
+
+function renderChips() {
+  const c = {
+    all: state.orders.filter(o=>o.status!=='delivered').length,
+    mine: state.orders.filter(o=>o.user===state.currentUser && o.status!=='delivered').length,
+    pending: state.orders.filter(o=>o.status==='pending').length,
+    issue: state.orders.filter(o=>o.status==='issue').length
+  };
+  $('chips').innerHTML = `
+    <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="chip-count">${c.all}</span></button>
+    <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mine<span class="chip-count">${c.mine}</span></button>
+    <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">Pending<span class="chip-count">${c.pending}</span></button>
+    <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Issues<span class="chip-count">${c.issue}</span></button>
+  `;
+}
+
+function renderOrders() {
+  const q = ($('search').value||'').toLowerCase();
+  let list = state.orders.filter(o => o.status !== 'delivered');
+  if (state.filter === 'mine') list = list.filter(o => o.user === state.currentUser);
+  else if (state.filter !== 'all') list = list.filter(o => o.status === state.filter);
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+o.note).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+  
+  const el = $('orders');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">📭</div><div class="empty-title">All caught up!</div><div class="empty-sub">No orders in this category</div><button class="btn btn-pri" onclick="openAdd()">+ Create order</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(orderCard).join('');
+}
+
+function renderDateFilter(targetId, currentValue, callback) {
+  $(targetId).innerHTML = DATE_RANGES.map(r => `
+    <button class="date-btn ${currentValue===r.id?'active':''}" onclick="${callback}('${r.id}')">${r.label}</button>
+  `).join('');
+}
+
+function renderAll() {
+  renderDateFilter('date-filter-all', state.dateRange, 'setDateRange');
+  const q = ($('search-all').value||'').toLowerCase();
+  let list = filterByDate(state.orders, state.dateRange);
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+  
+  const el = $('orders-all');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">📭</div><div class="empty-title">No results</div><div class="empty-sub">Try a different date range</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(orderCard).join('');
+}
+
+function setDateRange(r) { state.dateRange = r; renderAll(); }
+function setAnalyticsDateRange(r) { state.analyticsDateRange = r; renderAnalytics(); }
+
+function orderCard(o) {
+  const s = getStatus(o.status);
+  const cmt = o.note 
+    ? `<div class="card-comment"><span>${esc(o.note)}</span></div>`
+    : `<div class="card-comment empty"><span>No notes</span></div>`;
+  const pdfBadge = o.pdfUrls && o.pdfUrls.length 
+    ? `<span class="pdf-count">📎 ${o.pdfUrls.length}</span>` : '';
+  const displayRef = o.ref || `(no ref)`;
+  const displayClient = o.client || `(no client)`;
+  
+  return `
+    <div class="card s-${o.status}" onclick="openDetail('${esc(o.id)}')">
+      <div class="card-head">
+        <div>
+          <div class="card-ref">${esc(displayRef)} ${pdfBadge}</div>
+          <div class="card-client">${esc(displayClient)}</div>
+        </div>
+        <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
+      </div>
+      <div class="card-docs">
+        <div class="doc-tick ${o.pdf?'on':'off'}">${o.pdf?'✓':'○'} Inv</div>
+        <div class="doc-tick ${o.bl?'on':'off'}">${o.bl?'✓':'○'} BL</div>
+        <div class="doc-tick ${o.label?'on':'off'}">${o.label?'✓':'○'} Label</div>
+      </div>
+      <div class="card-meta">
+        <div><span class="meta-lbl">Via</span> ${esc(o.carrier)}</div>
+        ${o.tracking?`<div><span class="meta-lbl">Track</span> <span style="font-family:'JetBrains Mono',monospace;font-size:11px">${esc(o.tracking.substring(0,10))}</span></div>`:''}
+        <div style="margin-left:auto">${fmtAgo(o.createdAt)}</div>
+      </div>
+      ${cmt}
+      <div class="card-foot">
+        <div class="pill"><span class="pill-dot"></span>${s.label}</div>
+        ${o.status==='pending'?`<button class="quick-btn" onclick="event.stopPropagation();quickDone('${esc(o.id)}')">✅ Delivered</button>`:''}
+      </div>
+    </div>
+  `;
+}
+
+function setFilter(f) { state.filter = f; render(); }
+function filterBy(s) { state.filter = s; render(); }
+
+function switchView(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  $('view-'+v).classList.add('active');
+  if (el) el.classList.add('active');
+  if (v === 'all') renderAll();
+  if (v === 'analytics') renderAnalytics();
+}
+
+function render() { renderStats(); renderChips(); renderOrders(); }
+
+// ANALYTICS
+function renderAnalytics() {
+  renderDateFilter('date-filter-analytics', state.analyticsDateRange, 'setAnalyticsDateRange');
+  const filtered = filterByDate(state.orders, state.analyticsDateRange);
+  
+  const pending = filtered.filter(o => o.status==='pending').length;
+  const delivered = filtered.filter(o => o.status==='delivered').length;
+  const issue = filtered.filter(o => o.status==='issue').length;
+  const total = filtered.length;
+  const rate = total ? Math.round(delivered/total*100) : 0;
+  
+  $('stats-analytics').innerHTML = `
+    <div class="stat stat-total"><div class="stat-icon">📦</div><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
+    <div class="stat stat-delivered"><div class="stat-icon">✅</div><div class="stat-label">Delivered</div><div class="stat-value">${delivered}</div><div class="stat-trend">${rate}% rate</div></div>
+    <div class="stat stat-pending"><div class="stat-icon">🖨️</div><div class="stat-label">Pending</div><div class="stat-value">${pending}</div></div>
+    <div class="stat stat-issue"><div class="stat-icon">⚠️</div><div class="stat-label">Issues</div><div class="stat-value">${issue}</div></div>
+  `;
+  
+  setTimeout(() => {
+    renderTimelineChart(filtered);
+    renderStatusChart(filtered);
+    renderCarrierChart(filtered);
+    renderAssigneeChart(filtered);
+  }, 50);
+}
+
+function destroyChart(id) {
+  if (state.charts[id]) { state.charts[id].destroy(); delete state.charts[id]; }
+}
+
+function renderTimelineChart(orders) {
+  destroyChart('timeline');
+  const ctx = $('chart-timeline');
+  if (!ctx) return;
+  const days = {};
+  orders.forEach(o => {
+    const k = new Date(o.createdAt).toISOString().split('T')[0];
+    if (!days[k]) days[k] = {created:0, delivered:0};
+    days[k].created++;
+    if (o.status === 'delivered') days[k].delivered++;
+  });
+  const sorted = Object.keys(days).sort();
+  const labels = sorted.map(d => new Date(d).toLocaleDateString('en-US',{day:'2-digit',month:'short'}));
+  state.charts.timeline = new Chart(ctx, {
+    type: 'line',
+    data: {labels, datasets:[
+      {label:'Created', data:sorted.map(d=>days[d].created), borderColor:'#2d6987', backgroundColor:'rgba(45,105,135,.1)', tension:.3, fill:true},
+      {label:'Delivered', data:sorted.map(d=>days[d].delivered), borderColor:'#4d7a3a', backgroundColor:'rgba(77,122,58,.1)', tension:.3, fill:true}
+    ]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Bricolage Grotesque',size:11}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function renderStatusChart(orders) {
+  destroyChart('status');
+  const ctx = $('chart-status');
+  if (!ctx) return;
+  const counts = STATUSES.map(s => orders.filter(o => o.status === s.id).length);
+  state.charts.status = new Chart(ctx, {
+    type: 'doughnut',
+    data: {labels:STATUSES.map(s=>s.label), datasets:[{data:counts, backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Bricolage Grotesque',size:11}}}}}
+  });
+}
+
+function renderCarrierChart(orders) {
+  destroyChart('carrier');
+  const ctx = $('chart-carrier');
+  if (!ctx) return;
+  const groups = {};
+  orders.forEach(o => { groups[o.carrier] = (groups[o.carrier]||0)+1; });
+  state.charts.carrier = new Chart(ctx, {
+    type: 'bar',
+    data: {labels:Object.keys(groups), datasets:[{data:Object.values(groups), backgroundColor:'#7c4d8f', borderRadius:8}]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function renderAssigneeChart(orders) {
+  destroyChart('assignee');
+  const ctx = $('chart-assignee');
+  if (!ctx) return;
+  const counts = USERS.map(u => orders.filter(o => o.user === u.id).length);
+  state.charts.assignee = new Chart(ctx, {
+    type: 'bar',
+    data: {labels:USERS.map(u=>u.name), datasets:[{data:counts, backgroundColor:['#2d6987','#d99c20','#4d7a3a','#7c4d8f','#e85a3c'], borderRadius:8}]},
+    options: {responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+async function quickDone(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = 'delivered';
+  try { await saveAllToSheets(); render(); toast(`Marked delivered ✅`); }
+  catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ADD
+function openAdd() {
+  ['a-ref','a-client','a-tracking','a-note'].forEach(id => $(id).value = '');
+  $('a-carrier').value = 'UPS';
+  state.addStatus = 'pending';
+  state.addAssn = state.currentUser;
+  state.addDocs = {pdf:false, bl:false, label:false};
+  state.pdfFiles = [];
+  renderPdfList();
+  renderAddPickers();
+  renderAddDocs();
+  openModal('m-add');
+}
+
+function renderAddPickers() {
+  $('a-status-pick').innerHTML = STATUSES.map(s => `
+    <div class="spo ${state.addStatus===s.id?'sel':''}" data-s="${s.id}" onclick="state.addStatus='${s.id}';renderAddPickers()">
+      <div class="spo-emoji">${s.icon}</div><div class="spo-lbl">${s.label}</div>
+    </div>
+  `).join('');
+  $('a-assn-pick').innerHTML = USERS.map(u => `
+    <div class="apo ${state.addAssn===u.id?'sel':''}" onclick="state.addAssn='${u.id}';renderAddPickers()">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderAddDocs() {
+  ['pdf','bl','label'].forEach(k => {
+    const el = $('dp-'+k); const st = $('dp-'+k+'-st');
+    if (state.addDocs[k]) { el.classList.add('checked'); st.textContent = '✓ ready'; }
+    else { el.classList.remove('checked'); st.textContent = 'pending'; }
+  });
+}
+
+function toggleDoc(k) { state.addDocs[k] = !state.addDocs[k]; renderAddDocs(); }
+
+// PDF MULTI
+function handleDrop(e) {
+  e.preventDefault();
+  $('uz').classList.remove('drag');
+  addFiles(Array.from(e.dataTransfer.files));
+}
+function handleFiles(inp) {
+  addFiles(Array.from(inp.files));
+  inp.value = '';
+}
+function addFiles(files) {
+  const remaining = MAX_PDFS - state.pdfFiles.length;
+  if (remaining <= 0) { toast(`Maximum ${MAX_PDFS} files`, 'error'); return; }
+  const toAdd = files.slice(0, remaining);
+  if (files.length > remaining) toast(`Only ${remaining} added (max ${MAX_PDFS})`, 'error');
+  state.pdfFiles.push(...toAdd.map(f => ({file:f, id:uid(), status:'ready', url:''})));
+  if (state.pdfFiles.length > 0) { state.addDocs.pdf = true; renderAddDocs(); }
+  renderPdfList();
+}
+function removePdf(id) {
+  state.pdfFiles = state.pdfFiles.filter(p => p.id !== id);
+  if (state.pdfFiles.length === 0) { state.addDocs.pdf = false; renderAddDocs(); }
+  renderPdfList();
+}
+function renderPdfList() {
+  const el = $('pdf-list');
+  if (!state.pdfFiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = state.pdfFiles.map(p => {
+    const iconMap = {ready:'📄', uploading:'⏳', uploaded:'✅', error:'⚠️'};
+    return `
+      <div class="pdf-item ${p.status}">
+        <span class="pdf-item-icon">${iconMap[p.status]||'📄'}</span>
+        <span class="pdf-item-name">${esc(p.file.name)}</span>
+        <span class="pdf-item-size">${(p.file.size/1024).toFixed(0)}KB</span>
+        ${p.status==='ready'?`<button class="pdf-item-x" onclick="removePdf('${p.id}')">✕</button>`:''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function addOrder() {
+  const btn = $('add-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Saving…';
+  
+  const ref = $('a-ref').value.trim();
+  const client = $('a-client').value.trim();
+  const tracking = $('a-tracking').value.trim();
+  
+  // Upload PDFs sequentially
+  const uploadedUrls = [];
+  for (let i = 0; i < state.pdfFiles.length; i++) {
+    const p = state.pdfFiles[i];
+    p.status = 'uploading';
+    renderPdfList();
+    btn.innerHTML = `<span class="loader"></span> Uploading ${i+1}/${state.pdfFiles.length}…`;
+    
+    try {
+      const url = await uploadPDF(p.file, ref || 'order');
+      p.url = url;
+      p.status = 'uploaded';
+      uploadedUrls.push(url);
+      renderPdfList();
+    } catch(e) {
+      p.status = 'error';
+      renderPdfList();
+      toast('Upload failed: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Save order →';
+      return;
+    }
+  }
+  
+  const newOrder = {
+    id: uid(),
+    ref, client,
+    carrier: $('a-carrier').value,
+    tracking,
+    status: state.addStatus,
+    note: $('a-note').value.trim(),
+    user: state.addAssn,
+    createdAt: Date.now(),
+    pdf: state.addDocs.pdf,
+    bl: state.addDocs.bl,
+    label: state.addDocs.label,
+    pdfUrls: uploadedUrls
+  };
+  
+  state.orders.unshift(newOrder);
+  
+  try {
+    btn.innerHTML = '<span class="loader"></span> Saving order…';
+    await saveAllToSheets();
+    closeModal('m-add');
+    render();
+    toast(`Order saved ✨`);
+  } catch(e) {
+    toast('Save error: ' + e.message, 'error');
+    state.orders.shift();
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Save order →';
+}
+
+// DETAIL
+function openDetail(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  state.currentId = id;
+  
+  $('d-client').textContent = o.client || '(no client)';
+  $('d-ref').textContent = `${o.ref || '(no ref)'} · ${o.carrier} · ${fmtAgo(o.createdAt)}`;
+  $('d-tracking').value = o.tracking || '';
+  $('d-note').value = o.note || '';
+  
+  if (o.pdfUrls && o.pdfUrls.length) {
+    $('d-pdf-sect').style.display = 'block';
+    $('d-pdf-links').innerHTML = o.pdfUrls.map((url, i) => 
+      `<a class="drive-link" href="${url}" target="_blank">📄 PDF ${i+1}</a>`
+    ).join('');
+  } else {
+    $('d-pdf-sect').style.display = 'none';
+  }
+  
+  state.detStatus = o.status;
+  state.detAssn = o.user;
+  state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label};
+  
+  renderDetPickers();
+  renderDetDocs();
+  openModal('m-det');
+}
+
+function renderDetPickers() {
+  $('d-status-pick').innerHTML = STATUSES.map(s => `
+    <div class="spo ${state.detStatus===s.id?'sel':''}" data-s="${s.id}" onclick="state.detStatus='${s.id}';renderDetPickers()">
+      <div class="spo-emoji">${s.icon}</div><div class="spo-lbl">${s.label}</div>
+    </div>
+  `).join('');
+  $('d-assn-pick').innerHTML = USERS.map(u => `
+    <div class="apo ${state.detAssn===u.id?'sel':''}" onclick="state.detAssn='${u.id}';renderDetPickers()">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderDetDocs() {
+  ['pdf','bl','label'].forEach(k => {
+    const el = $('ddp-'+k); const st = $('ddp-'+k+'-st');
+    if (state.detDocs[k]) { el.classList.add('checked'); st.textContent = '✓ ready'; }
+    else { el.classList.remove('checked'); st.textContent = 'pending'; }
+  });
+}
+
+function toggleDocDet(k) { state.detDocs[k] = !state.detDocs[k]; renderDetDocs(); }
+
+async function saveOrder() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const btn = $('det-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Saving…';
+  
+  o.status = state.detStatus;
+  o.user = state.detAssn;
+  o.tracking = $('d-tracking').value.trim();
+  o.note = $('d-note').value.trim();
+  o.pdf = state.detDocs.pdf;
+  o.bl = state.detDocs.bl;
+  o.label = state.detDocs.label;
+  
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast(`Order updated ✅`); }
+  catch(e) { toast('Error: ' + e.message, 'error'); }
+  
+  btn.disabled = false;
+  btn.textContent = 'Save changes';
+}
+
+async function deleteOrder() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  if (!confirm(`Delete this order?`)) return;
+  state.orders = state.orders.filter(x => x.id !== state.currentId);
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Deleted', 'error'); }
+  catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+function openModal(id) { $(id).classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+});
+
+function init() {
+  renderIdentity();
+  loadFromSheets();
+  setInterval(loadFromSheets, 30000);
+}
+
+if (checkAuth()) {
+  $('lock-screen').classList.add('hidden');
+  $('app-shell').style.display = 'grid';
+  init();
+}
+</script>
+</body>
+</html>
