@@ -232,6 +232,14 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .pdf-item-x:hover{opacity:1}
 .drive-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--ocean-soft);color:var(--ocean);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s var(--ease);margin-right:6px;margin-bottom:6px}
 .drive-link:hover{background:var(--ocean);color:var(--paper);transform:translateY(-1px)}
+.timeline{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.tl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
+.tl-item.tl-done{background:var(--moss-soft)}
+.tl-item.tl-issue{background:var(--honey-soft)}
+.tl-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.tl-body{flex:1;min-width:0}
+.tl-label{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:2px}
+.tl-value{font-size:12px;word-break:break-word}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--paper);padding:14px 20px;border-radius:var(--r-lg);font-size:13px;font-weight:500;z-index:9999;box-shadow:var(--sh-lg);transform:translateY(120px);opacity:0;transition:all .3s var(--bounce);max-width:340px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:var(--moss)}
@@ -419,9 +427,26 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <button class="modal-x" onclick="closeModal('m-det')">✕</button>
     </div>
     <div class="modal-body">
+      <div class="sect" id="d-timeline-sect">
+        <div class="sect-lbl">Timeline</div>
+        <div id="d-timeline" class="timeline"></div>
+      </div>
       <div class="sect" id="d-pdf-sect" style="display:none">
         <div class="sect-lbl">Attached PDFs</div>
         <div id="d-pdf-links"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Add more PDFs</div>
+        <div class="pdf-drop" id="d-pdf-drop"
+             ondrop="handleDetailPdfDrop(event)"
+             ondragover="handleDetailPdfDragOver(event)"
+             ondragleave="handleDetailPdfDragLeave(event)"
+             onclick="document.getElementById('d-pdf-input').click()">
+          <div class="pdf-drop-icon">📎</div>
+          <div class="pdf-drop-text">Drop PDF or click to browse</div>
+          <div class="pdf-drop-hint">Max 4 PDFs per order</div>
+        </div>
+        <input type="file" id="d-pdf-input" accept="application/pdf" multiple style="display:none" onchange="handleDetailPdfPick(event)">
       </div>
       <div class="sect">
         <div class="sect-lbl">Documents</div>
@@ -587,6 +612,8 @@ async function loadFromSheets() {
     
     const rows = data.data || [];
     // Skip header (row 0), filter empty rows
+    // Column order (v3): ID, Ref, Client, Carrier, Tracking, Status, Notes, Assigned,
+    //   CreatedAt, UpdatedAt, DeliveredAt, DeliveredBy, Invoice, BL, Label, PDF_URLs, IssueHistory
     state.orders = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map(row => ({
       id: row[0] || uid(),
       ref: row[1]||'',
@@ -597,10 +624,14 @@ async function loadFromSheets() {
       note: row[6]||'',
       user: row[7]||'DI',
       createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
-      pdf: row[9]==='TRUE'||row[9]===true,
-      bl: row[10]==='TRUE'||row[10]===true,
-      label: row[11]==='TRUE'||row[11]===true,
-      pdfUrls: row[12] ? String(row[12]).split('|').filter(Boolean) : []
+      updatedAt: row[9] ? new Date(row[9]).getTime() : null,
+      deliveredAt: row[10] ? new Date(row[10]).getTime() : null,
+      deliveredBy: row[11]||'',
+      pdf: row[12]==='TRUE'||row[12]===true,
+      bl: row[13]==='TRUE'||row[13]===true,
+      label: row[14]==='TRUE'||row[14]===true,
+      pdfUrls: row[15] ? String(row[15]).split('|').filter(Boolean) : [],
+      issueHistory: row[16]||''
     }));
     
     render();
@@ -624,12 +655,16 @@ async function saveAllToSheets() {
     note: o.note || '',
     user: o.user || 'DI',
     createdAt: new Date(o.createdAt).toISOString(),
+    updatedAt: o.updatedAt ? new Date(o.updatedAt).toISOString() : '',
+    deliveredAt: o.deliveredAt ? new Date(o.deliveredAt).toISOString() : '',
+    deliveredBy: o.deliveredBy || '',
     pdf: o.pdf?'TRUE':'FALSE',
     bl: o.bl?'TRUE':'FALSE',
     label: o.label?'TRUE':'FALSE',
-    pdfUrls: (o.pdfUrls||[]).join('|')
+    pdfUrls: (o.pdfUrls||[]).join('|'),
+    issueHistory: o.issueHistory || ''
   }));
-  
+
   await callScript({action: 'save', orders});
 }
 
@@ -651,6 +686,22 @@ async function uploadPDF(file, refName) {
   });
   
   return result.url;
+}
+
+async function deletePdfFromDrive(fileUrl) {
+  try {
+    await callScript({action: 'deleteFile', fileUrl});
+    return true;
+  } catch(e) {
+    console.warn('Could not delete from Drive:', e.message);
+    return false;
+  }
+}
+
+function fmtDateTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
 }
 
 function syncNow() {
@@ -1024,6 +1075,7 @@ async function addOrder() {
     }
   }
   
+  const now = Date.now();
   const newOrder = {
     id: uid(),
     ref, client,
@@ -1032,11 +1084,15 @@ async function addOrder() {
     status: state.addStatus,
     note: $('a-note').value.trim(),
     user: state.addAssn,
-    createdAt: Date.now(),
+    createdAt: now,
+    updatedAt: now,
+    deliveredAt: state.addStatus === 'delivered' ? now : null,
+    deliveredBy: state.addStatus === 'delivered' ? state.currentUser : '',
     pdf: state.addDocs.pdf,
     bl: state.addDocs.bl,
     label: state.addDocs.label,
-    pdfUrls: uploadedUrls
+    pdfUrls: uploadedUrls,
+    issueHistory: state.addStatus === 'issue' ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} flagged as issue` : ''
   };
   
   state.orders.unshift(newOrder);
@@ -1061,28 +1117,152 @@ function openDetail(id) {
   const o = state.orders.find(x => x.id === id);
   if (!o) return;
   state.currentId = id;
-  
+
   $('d-client').textContent = o.client || '(no client)';
   $('d-ref').textContent = `${o.ref || '(no ref)'} · ${o.carrier} · ${fmtAgo(o.createdAt)}`;
   $('d-tracking').value = o.tracking || '';
   $('d-note').value = o.note || '';
-  
-  if (o.pdfUrls && o.pdfUrls.length) {
-    $('d-pdf-sect').style.display = 'block';
-    $('d-pdf-links').innerHTML = o.pdfUrls.map((url, i) => 
-      `<a class="drive-link" href="${url}" target="_blank">📄 PDF ${i+1}</a>`
-    ).join('');
-  } else {
-    $('d-pdf-sect').style.display = 'none';
-  }
-  
+
+  renderDetPdfs();
+  renderTimeline(o);
+
   state.detStatus = o.status;
   state.detAssn = o.user;
   state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label};
-  
+
   renderDetPickers();
   renderDetDocs();
   openModal('m-det');
+}
+
+function renderDetPdfs() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const sect = $('d-pdf-sect');
+  const list = $('d-pdf-links');
+  if (o.pdfUrls && o.pdfUrls.length) {
+    sect.style.display = 'block';
+    list.innerHTML = o.pdfUrls.map((url, i) =>
+      `<div class="pdf-item uploaded" style="margin-bottom:6px">
+        <span class="pdf-item-icon">📄</span>
+        <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1">PDF ${i+1} — open</a>
+        <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">✕</button>
+      </div>`
+    ).join('');
+  } else {
+    sect.style.display = 'none';
+    list.innerHTML = '';
+  }
+}
+
+function renderTimeline(o) {
+  const tl = $('d-timeline');
+  if (!tl) return;
+  const items = [];
+  items.push(`<div class="tl-item"><span class="tl-icon">📅</span><div class="tl-body"><div class="tl-label">Created</div><div class="tl-value">${fmtDateTime(o.createdAt)} · by ${userName(o.user)}</div></div></div>`);
+  if (o.updatedAt && o.updatedAt > o.createdAt + 60000) {
+    items.push(`<div class="tl-item"><span class="tl-icon">✏️</span><div class="tl-body"><div class="tl-label">Last update</div><div class="tl-value">${fmtDateTime(o.updatedAt)}</div></div></div>`);
+  }
+  if (o.deliveredAt) {
+    items.push(`<div class="tl-item tl-done"><span class="tl-icon">✅</span><div class="tl-body"><div class="tl-label">Delivered</div><div class="tl-value">${fmtDateTime(o.deliveredAt)} · by ${userName(o.deliveredBy) || '—'}</div></div></div>`);
+  }
+  if (o.issueHistory) {
+    const entries = o.issueHistory.split('\n').filter(Boolean);
+    entries.forEach(e => {
+      items.push(`<div class="tl-item tl-issue"><span class="tl-icon">⚠️</span><div class="tl-body"><div class="tl-label">Issue log</div><div class="tl-value">${esc(e)}</div></div></div>`);
+    });
+  }
+  tl.innerHTML = items.join('');
+}
+
+async function removePdfFromOrder(idx) {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o || !o.pdfUrls || !o.pdfUrls[idx]) return;
+  if (!confirm('Remove this PDF? It will be deleted from Drive too.')) return;
+
+  const url = o.pdfUrls[idx];
+  toast('Removing PDF…');
+
+  // Delete from Drive (best effort — don't block on failure)
+  await deletePdfFromDrive(url);
+
+  // Remove from order
+  o.pdfUrls.splice(idx, 1);
+  if (o.pdfUrls.length === 0) {
+    o.pdf = false;
+    state.detDocs.pdf = false;
+  }
+  o.updatedAt = Date.now();
+
+  try {
+    await saveAllToSheets();
+    renderDetPdfs();
+    renderDetDocs();
+    render();
+    toast('PDF removed ✅');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function addPdfToOrder(files) {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const current = (o.pdfUrls || []).length;
+  const remaining = MAX_PDFS - current;
+  if (remaining <= 0) {
+    toast(`Max ${MAX_PDFS} PDFs per order`, 'error');
+    return;
+  }
+  const toUpload = Array.from(files).filter(f => f.type === 'application/pdf').slice(0, remaining);
+  if (toUpload.length === 0) {
+    toast('Only PDF files allowed', 'error');
+    return;
+  }
+
+  toast(`Uploading ${toUpload.length} PDF(s)…`);
+  if (!o.pdfUrls) o.pdfUrls = [];
+
+  for (let i = 0; i < toUpload.length; i++) {
+    try {
+      const url = await uploadPDF(toUpload[i], o.ref || 'order');
+      o.pdfUrls.push(url);
+    } catch(e) {
+      toast('Upload failed: ' + e.message, 'error');
+      return;
+    }
+  }
+
+  o.pdf = true;
+  state.detDocs.pdf = true;
+  o.updatedAt = Date.now();
+
+  try {
+    await saveAllToSheets();
+    renderDetPdfs();
+    renderDetDocs();
+    render();
+    toast(`${toUpload.length} PDF(s) added ✅`);
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+function handleDetailPdfDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  addPdfToOrder(e.dataTransfer.files);
+}
+function handleDetailPdfDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag');
+}
+function handleDetailPdfDragLeave(e) {
+  e.currentTarget.classList.remove('drag');
+}
+function handleDetailPdfPick(e) {
+  if (e.target.files.length) addPdfToOrder(e.target.files);
+  e.target.value = '';
 }
 
 function renderDetPickers() {
@@ -1114,18 +1294,48 @@ async function saveOrder() {
   const btn = $('det-save-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="loader"></span> Saving…';
-  
-  o.status = state.detStatus;
+
+  const now = Date.now();
+  const prevStatus = o.status;
+  const newStatus = state.detStatus;
+  const actor = userName(state.currentUser);
+
+  // Track status transitions
+  if (prevStatus !== newStatus) {
+    // Going TO issue → add entry
+    if (newStatus === 'issue') {
+      const entry = `[${new Date(now).toISOString()}] ${actor} flagged as issue`;
+      o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+    }
+    // Going OUT of issue → record resolution
+    if (prevStatus === 'issue' && newStatus !== 'issue') {
+      const entry = `[${new Date(now).toISOString()}] ${actor} resolved → ${newStatus}`;
+      o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+    }
+    // Going TO delivered → record who/when
+    if (newStatus === 'delivered') {
+      o.deliveredAt = now;
+      o.deliveredBy = state.currentUser;
+    }
+    // Going OUT of delivered → clear delivery record
+    if (prevStatus === 'delivered' && newStatus !== 'delivered') {
+      o.deliveredAt = null;
+      o.deliveredBy = '';
+    }
+  }
+
+  o.status = newStatus;
   o.user = state.detAssn;
   o.tracking = $('d-tracking').value.trim();
   o.note = $('d-note').value.trim();
   o.pdf = state.detDocs.pdf;
   o.bl = state.detDocs.bl;
   o.label = state.detDocs.label;
-  
+  o.updatedAt = now;
+
   try { await saveAllToSheets(); closeModal('m-det'); render(); toast(`Order updated ✅`); }
   catch(e) { toast('Error: ' + e.message, 'error'); }
-  
+
   btn.disabled = false;
   btn.textContent = 'Save changes';
 }
@@ -1133,7 +1343,16 @@ async function saveOrder() {
 async function deleteOrder() {
   const o = state.orders.find(x => x.id === state.currentId);
   if (!o) return;
-  if (!confirm(`Delete this order?`)) return;
+  if (!confirm(`Delete this order? This will also remove all its PDFs from Drive.`)) return;
+
+  // Delete PDFs from Drive first (best effort)
+  if (o.pdfUrls && o.pdfUrls.length) {
+    toast('Deleting PDFs from Drive…');
+    for (const url of o.pdfUrls) {
+      await deletePdfFromDrive(url);
+    }
+  }
+
   state.orders = state.orders.filter(x => x.id !== state.currentId);
   try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Deleted', 'error'); }
   catch(e) { toast('Error: ' + e.message, 'error'); }
