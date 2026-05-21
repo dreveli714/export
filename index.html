@@ -182,21 +182,22 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .inp::placeholder{color:var(--ink-fade)}
 select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8278' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
-.docs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.doc-pick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .2s var(--ease)}
+.docs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.doc-pick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .2s var(--ease)}
 .doc-pick:hover{transform:translateY(-2px)}
 .doc-pick.checked{border-color:var(--moss);background:var(--moss-soft)}
+.doc-pick.doc-issue.checked{border-color:var(--honey);background:var(--honey-soft)}
+.doc-pick.doc-issue.checked .doc-pick-state{color:var(--honey)}
 .doc-pick-emoji{font-size:22px}
 .doc-pick-lbl{font-size:11px;font-weight:600}
 .doc-pick-state{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute)}
 .doc-pick.checked .doc-pick-state{color:var(--moss)}
-.sp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sp{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .spo{background:var(--paper-2);border:2px solid transparent;border-radius:var(--r-md);padding:14px;cursor:pointer;text-align:center;transition:all .2s var(--ease)}
 .spo:hover{transform:translateY(-2px)}
 .spo.sel{background:var(--paper);box-shadow:var(--sh-md)}
 .spo[data-s="pending"].sel{border-color:var(--tomato)}
 .spo[data-s="delivered"].sel{border-color:var(--moss)}
-.spo[data-s="issue"].sel{border-color:var(--honey)}
 .spo-emoji{font-size:22px;margin-bottom:6px}
 .spo-lbl{font-size:11px;font-weight:600}
 .ap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
@@ -232,14 +233,40 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .pdf-item-x:hover{opacity:1}
 .drive-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--ocean-soft);color:var(--ocean);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s var(--ease);margin-right:6px;margin-bottom:6px}
 .drive-link:hover{background:var(--ocean);color:var(--paper);transform:translateY(-1px)}
-.timeline{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.tl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
-.tl-item.tl-done{background:var(--moss-soft)}
-.tl-item.tl-issue{background:var(--honey-soft)}
-.tl-icon{font-size:14px;flex-shrink:0;margin-top:1px}
-.tl-body{flex:1;min-width:0}
-.tl-label{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:2px}
-.tl-value{font-size:12px;word-break:break-word}
+
+/* Modern PDF drop zone (modal de detalles) */
+.pdf-drop{border:2px dashed var(--line);border-radius:var(--r-lg);padding:18px;text-align:center;cursor:pointer;transition:all .25s var(--ease);background:linear-gradient(135deg,var(--paper-2) 0%,var(--paper) 100%);display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;overflow:hidden}
+.pdf-drop::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(232,90,60,.08),transparent);transform:translateX(-100%);transition:transform .6s var(--ease)}
+.pdf-drop:hover{border-color:var(--tomato);background:var(--tomato-soft)}
+.pdf-drop:hover::before{transform:translateX(100%)}
+.pdf-drop.drag{border-color:var(--tomato);background:var(--tomato-soft);transform:scale(1.01)}
+.pdf-drop.uploading{border-color:var(--honey);background:var(--honey-soft);pointer-events:none;opacity:.7}
+.pdf-drop-icon{font-size:24px}
+.pdf-drop-text{font-size:13px;font-weight:600}
+.pdf-drop-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute)}
+
+/* History toggle */
+.history-toggle{width:100%;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s var(--ease)}
+.history-toggle:hover{background:var(--paper);border-color:var(--ink-mute);color:var(--ink)}
+.ht-icon{font-size:14px;opacity:.7}
+.ht-label{flex:1;text-align:left}
+.ht-chev{font-size:10px;opacity:.6;transition:transform .2s var(--ease)}
+
+/* Timeline — compact line-style */
+.timeline{display:flex;flex-direction:column;margin-top:10px;padding-left:6px;border-left:1px dashed var(--line)}
+.tl-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0 6px 14px;position:relative;font-size:11px;line-height:1.5}
+.tl-item::before{content:'';position:absolute;left:-4px;top:11px;width:7px;height:7px;background:var(--ink-mute);border-radius:50%;border:2px solid var(--paper)}
+.tl-item.tl-done::before{background:var(--moss)}
+.tl-item.tl-issue::before{background:var(--honey)}
+.tl-item.tl-issue{color:var(--honey)}
+.tl-item.tl-done{color:var(--moss)}
+.tl-when{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7;margin-right:4px}
+.tl-body{flex:1;min-width:0;word-break:break-word}
+.tl-body b{font-weight:600}
+
+/* Issue badge on cards */
+.issue-badge{display:inline-block;background:var(--honey);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--r-full);letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;margin-left:4px}
+.card.has-issue{box-shadow:inset 3px 0 0 var(--honey)}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--paper);padding:14px 20px;border-radius:var(--r-lg);font-size:13px;font-weight:500;z-index:9999;box-shadow:var(--sh-lg);transform:translateY(120px);opacity:0;transition:all .3s var(--bounce);max-width:340px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:var(--moss)}
@@ -407,6 +434,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
           <div class="doc-pick" id="dp-pdf" onclick="toggleDoc('pdf')"><div class="doc-pick-emoji">📄</div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="dp-pdf-st">pending</div></div>
           <div class="doc-pick" id="dp-bl" onclick="toggleDoc('bl')"><div class="doc-pick-emoji">📋</div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="dp-bl-st">pending</div></div>
           <div class="doc-pick" id="dp-label" onclick="toggleDoc('label')"><div class="doc-pick-emoji">🏷️</div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="dp-label-st">pending</div></div>
+          <div class="doc-pick doc-issue" id="dp-issue" onclick="toggleDoc('issue')"><div class="doc-pick-emoji">⚠️</div><div class="doc-pick-lbl">Issue</div><div class="doc-pick-state" id="dp-issue-st">no issue</div></div>
         </div>
       </div>
       <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="a-status-pick"></div></div>
@@ -427,10 +455,6 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <button class="modal-x" onclick="closeModal('m-det')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="sect" id="d-timeline-sect">
-        <div class="sect-lbl">Timeline</div>
-        <div id="d-timeline" class="timeline"></div>
-      </div>
       <div class="sect" id="d-pdf-sect" style="display:none">
         <div class="sect-lbl">Attached PDFs</div>
         <div id="d-pdf-links"></div>
@@ -449,17 +473,26 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
         <input type="file" id="d-pdf-input" accept="application/pdf" multiple style="display:none" onchange="handleDetailPdfPick(event)">
       </div>
       <div class="sect">
-        <div class="sect-lbl">Documents</div>
+        <div class="sect-lbl">Documents & flags</div>
         <div class="docs-row">
           <div class="doc-pick" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji">📄</div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="ddp-pdf-st">pending</div></div>
           <div class="doc-pick" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji">📋</div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">pending</div></div>
           <div class="doc-pick" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji">🏷️</div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="ddp-label-st">pending</div></div>
+          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji">⚠️</div><div class="doc-pick-lbl">Issue</div><div class="doc-pick-state" id="ddp-issue-st">no issue</div></div>
         </div>
       </div>
       <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="d-status-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Assigned</div><div class="ap" id="d-assn-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Tracking number"></div>
       <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="d-note" placeholder="Update notes…"></textarea></div>
+      <div class="sect">
+        <button type="button" class="history-toggle" onclick="toggleHistory()">
+          <span class="ht-icon">ⓘ</span>
+          <span class="ht-label">Show history</span>
+          <span class="ht-chev" id="ht-chev">▾</span>
+        </button>
+        <div id="d-timeline" class="timeline" style="display:none"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-dng" onclick="deleteOrder()">Delete</button>
@@ -488,8 +521,7 @@ const USERS = [
 ];
 const STATUSES = [
   {id:'pending',label:'Pending',icon:'🖨️'},
-  {id:'delivered',label:'Delivered',icon:'✅'},
-  {id:'issue',label:'Issue',icon:'⚠️'}
+  {id:'delivered',label:'Delivered',icon:'✅'}
 ];
 const DATE_RANGES = [
   {id:'today',label:'Today'},{id:'week',label:'7 days'},
@@ -501,8 +533,8 @@ let state = {
   filter:'all', dateRange:'all', analyticsDateRange:'month',
   currentId:null, addStatus:'pending', addAssn:'DI',
   detStatus:'pending', detAssn:'DI',
-  addDocs:{pdf:false,bl:false,label:false},
-  detDocs:{pdf:false,bl:false,label:false},
+  addDocs:{pdf:false,bl:false,label:false,issue:false},
+  detDocs:{pdf:false,bl:false,label:false,issue:false},
   pdfFiles:[], pinInput:'', charts:{}
 };
 
@@ -614,25 +646,31 @@ async function loadFromSheets() {
     // Skip header (row 0), filter empty rows
     // Column order (v3): ID, Ref, Client, Carrier, Tracking, Status, Notes, Assigned,
     //   CreatedAt, UpdatedAt, DeliveredAt, DeliveredBy, Invoice, BL, Label, PDF_URLs, IssueHistory
-    state.orders = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map(row => ({
-      id: row[0] || uid(),
-      ref: row[1]||'',
-      client: row[2]||'',
-      carrier: row[3]||'UPS',
-      tracking: row[4]||'',
-      status: row[5]||'pending',
-      note: row[6]||'',
-      user: row[7]||'DI',
-      createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
-      updatedAt: row[9] ? new Date(row[9]).getTime() : null,
-      deliveredAt: row[10] ? new Date(row[10]).getTime() : null,
-      deliveredBy: row[11]||'',
-      pdf: row[12]==='TRUE'||row[12]===true,
-      bl: row[13]==='TRUE'||row[13]===true,
-      label: row[14]==='TRUE'||row[14]===true,
-      pdfUrls: row[15] ? String(row[15]).split('|').filter(Boolean) : [],
-      issueHistory: row[16]||''
-    }));
+    state.orders = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map(row => {
+      const rawStatus = row[5] || 'pending';
+      // Legacy migration: old "issue" status → new "issue" check + status reverts to pending
+      const isLegacyIssue = rawStatus === 'issue';
+      return {
+        id: row[0] || uid(),
+        ref: row[1]||'',
+        client: row[2]||'',
+        carrier: row[3]||'UPS',
+        tracking: row[4]||'',
+        status: isLegacyIssue ? 'pending' : rawStatus,
+        note: row[6]||'',
+        user: row[7]||'DI',
+        createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
+        updatedAt: row[9] ? new Date(row[9]).getTime() : null,
+        deliveredAt: row[10] ? new Date(row[10]).getTime() : null,
+        deliveredBy: row[11]||'',
+        pdf: row[12]==='TRUE'||row[12]===true,
+        bl: row[13]==='TRUE'||row[13]===true,
+        label: row[14]==='TRUE'||row[14]===true,
+        pdfUrls: row[15] ? String(row[15]).split('|').filter(Boolean) : [],
+        issueHistory: row[16]||'',
+        issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue
+      };
+    });
     
     render();
     $('sync-text').textContent = `Live · ${state.orders.length} orders`;
@@ -662,7 +700,8 @@ async function saveAllToSheets() {
     bl: o.bl?'TRUE':'FALSE',
     label: o.label?'TRUE':'FALSE',
     pdfUrls: (o.pdfUrls||[]).join('|'),
-    issueHistory: o.issueHistory || ''
+    issueHistory: o.issueHistory || '',
+    issue: o.issue?'TRUE':'FALSE'
   }));
 
   await callScript({action: 'save', orders});
@@ -746,7 +785,7 @@ function renderStats() {
   const stats = [
     {id:'pending',label:'Pending',icon:'🖨️',count:state.orders.filter(o=>o.status==='pending').length},
     {id:'delivered',label:'Delivered',icon:'✅',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} today`},
-    {id:'issue',label:'Issues',icon:'⚠️',count:state.orders.filter(o=>o.status==='issue').length},
+    {id:'issue',label:'Issues',icon:'⚠️',count:state.orders.filter(o=>!!o.issue).length},
     {id:'total',label:'Total',icon:'📦',count:state.orders.length,trend:`${weekDel} this week`}
   ];
   
@@ -765,7 +804,7 @@ function renderChips() {
     all: state.orders.filter(o=>o.status!=='delivered').length,
     mine: state.orders.filter(o=>o.user===state.currentUser && o.status!=='delivered').length,
     pending: state.orders.filter(o=>o.status==='pending').length,
-    issue: state.orders.filter(o=>o.status==='issue').length
+    issue: state.orders.filter(o=>!!o.issue).length
   };
   $('chips').innerHTML = `
     <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="chip-count">${c.all}</span></button>
@@ -779,10 +818,11 @@ function renderOrders() {
   const q = ($('search').value||'').toLowerCase();
   let list = state.orders.filter(o => o.status !== 'delivered');
   if (state.filter === 'mine') list = list.filter(o => o.user === state.currentUser);
+  else if (state.filter === 'issue') list = list.filter(o => !!o.issue);
   else if (state.filter !== 'all') list = list.filter(o => o.status === state.filter);
   if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+o.note).toLowerCase().includes(q));
   list.sort((a,b) => b.createdAt - a.createdAt);
-  
+
   const el = $('orders');
   if (!list.length) {
     el.innerHTML = `<div class="empty"><div class="empty-emoji">📭</div><div class="empty-title">All caught up!</div><div class="empty-sub">No orders in this category</div><button class="btn btn-pri" onclick="openAdd()">+ Create order</button></div>`;
@@ -816,20 +856,21 @@ function setDateRange(r) { state.dateRange = r; renderAll(); }
 function setAnalyticsDateRange(r) { state.analyticsDateRange = r; renderAnalytics(); }
 
 function orderCard(o) {
-  const s = getStatus(o.status);
-  const cmt = o.note 
+  const s = getStatus(o.status) || {label: o.status, icon: '•'};
+  const cmt = o.note
     ? `<div class="card-comment"><span>${esc(o.note)}</span></div>`
     : `<div class="card-comment empty"><span>No notes</span></div>`;
-  const pdfBadge = o.pdfUrls && o.pdfUrls.length 
+  const pdfBadge = o.pdfUrls && o.pdfUrls.length
     ? `<span class="pdf-count">📎 ${o.pdfUrls.length}</span>` : '';
   const displayRef = o.ref || `(no ref)`;
   const displayClient = o.client || `(no client)`;
-  
+  const issueClass = o.issue ? 'has-issue' : '';
+
   return `
-    <div class="card s-${o.status}" onclick="openDetail('${esc(o.id)}')">
+    <div class="card s-${o.status} ${issueClass}" onclick="openDetail('${esc(o.id)}')">
       <div class="card-head">
         <div>
-          <div class="card-ref">${esc(displayRef)} ${pdfBadge}</div>
+          <div class="card-ref">${esc(displayRef)} ${pdfBadge} ${o.issue?'<span class="issue-badge">⚠ Issue</span>':''}</div>
           <div class="card-client">${esc(displayClient)}</div>
         </div>
         <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
@@ -874,7 +915,7 @@ function renderAnalytics() {
   
   const pending = filtered.filter(o => o.status==='pending').length;
   const delivered = filtered.filter(o => o.status==='delivered').length;
-  const issue = filtered.filter(o => o.status==='issue').length;
+  const issue = filtered.filter(o => !!o.issue).length;
   const total = filtered.length;
   const rate = total ? Math.round(delivered/total*100) : 0;
   
@@ -924,10 +965,13 @@ function renderStatusChart(orders) {
   destroyChart('status');
   const ctx = $('chart-status');
   if (!ctx) return;
-  const counts = STATUSES.map(s => orders.filter(o => o.status === s.id).length);
+  // 3 segments: Pending, Delivered, and Issue (the latter from the check, not status)
+  const pending = orders.filter(o => o.status === 'pending').length;
+  const delivered = orders.filter(o => o.status === 'delivered').length;
+  const issue = orders.filter(o => !!o.issue).length;
   state.charts.status = new Chart(ctx, {
     type: 'doughnut',
-    data: {labels:STATUSES.map(s=>s.label), datasets:[{data:counts, backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
+    data: {labels:['Pending','Delivered','Issue'], datasets:[{data:[pending, delivered, issue], backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
     options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Bricolage Grotesque',size:11}}}}}
   });
 }
@@ -971,7 +1015,7 @@ function openAdd() {
   $('a-carrier').value = 'UPS';
   state.addStatus = 'pending';
   state.addAssn = state.currentUser;
-  state.addDocs = {pdf:false, bl:false, label:false};
+  state.addDocs = {pdf:false, bl:false, label:false, issue:false};
   state.pdfFiles = [];
   renderPdfList();
   renderAddPickers();
@@ -993,10 +1037,16 @@ function renderAddPickers() {
 }
 
 function renderAddDocs() {
-  ['pdf','bl','label'].forEach(k => {
+  ['pdf','bl','label','issue'].forEach(k => {
     const el = $('dp-'+k); const st = $('dp-'+k+'-st');
-    if (state.addDocs[k]) { el.classList.add('checked'); st.textContent = '✓ ready'; }
-    else { el.classList.remove('checked'); st.textContent = 'pending'; }
+    if (!el) return;
+    if (state.addDocs[k]) {
+      el.classList.add('checked');
+      st.textContent = k === 'issue' ? '⚠ flagged' : '✓ ready';
+    } else {
+      el.classList.remove('checked');
+      st.textContent = k === 'issue' ? 'no issue' : 'pending';
+    }
   });
 }
 
@@ -1091,8 +1141,9 @@ async function addOrder() {
     pdf: state.addDocs.pdf,
     bl: state.addDocs.bl,
     label: state.addDocs.label,
+    issue: !!state.addDocs.issue,
     pdfUrls: uploadedUrls,
-    issueHistory: state.addStatus === 'issue' ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} flagged as issue` : ''
+    issueHistory: state.addDocs.issue ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} flagged as issue` : ''
   };
   
   state.orders.unshift(newOrder);
@@ -1128,7 +1179,7 @@ function openDetail(id) {
 
   state.detStatus = o.status;
   state.detAssn = o.user;
-  state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label};
+  state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label, issue: !!o.issue};
 
   renderDetPickers();
   renderDetDocs();
@@ -1159,20 +1210,43 @@ function renderTimeline(o) {
   const tl = $('d-timeline');
   if (!tl) return;
   const items = [];
-  items.push(`<div class="tl-item"><span class="tl-icon">📅</span><div class="tl-body"><div class="tl-label">Created</div><div class="tl-value">${fmtDateTime(o.createdAt)} · by ${userName(o.user)}</div></div></div>`);
+  items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.createdAt)}</span> · Created by <b>${userName(o.user)}</b></div></div>`);
   if (o.updatedAt && o.updatedAt > o.createdAt + 60000) {
-    items.push(`<div class="tl-item"><span class="tl-icon">✏️</span><div class="tl-body"><div class="tl-label">Last update</div><div class="tl-value">${fmtDateTime(o.updatedAt)}</div></div></div>`);
+    items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.updatedAt)}</span> · Last edit</div></div>`);
   }
   if (o.deliveredAt) {
-    items.push(`<div class="tl-item tl-done"><span class="tl-icon">✅</span><div class="tl-body"><div class="tl-label">Delivered</div><div class="tl-value">${fmtDateTime(o.deliveredAt)} · by ${userName(o.deliveredBy) || '—'}</div></div></div>`);
+    items.push(`<div class="tl-item tl-done"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.deliveredAt)}</span> · Delivered by <b>${userName(o.deliveredBy) || '—'}</b></div></div>`);
   }
   if (o.issueHistory) {
     const entries = o.issueHistory.split('\n').filter(Boolean);
     entries.forEach(e => {
-      items.push(`<div class="tl-item tl-issue"><span class="tl-icon">⚠️</span><div class="tl-body"><div class="tl-label">Issue log</div><div class="tl-value">${esc(e)}</div></div></div>`);
+      // Parse "[ISO_DATE] actor action" to format nicely
+      const m = e.match(/^\[([^\]]+)\]\s*(.*)$/);
+      if (m) {
+        const when = fmtDateTime(new Date(m[1]).getTime());
+        items.push(`<div class="tl-item tl-issue"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${when}</span> · ${esc(m[2])}</div></div>`);
+      } else {
+        items.push(`<div class="tl-item tl-issue"><span class="tl-dot"></span><div class="tl-body">${esc(e)}</div></div>`);
+      }
     });
   }
   tl.innerHTML = items.join('');
+}
+
+function toggleHistory() {
+  const tl = $('d-timeline');
+  const chev = $('ht-chev');
+  const lbl = document.querySelector('.history-toggle .ht-label');
+  if (!tl) return;
+  if (tl.style.display === 'none') {
+    tl.style.display = 'flex';
+    chev.textContent = '▴';
+    if (lbl) lbl.textContent = 'Hide history';
+  } else {
+    tl.style.display = 'none';
+    chev.textContent = '▾';
+    if (lbl) lbl.textContent = 'Show history';
+  }
 }
 
 async function removePdfFromOrder(idx) {
@@ -1220,15 +1294,52 @@ async function addPdfToOrder(files) {
     return;
   }
 
-  toast(`Uploading ${toUpload.length} PDF(s)…`);
   if (!o.pdfUrls) o.pdfUrls = [];
+
+  // Show pending placeholders in the list IMMEDIATELY so user sees something happening
+  const sect = $('d-pdf-sect');
+  const list = $('d-pdf-links');
+  sect.style.display = 'block';
+
+  // Render with pending items appended
+  const existingHtml = o.pdfUrls.map((url, i) =>
+    `<div class="pdf-item uploaded" style="margin-bottom:6px">
+      <span class="pdf-item-icon">📄</span>
+      <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1">PDF ${i+1} — open</a>
+      <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">✕</button>
+    </div>`
+  ).join('');
+  const pendingHtml = toUpload.map((f, i) =>
+    `<div class="pdf-item uploading" id="pending-${i}" style="margin-bottom:6px">
+      <span class="loader"></span>
+      <span class="pdf-item-name">${esc(f.name)}</span>
+      <span class="pdf-item-size">uploading…</span>
+    </div>`
+  ).join('');
+  list.innerHTML = existingHtml + pendingHtml;
+
+  const drop = $('d-pdf-drop');
+  if (drop) drop.classList.add('uploading');
 
   for (let i = 0; i < toUpload.length; i++) {
     try {
       const url = await uploadPDF(toUpload[i], o.ref || 'order');
       o.pdfUrls.push(url);
+      const pending = $(`pending-${i}`);
+      if (pending) {
+        pending.classList.remove('uploading');
+        pending.classList.add('uploaded');
+        pending.innerHTML = `<span class="pdf-item-icon">📄</span><span class="pdf-item-name">${esc(toUpload[i].name)}</span><span class="pdf-item-size">✓ saved</span>`;
+      }
     } catch(e) {
+      const pending = $(`pending-${i}`);
+      if (pending) {
+        pending.classList.remove('uploading');
+        pending.classList.add('error');
+        pending.innerHTML = `<span class="pdf-item-icon">⚠️</span><span class="pdf-item-name">${esc(toUpload[i].name)}</span><span class="pdf-item-size">failed</span>`;
+      }
       toast('Upload failed: ' + e.message, 'error');
+      if (drop) drop.classList.remove('uploading');
       return;
     }
   }
@@ -1239,11 +1350,13 @@ async function addPdfToOrder(files) {
 
   try {
     await saveAllToSheets();
+    if (drop) drop.classList.remove('uploading');
     renderDetPdfs();
     renderDetDocs();
     render();
     toast(`${toUpload.length} PDF(s) added ✅`);
   } catch(e) {
+    if (drop) drop.classList.remove('uploading');
     toast('Error: ' + e.message, 'error');
   }
 }
@@ -1279,10 +1392,16 @@ function renderDetPickers() {
 }
 
 function renderDetDocs() {
-  ['pdf','bl','label'].forEach(k => {
+  ['pdf','bl','label','issue'].forEach(k => {
     const el = $('ddp-'+k); const st = $('ddp-'+k+'-st');
-    if (state.detDocs[k]) { el.classList.add('checked'); st.textContent = '✓ ready'; }
-    else { el.classList.remove('checked'); st.textContent = 'pending'; }
+    if (!el) return;
+    if (state.detDocs[k]) {
+      el.classList.add('checked');
+      st.textContent = k === 'issue' ? '⚠ flagged' : '✓ ready';
+    } else {
+      el.classList.remove('checked');
+      st.textContent = k === 'issue' ? 'no issue' : 'pending';
+    }
   });
 }
 
@@ -1298,26 +1417,26 @@ async function saveOrder() {
   const now = Date.now();
   const prevStatus = o.status;
   const newStatus = state.detStatus;
+  const prevIssue = !!o.issue;
+  const newIssue = !!state.detDocs.issue;
   const actor = userName(state.currentUser);
+
+  // Track issue toggle
+  if (!prevIssue && newIssue) {
+    const entry = `[${new Date(now).toISOString()}] ${actor} flagged as issue`;
+    o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+  }
+  if (prevIssue && !newIssue) {
+    const entry = `[${new Date(now).toISOString()}] ${actor} cleared issue flag`;
+    o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+  }
 
   // Track status transitions
   if (prevStatus !== newStatus) {
-    // Going TO issue → add entry
-    if (newStatus === 'issue') {
-      const entry = `[${new Date(now).toISOString()}] ${actor} flagged as issue`;
-      o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
-    }
-    // Going OUT of issue → record resolution
-    if (prevStatus === 'issue' && newStatus !== 'issue') {
-      const entry = `[${new Date(now).toISOString()}] ${actor} resolved → ${newStatus}`;
-      o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
-    }
-    // Going TO delivered → record who/when
     if (newStatus === 'delivered') {
       o.deliveredAt = now;
       o.deliveredBy = state.currentUser;
     }
-    // Going OUT of delivered → clear delivery record
     if (prevStatus === 'delivered' && newStatus !== 'delivered') {
       o.deliveredAt = null;
       o.deliveredBy = '';
@@ -1331,6 +1450,7 @@ async function saveOrder() {
   o.pdf = state.detDocs.pdf;
   o.bl = state.detDocs.bl;
   o.label = state.detDocs.label;
+  o.issue = newIssue;
   o.updatedAt = now;
 
   try { await saveAllToSheets(); closeModal('m-det'); render(); toast(`Order updated ✅`); }
