@@ -866,8 +866,7 @@ function renderOrders() {
   if (state.filter === 'mine') list = list.filter(o => o.user === state.currentUser);
   else if (state.filter === 'issue') list = list.filter(o => !!o.issue);
   else if (state.filter !== 'all') list = list.filter(o => o.status === state.filter);
-  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+o.note).toLowerCase().includes(q));
-  list.sort((a,b) => b.createdAt - a.createdAt);
+if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking).toLowerCase().includes(q));  list.sort((a,b) => b.createdAt - a.createdAt);
 
   const el = $('orders');
   if (!list.length) {
