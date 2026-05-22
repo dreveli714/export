@@ -702,8 +702,7 @@ async function loadFromSheets() {
         ref: row[1]||'',
         client: row[2]||'',
         carrier: row[3]||'UPS',
-        tracking: row[4]||'',
-        status: isLegacyIssue ? 'pending' : rawStatus,
+tracking: row[4]!=null ? String(row[4]) : '',        status: isLegacyIssue ? 'pending' : rawStatus,
         note: row[6]||'',
         user: row[7]||'DI',
         createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
@@ -931,8 +930,7 @@ function orderCard(o) {
       </div>
       <div class="card-meta">
         <div><span class="meta-lbl">Via</span> ${esc(o.carrier)}</div>
-        ${o.tracking?`<div><span class="meta-lbl">Track</span> <span class="tracking-pill">${esc(o.tracking.substring(0,12))}</span></div>`:''}
-        <div class="card-ago">${fmtAgo(o.createdAt)}</div>
+${o.tracking?`<div><span class="meta-lbl">Track</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}<div class="card-ago">${fmtAgo(o.createdAt)}</div>
       </div>
       ${cmt}
       <div class="card-foot">
