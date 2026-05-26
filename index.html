@@ -757,7 +757,7 @@ function icon(name, size = 16) {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxq4Rtj_cL5aOk5c8IuWgXLWNnIs28kgldaW0DCMB3qhmBClao-PjJAMNnw0I755SdHDg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxORKhR2wYwYnhWz6UKz99M1PGXfoCiYFH-KDCU6J6hLLVzxYjRLSx6kMubOrxEzlY-kQ/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
 const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
@@ -1001,7 +1001,6 @@ function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(St
 // oldest: url|url  (plain URLs)
 function parsePdfUrls(raw) {
   if (!raw) return [];
-  console.log('[parsePdfUrls] input:', JSON.stringify(raw.substring(0,200)));
   // v4 clean format
   if (raw.includes('§§§')) return raw.split('§§§').filter(Boolean);
   
@@ -1033,7 +1032,6 @@ function parsePdfUrls(raw) {
       entries.push(u.url);
     }
   }
-  console.log('[parsePdfUrls] result:', entries.length, entries);
   return entries;
 }
 
