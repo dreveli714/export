@@ -757,7 +757,7 @@ function icon(name, size = 16) {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
-const SCRIPT_URL = 'https://script.google.com/a/macros/reflectiv.com/s/AKfycbxKgPtLysZ5AJMydVlLi_XSxrdpUIuSyG9uJNDcbuTv8FLIXwIZVOC-lEGGYFeFKGjunQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA2CBwTUyHGTTlmPVFd_ExepmzdoumFXXbL04WM_5pGljcQ-Vp7V5yA0vCSxhcTsShkg/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
 const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
@@ -997,48 +997,51 @@ function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(St
 // parse PDF URLs from sheet — handles old '|' separator and new '§§§'
 function parsePdfUrls(raw) {
   if (!raw) return [];
-  // new format uses §§§ between entries
+  // new format: entries separated by §§§
   if (raw.includes('§§§')) {
     return raw.split('§§§').filter(Boolean);
   }
-  // old format: plain URLs separated by |  (no ||| inside)
-  // OR broken format with ||| inside entries
-  // detect: if it contains '|||', it's name|||url entries joined by |
-  if (raw.includes('|||')) {
-    // rebuild: split on | then recombine groups of name|||url
-    const parts = raw.split('|');
-    const entries = [];
-    let buf = '';
-    for (let i = 0; i < parts.length; i++) {
-      if (buf === '') {
-        buf = parts[i];
-      } else {
-        buf += '|' + parts[i];
-      }
-      // an entry is complete if buf contains '|||' AND either:
-      // - it's a URL (starts with http after the |||)
-      // - next part would start a new name (not empty, not http continuation)
-      const tripleIdx = buf.indexOf('|||');
-      if (tripleIdx >= 0) {
-        const afterTriple = buf.slice(tripleIdx + 3);
-        // URL part is complete if it starts with http and contains google.com or drive
-        if (afterTriple.match(/^https?:\/\//)) {
-          // check if next parts are still part of this URL (URLs don't contain bare |)
-          // peek ahead — if next part starts with http or is a filename, current entry is done
-          const nextPart = parts[i+1] || '';
-          const nextIsNewEntry = !nextPart || !afterTriple.endsWith('/') || nextPart.match(/^[A-Za-z0-9_].*\.(pdf|png|jpg|jpeg)/i) || nextPart.match(/^https?:/);
-          if (nextIsNewEntry || i === parts.length - 1) {
-            entries.push(buf);
-            buf = '';
-          }
-        }
-      }
-    }
-    if (buf) entries.push(buf);
-    return entries.filter(Boolean);
+  // old or broken format with |
+  // Strategy: find all Drive URLs, then match them back to names
+  const driveUrls = [];
+  const regex = /https:\/\/drive\.google\.com\/[^|\s]+/g;
+  let m;
+  while ((m = regex.exec(raw)) !== null) driveUrls.push(m[0]);
+  
+  if (driveUrls.length === 0) {
+    // no drive URLs — try splitting by | for plain URLs (http...)
+    return raw.split('|').filter(u => u.startsWith('http'));
   }
-  // plain old URLs separated by |
-  return raw.split('|').filter(Boolean);
+  
+  // for each URL, look for a name before it (name|||url pattern)
+  const entries = [];
+  for (const url of driveUrls) {
+    const idx = raw.indexOf(url);
+    // check if preceded by ||| — means there's a name
+    const before = raw.substring(0, idx);
+    const triplePos = before.lastIndexOf('|||');
+    if (triplePos >= 0) {
+      // find name: text between previous URL end (or start) and |||
+      let nameStart = 0;
+      // find the end of the previous entry
+      for (const prev of entries) {
+        const prevUrl = pdfUrlOf(prev) || prev;
+        const prevEnd = raw.indexOf(prevUrl) + prevUrl.length;
+        if (prevEnd > nameStart) nameStart = prevEnd;
+      }
+      // skip separators
+      while (nameStart < triplePos && raw[nameStart] === '|') nameStart++;
+      const name = raw.substring(nameStart, triplePos);
+      if (name) {
+        entries.push(name + '|||' + url);
+      } else {
+        entries.push(url);
+      }
+    } else {
+      entries.push(url);
+    }
+  }
+  return entries.length > 0 ? entries : raw.split('|').filter(Boolean);
 }
 
 
