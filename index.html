@@ -1001,6 +1001,7 @@ function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(St
 // oldest: url|url  (plain URLs)
 function parsePdfUrls(raw) {
   if (!raw) return [];
+  console.log('[parsePdfUrls] input:', JSON.stringify(raw.substring(0,200)));
   // v4 clean format
   if (raw.includes('§§§')) return raw.split('§§§').filter(Boolean);
   
@@ -1032,6 +1033,7 @@ function parsePdfUrls(raw) {
       entries.push(u.url);
     }
   }
+  console.log('[parsePdfUrls] result:', entries.length, entries);
   return entries;
 }
 
