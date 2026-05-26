@@ -757,7 +757,7 @@ function icon(name, size = 16) {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA2CBwTUyHGTTlmPVFd_ExepmzdoumFXXbL04WM_5pGljcQ-Vp7V5yA0vCSxhcTsShkg/exec';
+const SCRIPT_URL = 'https://script.google.com/a/macros/reflectiv.com/s/AKfycbxKgPtLysZ5AJMydVlLi_XSxrdpUIuSyG9uJNDcbuTv8FLIXwIZVOC-lEGGYFeFKGjunQ/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
 const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
@@ -921,7 +921,7 @@ async function loadFromSheets() {
         pdf: row[12]==='TRUE'||row[12]===true,
         bl: row[13]==='TRUE'||row[13]===true,
         label: row[14]==='TRUE'||row[14]===true,
-        pdfUrls: row[15] ? String(row[15]).split('|').filter(Boolean) : [],
+        pdfUrls: row[15] ? parsePdfUrls(String(row[15])) : [],
         issueHistory: row[16]||'',
         issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue,
         isSample: row[18]==='TRUE'||row[18]===true,
@@ -956,7 +956,7 @@ async function saveAllToSheets() {
     pdf: o.pdf?'TRUE':'FALSE',
     bl: o.bl?'TRUE':'FALSE',
     label: o.label?'TRUE':'FALSE',
-    pdfUrls: (o.pdfUrls||[]).join('|'),
+    pdfUrls: (o.pdfUrls||[]).join('§§§'),
     issueHistory: o.issueHistory || '',
     issue: o.issue?'TRUE':'FALSE',
     isSample: o.isSample?'TRUE':'FALSE',
@@ -994,6 +994,53 @@ function pdfUrlOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); r
 function pdfNameOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?'':x.slice(0,i); }
 function pdfIdOf(entry){ const p=String(entry||'').split('|||'); return p.length>2?p[2]:''; }
 function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(String(n||'')); }
+// parse PDF URLs from sheet — handles old '|' separator and new '§§§'
+function parsePdfUrls(raw) {
+  if (!raw) return [];
+  // new format uses §§§ between entries
+  if (raw.includes('§§§')) {
+    return raw.split('§§§').filter(Boolean);
+  }
+  // old format: plain URLs separated by |  (no ||| inside)
+  // OR broken format with ||| inside entries
+  // detect: if it contains '|||', it's name|||url entries joined by |
+  if (raw.includes('|||')) {
+    // rebuild: split on | then recombine groups of name|||url
+    const parts = raw.split('|');
+    const entries = [];
+    let buf = '';
+    for (let i = 0; i < parts.length; i++) {
+      if (buf === '') {
+        buf = parts[i];
+      } else {
+        buf += '|' + parts[i];
+      }
+      // an entry is complete if buf contains '|||' AND either:
+      // - it's a URL (starts with http after the |||)
+      // - next part would start a new name (not empty, not http continuation)
+      const tripleIdx = buf.indexOf('|||');
+      if (tripleIdx >= 0) {
+        const afterTriple = buf.slice(tripleIdx + 3);
+        // URL part is complete if it starts with http and contains google.com or drive
+        if (afterTriple.match(/^https?:\/\//)) {
+          // check if next parts are still part of this URL (URLs don't contain bare |)
+          // peek ahead — if next part starts with http or is a filename, current entry is done
+          const nextPart = parts[i+1] || '';
+          const nextIsNewEntry = !nextPart || !afterTriple.endsWith('/') || nextPart.match(/^[A-Za-z0-9_].*\.(pdf|png|jpg|jpeg)/i) || nextPart.match(/^https?:/);
+          if (nextIsNewEntry || i === parts.length - 1) {
+            entries.push(buf);
+            buf = '';
+          }
+        }
+      }
+    }
+    if (buf) entries.push(buf);
+    return entries.filter(Boolean);
+  }
+  // plain old URLs separated by |
+  return raw.split('|').filter(Boolean);
+}
+
 
 async function deletePdfFromDrive(fileUrl) {
   try {
@@ -1860,7 +1907,7 @@ async function loadLitiges() {
       progressNote: row[13]||'',
       remarks: row[14]||'',
       folderId: row[15]||'',
-      fileUrls: row[16] ? String(row[16]).split('|').filter(Boolean) : [],
+      fileUrls: row[16] ? parsePdfUrls(String(row[16])) : [],
       updatedAt: row[17] ? new Date(row[17]).getTime() : null,
       linkedOrderId: row[18]||''
     }));
@@ -1882,7 +1929,7 @@ async function saveAllLitiges() {
     economicValue: l.economicValue||'', deadline: l.deadline||'',
     solution: l.solution||'', progressNote: l.progressNote||'',
     remarks: l.remarks||'', folderId: l.folderId||'',
-    fileUrls: (l.fileUrls||[]).join('|'),
+    fileUrls: (l.fileUrls||[]).join('§§§'),
     updatedAt: l.updatedAt ? new Date(l.updatedAt).toISOString() : '',
     linkedOrderId: l.linkedOrderId||''
   }));
