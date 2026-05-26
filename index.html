@@ -282,6 +282,49 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .view.active{display:block}
 .loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--paper);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== v4 — sample flag, preview, litiges ===== */
+.sample-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--plum);color:#fff;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:5px;letter-spacing:.02em;vertical-align:middle}
+.card.is-sample::before{background:var(--plum)}
+.sample-toggle{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .15s var(--ease)}
+.sample-toggle:hover{background:var(--paper);border-color:var(--line)}
+.sample-toggle.on{background:var(--plum-soft);border-color:var(--plum);color:var(--plum)}
+.sample-toggle .st-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--ink-fade);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:11px;color:transparent}
+.sample-toggle.on .st-box{background:var(--plum);border-color:var(--plum);color:#fff}
+.sample-toggle .st-txt{font-size:12px;font-weight:600;color:var(--ink)}
+.sample-toggle .st-sub{font-size:11px;color:var(--ink-mute)}
+/* file preview */
+.prev-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.prev-card{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
+.prev-thumb{width:46px;height:46px;border-radius:6px;background:var(--paper-3);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--line)}
+.prev-thumb img{width:100%;height:100%;object-fit:cover}
+.prev-thumb svg{color:var(--ink-mute)}
+.prev-thumb.no-thumb::after{content:'IMG';font-size:9px;font-weight:700;color:var(--ink-mute)}
+.prev-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+.prev-size{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute)}
+.prev-eye{background:var(--ocean-soft);color:var(--ocean);border:none;border-radius:6px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.prev-eye:hover{background:var(--ocean);color:#fff}
+.prev-x{background:none;border:none;cursor:pointer;color:var(--ink-mute);padding:2px 6px}
+.prev-x:hover{color:var(--tomato)}
+/* preview lightbox */
+.preview-bg{position:fixed;inset:0;background:rgba(10,37,64,.82);backdrop-filter:blur(6px);z-index:2000;display:none;align-items:center;justify-content:center;padding:30px}
+.preview-bg.open{display:flex}
+.preview-frame{background:#fff;border-radius:12px;width:min(900px,92vw);height:min(86vh,900px);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+.preview-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;color:var(--navy)}
+.preview-body{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;background:var(--paper-2)}
+.preview-body iframe{width:100%;height:100%;border:0}
+.preview-body img{max-width:100%;max-height:100%;object-fit:contain}
+/* litige time bar */
+.tbar{height:5px;border-radius:3px;background:var(--paper-3);overflow:hidden;margin-top:4px}
+.tbar > span{display:block;height:100%;border-radius:3px}
+.tbar-g > span{background:var(--moss)}
+.tbar-a > span{background:var(--honey)}
+.tbar-r > span{background:var(--tomato)}
+.lit-age{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.lit-age.g{color:var(--moss)} .lit-age.a{color:var(--honey)} .lit-age.r{color:var(--tomato)}
+.restype{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:var(--ocean-soft);color:var(--ocean);letter-spacing:.02em}
+.litige-folder-link{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--plum-soft);color:var(--plum);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s}
+.litige-folder-link:hover{background:var(--plum);color:#fff}
 @media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:20px}.charts-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -330,6 +373,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="nav-item active" onclick="switchView('today',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span>Active</span><span class="nav-count" id="nav-today">0</span></div>
     <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>All orders</span><span class="nav-count" id="nav-all">0</span></div>
     <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Analytics</span></div>
+    <div class="nav-item" onclick="switchView('litiges',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></span><span>Litiges</span><span class="nav-count" id="nav-litiges">0</span></div>
   </div>
   <div class="nav">
     <div class="nav-label">Actions</div>
@@ -404,6 +448,26 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <div class="chart-card"><div class="chart-title">By assignee</div><div class="chart-box"><canvas id="chart-assignee"></canvas></div></div>
     </div>
   </div>
+  <div id="view-litiges" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Traçabilité</div>
+        <h1 class="page-title">Litiges <span class="accent">&amp; réclamations</span></h1>
+        <div class="page-sub">Réclamations clients — suivi et résolution</div>
+      </div>
+      <button class="add-btn" onclick="openAddLitige()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouveau litige</button>
+    </div>
+    <div class="stats" id="stats-litiges"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-litiges" placeholder="Rechercher client, produit, ID…" oninput="renderLitiges()">
+      </div>
+      <div class="chips" id="chips-litiges"></div>
+    </div>
+    <div class="orders" id="litiges-list"></div>
+  </div>
+
 </main>
 </div>
 
@@ -447,6 +511,13 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="a-status-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Assign to</div><div class="ap" id="a-assn-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="a-note" placeholder="Notes, instructions…"></textarea></div>
+      <div class="sect">
+        <div class="sect-lbl">Type d'envoi</div>
+        <div class="sample-toggle" id="a-sample-toggle" onclick="toggleSampleAdd()">
+          <div class="st-box" id="a-sample-box">M</div>
+          <div><div class="st-txt">Échantillons (Muestra)</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+        </div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-gh" onclick="closeModal('m-add')">Cancel</button>
@@ -493,6 +564,13 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Tracking number"></div>
       <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="d-note" placeholder="Update notes…"></textarea></div>
       <div class="sect">
+        <div class="sect-lbl">Type d'envoi</div>
+        <div class="sample-toggle" id="d-sample-toggle" onclick="toggleSampleDet()">
+          <div class="st-box" id="d-sample-box">M</div>
+          <div><div class="st-txt">Échantillons (Muestra)</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+        </div>
+      </div>
+      <div class="sect">
         <button type="button" class="history-toggle" onclick="toggleHistory()">
           <span class="ht-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r=".8" fill="currentColor"/></svg></span>
           <span class="ht-label">Show history</span>
@@ -509,6 +587,131 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     </div>
   </div>
 </div>
+
+<!-- ===== LITIGE: ADD MODAL ===== -->
+<div class="modal-bg" id="m-litige-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Nouveau litige</div><div class="modal-sub">Réclamation client · un dossier Drive sera créé</div></div>
+      <button class="modal-x" onclick="closeModal('m-litige-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Photos &amp; documents</div>
+        <div class="pdf-drop" id="la-drop"
+             ondrop="handleLitigeAddDrop(event)" ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             onclick="document.getElementById('la-file-input').click()">
+          <div class="pdf-drop-icon" style="color:var(--plum)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="pdf-drop-text">Déposer photos ou documents</div>
+          <div class="pdf-drop-hint">Seront enregistrés en créant le litige</div>
+        </div>
+        <input type="file" id="la-file-input" accept="image/*,.pdf,.heic,.heif" multiple style="display:none" onchange="handleLitigeAddPick(event)">
+        <div class="prev-list" id="la-files"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Client &amp; produit</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="l-client" placeholder="EUROSCREEN"></div>
+          <div class="fld"><label class="fld-lbl">Email contact</label><input class="inp" id="l-email" placeholder="acquisti@…"></div>
+          <div class="fld"><label class="fld-lbl">Produit</label><input class="inp" id="l-product" placeholder="SOL 102"></div>
+          <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="l-qty" placeholder="3"></div>
+          <div class="fld"><label class="fld-lbl">Commande liée (réf, optionnel)</label><input class="inp" id="l-order" placeholder="RF2026/…"></div>
+        </div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Problème</div>
+        <textarea class="inp" id="l-problem" placeholder="Description du problème signalé par le client…"></textarea>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Type de résolution</div>
+        <select class="inp" id="l-restype"></select>
+      </div>
+      <div class="sect">
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Valeur économique (€)</label><input class="inp" id="l-value" type="number" placeholder="392.60"></div>
+          <div class="fld"><label class="fld-lbl">Date limite</label><input class="inp" id="l-deadline" type="date"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="l-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Géré par</div><div class="ap" id="l-handler-pick"></div></div>
+      <div class="sect">
+        <div class="sect-lbl">Solution / note de progrès</div>
+        <textarea class="inp" id="l-solution" placeholder="Solution proposée, actions effectuées…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-litige-add')">Annuler</button>
+      <button class="btn btn-pri" id="litige-add-btn" onclick="addLitige()">Créer le litige →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LITIGE: DETAIL MODAL ===== -->
+<div class="modal-bg" id="m-litige-det">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title" id="ld-title">—</div><div class="modal-sub" id="ld-sub">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-litige-det')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect" id="ld-folder-sect"></div>
+      <div class="sect">
+        <div class="sect-lbl">Fichiers du dossier</div>
+        <div class="pdf-drop" id="ld-drop"
+             ondrop="handleLitigeDrop(event)" ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             onclick="document.getElementById('ld-file-input').click()">
+          <div class="pdf-drop-icon" style="color:var(--plum)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="pdf-drop-text">Déposer photo ou document du litige</div>
+          <div class="pdf-drop-hint">PDF / image — tout type</div>
+        </div>
+        <input type="file" id="ld-file-input" accept="image/*,.pdf,.heic,.heif" multiple style="display:none" onchange="handleLitigePick(event)">
+        <div class="prev-list" id="ld-files"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Client &amp; produit</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="ld-client"></div>
+          <div class="fld"><label class="fld-lbl">Email contact</label><input class="inp" id="ld-email"></div>
+          <div class="fld"><label class="fld-lbl">Produit</label><input class="inp" id="ld-product"></div>
+          <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="ld-qty"></div>
+          <div class="fld"><label class="fld-lbl">Commande liée</label><input class="inp" id="ld-order"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Problème</div><textarea class="inp" id="ld-problem"></textarea></div>
+      <div class="sect"><div class="sect-lbl">Type de résolution</div><select class="inp" id="ld-restype"></select></div>
+      <div class="sect">
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Valeur économique (€)</label><input class="inp" id="ld-value" type="number"></div>
+          <div class="fld"><label class="fld-lbl">Date limite</label><input class="inp" id="ld-deadline" type="date"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="ld-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Géré par</div><div class="ap" id="ld-handler-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Solution / progrès</div><textarea class="inp" id="ld-solution"></textarea></div>
+      <div class="sect"><div class="sect-lbl">Remarques</div><textarea class="inp" id="ld-remarks"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-dng" onclick="deleteLitige()">Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-gh" onclick="closeModal('m-litige-det')">Annuler</button>
+      <button class="btn btn-pri" id="litige-det-btn" onclick="saveLitige()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREVIEW LIGHTBOX ===== -->
+<div class="preview-bg" id="preview-bg" onclick="if(event.target===this)closePreview()">
+  <div class="preview-frame">
+    <div class="preview-top">
+      <span id="preview-name">—</span>
+      <button class="modal-x" onclick="closePreview()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+  </div>
+</div>
+
 
 <div class="toast" id="toast"></div>
 
@@ -557,6 +760,7 @@ function icon(name, size = 16) {
 const SCRIPT_URL = 'https://script.google.com/a/macros/reflectiv.com/s/AKfycbxKgPtLysZ5AJMydVlLi_XSxrdpUIuSyG9uJNDcbuTv8FLIXwIZVOC-lEGGYFeFKGjunQ/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
+const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
 const DRIVE_URL = `https://drive.google.com/drive/folders/${FOLDER_ID}`;
 const ACCESS_PIN = '220202';
 const PIN_VALID_HOURS = 8;
@@ -582,7 +786,11 @@ let state = {
   detStatus:'pending', detAssn:'DI',
   addDocs:{pdf:false,bl:false,label:false,issue:false},
   detDocs:{pdf:false,bl:false,label:false,issue:false},
-  pdfFiles:[], pinInput:'', charts:{}
+  pdfFiles:[], pinInput:'', charts:{},
+  addSample:false, detSample:false,
+  litiges:[], litigeFilter:'open', currentLitigeId:null,
+  litStatus:'open', litHandler:'DI', detLitStatus:'open', detLitHandler:'DI',
+  litFiles:[]
 };
 
 const $ = id => document.getElementById(id);
@@ -702,7 +910,8 @@ async function loadFromSheets() {
         ref: row[1]||'',
         client: row[2]||'',
         carrier: row[3]||'UPS',
-tracking: row[4]!=null ? String(row[4]) : '',        status: isLegacyIssue ? 'pending' : rawStatus,
+        tracking: row[4]!=null ? String(row[4]) : '',
+        status: isLegacyIssue ? 'pending' : rawStatus,
         note: row[6]||'',
         user: row[7]||'DI',
         createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
@@ -714,7 +923,9 @@ tracking: row[4]!=null ? String(row[4]) : '',        status: isLegacyIssue ? 'pe
         label: row[14]==='TRUE'||row[14]===true,
         pdfUrls: row[15] ? String(row[15]).split('|').filter(Boolean) : [],
         issueHistory: row[16]||'',
-        issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue
+        issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue,
+        isSample: row[18]==='TRUE'||row[18]===true,
+        litigeId: row[19]||''
       };
     });
     
@@ -747,7 +958,9 @@ async function saveAllToSheets() {
     label: o.label?'TRUE':'FALSE',
     pdfUrls: (o.pdfUrls||[]).join('|'),
     issueHistory: o.issueHistory || '',
-    issue: o.issue?'TRUE':'FALSE'
+    issue: o.issue?'TRUE':'FALSE',
+    isSample: o.isSample?'TRUE':'FALSE',
+    litigeId: o.litigeId||''
   }));
 
   await callScript({action: 'save', orders});
@@ -760,18 +973,27 @@ async function uploadPDF(file, refName) {
     r.onerror = () => rej(new Error('Read failed'));
     r.readAsDataURL(file);
   });
-  
-  const filename = `${refName || 'order'}_${Date.now()}_${file.name}`;
-  
+
+  // v4 — keep ORIGINAL filename; only prefix ref so files group in Drive
+  const safeRef = (refName||'').replace(/[\\/:*?\"<>|]/g,'-').trim();
+  const filename = safeRef ? `${safeRef} - ${file.name}` : file.name;
+
   const result = await callScript({
     action: 'upload',
     fileData: base64,
     mime: file.type || 'application/pdf',
     filename: filename
   });
-  
-  return result.url;
+
+  // return name|||url so the dashboard can show the real name later
+  return file.name + '|||' + result.url;
 }
+
+// pdfUrls entries are stored as "name|||url" — backward compatible with plain url
+function pdfUrlOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?x:x.slice(i+3); }
+function pdfNameOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?'':x.slice(0,i); }
+function pdfIdOf(entry){ const p=String(entry||'').split('|||'); return p.length>2?p[2]:''; }
+function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(String(n||'')); }
 
 async function deletePdfFromDrive(fileUrl) {
   try {
@@ -852,11 +1074,13 @@ function renderChips() {
     pending: state.orders.filter(o=>o.status==='pending').length,
     issue: state.orders.filter(o=>!!o.issue).length
   };
+  c.sample = state.orders.filter(o=>o.isSample && o.status!=='delivered').length;
   $('chips').innerHTML = `
     <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="chip-count">${c.all}</span></button>
     <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mine<span class="chip-count">${c.mine}</span></button>
     <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">Pending<span class="chip-count">${c.pending}</span></button>
     <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Issues<span class="chip-count">${c.issue}</span></button>
+    <button class="chip ${state.filter==='sample'?'active':''}" onclick="setFilter('sample')">Samples<span class="chip-count">${c.sample}</span></button>
   `;
 }
 
@@ -865,8 +1089,10 @@ function renderOrders() {
   let list = state.orders.filter(o => o.status !== 'delivered');
   if (state.filter === 'mine') list = list.filter(o => o.user === state.currentUser);
   else if (state.filter === 'issue') list = list.filter(o => !!o.issue);
+  else if (state.filter === 'sample') list = list.filter(o => !!o.isSample);
   else if (state.filter !== 'all') list = list.filter(o => o.status === state.filter);
-if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking).toLowerCase().includes(q));  list.sort((a,b) => b.createdAt - a.createdAt);
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+o.note).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
 
   const el = $('orders');
   if (!list.length) {
@@ -913,11 +1139,13 @@ function orderCard(o) {
   const issueBadge = o.issue
     ? `<span class="issue-badge">${icon('warning',9)} Issue</span>` : '';
 
+  const sampleBadge = o.isSample ? `<span class="sample-badge" title="Échantillons">M</span>` : '';
+  const sampleClass = o.isSample ? 'is-sample' : '';
   return `
-    <div class="card s-${o.status} ${issueClass}" onclick="openDetail('${esc(o.id)}')">
+    <div class="card s-${o.status} ${issueClass} ${sampleClass}" onclick="openDetail('${esc(o.id)}')">
       <div class="card-head">
         <div class="card-title-block">
-          <div class="card-ref">${esc(displayRef)} ${pdfBadge} ${issueBadge}</div>
+          <div class="card-ref">${esc(displayRef)} ${sampleBadge} ${pdfBadge} ${issueBadge}</div>
           <div class="card-client">${esc(displayClient)}</div>
         </div>
         <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
@@ -929,7 +1157,8 @@ function orderCard(o) {
       </div>
       <div class="card-meta">
         <div><span class="meta-lbl">Via</span> ${esc(o.carrier)}</div>
-${o.tracking?`<div><span class="meta-lbl">Track</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}<div class="card-ago">${fmtAgo(o.createdAt)}</div>
+        ${o.tracking?`<div><span class="meta-lbl">Track</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}
+        <div class="card-ago">${fmtAgo(o.createdAt)}</div>
       </div>
       ${cmt}
       <div class="card-foot">
@@ -949,6 +1178,7 @@ function switchView(v, el) {
   if (el) el.classList.add('active');
   if (v === 'all') renderAll();
   if (v === 'analytics') renderAnalytics();
+  if (v === 'litiges') renderLitiges();
 }
 
 function render() { renderStats(); renderChips(); renderOrders(); }
@@ -1061,10 +1291,12 @@ function openAdd() {
   state.addStatus = 'pending';
   state.addAssn = state.currentUser;
   state.addDocs = {pdf:false, bl:false, label:false, issue:false};
+  state.addSample = false;
   state.pdfFiles = [];
   renderPdfList();
   renderAddPickers();
   renderAddDocs();
+  renderSampleToggle('a');
   openModal('m-add');
 }
 
@@ -1117,6 +1349,8 @@ function addFiles(files) {
   renderPdfList();
 }
 function removePdf(id) {
+  const gone = state.pdfFiles.find(p=>p.id===id);
+  if (gone && gone.objUrl) { try{URL.revokeObjectURL(gone.objUrl);}catch(e){} }
   state.pdfFiles = state.pdfFiles.filter(p => p.id !== id);
   if (state.pdfFiles.length === 0) { state.addDocs.pdf = false; renderAddDocs(); }
   renderPdfList();
@@ -1124,17 +1358,41 @@ function removePdf(id) {
 function renderPdfList() {
   const el = $('pdf-list');
   if (!state.pdfFiles.length) { el.innerHTML = ''; return; }
+  el.classList.add('prev-list');
   el.innerHTML = state.pdfFiles.map(p => {
-    const iconMap = {ready: icon('invoice',16), uploading: icon('spinner',16), uploaded: icon('check',16), error: icon('warning',16)};
+    const isImg = p.file.type && p.file.type.startsWith('image/');
+    // make a local object URL once, so user can preview before saving
+    if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+    const thumb = isImg
+      ? `<div class="prev-thumb" onclick="openPreview('${p.id}')"><img src="${p.objUrl}" alt=""></div>`
+      : `<div class="prev-thumb" onclick="openPreview('${p.id}')">${icon('invoice',20)}</div>`;
+    const stTxt = {ready:`${(p.file.size/1024).toFixed(0)} KB`, uploading:'envoi…', uploaded:'enregistré', error:'échec'}[p.status]||'';
     return `
-      <div class="pdf-item ${p.status}">
-        <span class="pdf-item-icon">${iconMap[p.status]||icon('invoice',16)}</span>
-        <span class="pdf-item-name">${esc(p.file.name)}</span>
-        <span class="pdf-item-size">${(p.file.size/1024).toFixed(0)}KB</span>
-        ${p.status==='ready'?`<button class="pdf-item-x" onclick="removePdf('${p.id}')" aria-label="Remove">${icon('x',12)}</button>`:''}
-      </div>
-    `;
+      <div class="prev-card">
+        ${thumb}
+        <span class="prev-name" title="${esc(p.file.name)}">${esc(p.file.name)}</span>
+        <span class="prev-size">${stTxt}</span>
+        <button class="prev-eye" onclick="openPreview('${p.id}')" title="Aperçu">${icon('search',14)}</button>
+        ${p.status==='ready'?`<button class="prev-x" onclick="removePdf('${p.id}')" title="Retirer">${icon('x',13)}</button>`:''}
+      </div>`;
   }).join('');
+}
+
+// ===== PREVIEW (lightbox) — before-save check =====
+function openPreview(fileId) {
+  const p = state.pdfFiles.find(x => x.id === fileId);
+  if (!p) return;
+  if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+  const body = $('preview-body');
+  $('preview-name').textContent = p.file.name;
+  const isImg = p.file.type && p.file.type.startsWith('image/');
+  if (isImg) body.innerHTML = `<img src="${p.objUrl}" alt="">`;
+  else body.innerHTML = `<iframe src="${p.objUrl}"></iframe>`;
+  $('preview-bg').classList.add('open');
+}
+function closePreview() {
+  $('preview-bg').classList.remove('open');
+  $('preview-body').innerHTML = '';
 }
 
 async function addOrder() {
@@ -1187,6 +1445,8 @@ async function addOrder() {
     bl: state.addDocs.bl,
     label: state.addDocs.label,
     issue: !!state.addDocs.issue,
+    isSample: !!state.addSample,
+    litigeId: '',
     pdfUrls: uploadedUrls,
     issueHistory: state.addDocs.issue ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} flagged as issue` : ''
   };
@@ -1225,9 +1485,11 @@ function openDetail(id) {
   state.detStatus = o.status;
   state.detAssn = o.user;
   state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label, issue: !!o.issue};
+  state.detSample = !!o.isSample;
 
   renderDetPickers();
   renderDetDocs();
+  renderSampleToggle('d');
   openModal('m-det');
 }
 
@@ -1238,13 +1500,15 @@ function renderDetPdfs() {
   const list = $('d-pdf-links');
   if (o.pdfUrls && o.pdfUrls.length) {
     sect.style.display = 'block';
-    list.innerHTML = o.pdfUrls.map((url, i) =>
-      `<div class="pdf-item uploaded" style="margin-bottom:6px">
+    list.innerHTML = o.pdfUrls.map((entry, i) => {
+      const url = pdfUrlOf(entry);
+      const nm = pdfNameOf(entry) || `PDF ${i+1}`;
+      return `<div class="pdf-item uploaded" style="margin-bottom:6px">
         <span class="pdf-item-icon">${icon('invoice',16)}</span>
-        <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1">PDF ${i+1} — open</a>
+        <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
         <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">${icon('trash',13)}</button>
-      </div>`
-    ).join('');
+      </div>`;
+    }).join('');
   } else {
     sect.style.display = 'none';
     list.innerHTML = '';
@@ -1299,7 +1563,7 @@ async function removePdfFromOrder(idx) {
   if (!o || !o.pdfUrls || !o.pdfUrls[idx]) return;
   if (!confirm('Remove this PDF? It will be deleted from Drive too.')) return;
 
-  const url = o.pdfUrls[idx];
+  const url = pdfUrlOf(o.pdfUrls[idx]);
   toast('Removing PDF…');
 
   // Delete from Drive (best effort — don't block on failure)
@@ -1347,13 +1611,15 @@ async function addPdfToOrder(files) {
   sect.style.display = 'block';
 
   // Render with pending items appended
-  const existingHtml = o.pdfUrls.map((url, i) =>
-    `<div class="pdf-item uploaded" style="margin-bottom:6px">
+  const existingHtml = o.pdfUrls.map((entry, i) => {
+    const url = pdfUrlOf(entry);
+    const nm = pdfNameOf(entry) || `PDF ${i+1}`;
+    return `<div class="pdf-item uploaded" style="margin-bottom:6px">
       <span class="pdf-item-icon">${icon('invoice',16)}</span>
-      <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1">PDF ${i+1} — open</a>
+      <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
       <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">${icon('trash',13)}</button>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   const pendingHtml = toUpload.map((f, i) =>
     `<div class="pdf-item uploading" id="pending-${i}" style="margin-bottom:6px">
       <span class="loader"></span>
@@ -1496,6 +1762,7 @@ async function saveOrder() {
   o.bl = state.detDocs.bl;
   o.label = state.detDocs.label;
   o.issue = newIssue;
+  o.isSample = !!state.detSample;
   o.updatedAt = now;
 
   try { await saveAllToSheets(); closeModal('m-det'); render(); toast(`Order updated`); }
@@ -1529,13 +1796,561 @@ document.querySelectorAll('.modal-bg').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+    closePreview();
+  }
 });
+
+// ============================================================
+// v4 — SAMPLE (M) TOGGLE
+// ============================================================
+function renderSampleToggle(prefix) {
+  const on = prefix === 'a' ? state.addSample : state.detSample;
+  const tog = $(prefix + '-sample-toggle');
+  if (tog) tog.classList.toggle('on', !!on);
+}
+function toggleSampleAdd() { state.addSample = !state.addSample; renderSampleToggle('a'); }
+function toggleSampleDet() { state.detSample = !state.detSample; renderSampleToggle('d'); }
+
+// ============================================================
+// v4 — LITIGES MODULE
+// ============================================================
+const RES_TYPES = [
+  {id:'replacement', label:'Remplacement produit'},
+  {id:'refund',      label:'Remboursement / Avoir'},
+  {id:'carrier',     label:'Réclamation transporteur'},
+  {id:'restock',     label:'Retour avec frais de restock'},
+  {id:'rejected',    label:'Réclamation refusée'},
+  {id:'wrongitem',   label:'Erreur d\u2019envoi / mauvais produit'},
+  {id:'info',        label:'Information / conseil seulement'},
+  {id:'',            label:'\u2014 Non défini \u2014'}
+];
+const LIT_STATUSES = [
+  {id:'open',    label:'Ouvert',   icon:'pending'},
+  {id:'closed',  label:'Finalisé', icon:'checkCircle'}
+];
+const resTypeLabel = id => (RES_TYPES.find(r=>r.id===id)||{}).label || '\u2014';
+
+// ----- load / save -----
+async function loadLitiges() {
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=listProblems', {method:'GET', redirect:'follow'});
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const rows = data.data || [];
+    // Problems headers: LitigeId,CreatedAt,Client,ContactEmail,Product,Quantity,
+    //  Problem,ResolutionType,Status,Handler,EconomicValue,Deadline,
+    //  Solution,ProgressNote,Remarks,FolderId,FileUrls,UpdatedAt,LinkedOrderId
+    state.litiges = rows.slice(1).filter(r => r[0]).map(row => ({
+      litigeId: row[0]||'',
+      createdAt: row[1] ? new Date(row[1]).getTime() : Date.now(),
+      client: row[2]||'',
+      contactEmail: row[3]||'',
+      product: row[4]!=null ? String(row[4]) : '',
+      quantity: row[5]!=null ? String(row[5]) : '',
+      problem: row[6]||'',
+      resolutionType: row[7]||'',
+      status: row[8]||'open',
+      handler: row[9]||'DI',
+      economicValue: row[10]!=null ? String(row[10]) : '',
+      deadline: row[11]||'',
+      solution: row[12]||'',
+      progressNote: row[13]||'',
+      remarks: row[14]||'',
+      folderId: row[15]||'',
+      fileUrls: row[16] ? String(row[16]).split('|').filter(Boolean) : [],
+      updatedAt: row[17] ? new Date(row[17]).getTime() : null,
+      linkedOrderId: row[18]||''
+    }));
+    renderLitiges();
+  } catch(e) {
+    console.error('Litiges load error:', e);
+    toast('Litiges: ' + e.message, 'error');
+  }
+}
+
+async function saveAllLitiges() {
+  const problems = state.litiges.map(l => ({
+    litigeId: l.litigeId,
+    createdAt: new Date(l.createdAt).toISOString(),
+    client: l.client||'', contactEmail: l.contactEmail||'',
+    product: l.product||'', quantity: l.quantity||'',
+    problem: l.problem||'', resolutionType: l.resolutionType||'',
+    status: l.status||'open', handler: l.handler||'DI',
+    economicValue: l.economicValue||'', deadline: l.deadline||'',
+    solution: l.solution||'', progressNote: l.progressNote||'',
+    remarks: l.remarks||'', folderId: l.folderId||'',
+    fileUrls: (l.fileUrls||[]).join('|'),
+    updatedAt: l.updatedAt ? new Date(l.updatedAt).toISOString() : '',
+    linkedOrderId: l.linkedOrderId||''
+  }));
+  await callScript({action:'saveProblems', problems});
+}
+
+// ----- ID generator: L-2026-001 -----
+function nextLitigeId() {
+  const year = new Date().getFullYear();
+  let max = 0;
+  state.litiges.forEach(l => {
+    const m = String(l.litigeId).match(new RegExp('^L-' + year + '-(\\d+)$'));
+    if (m) max = Math.max(max, parseInt(m[1]));
+  });
+  return 'L-' + year + '-' + String(max + 1).padStart(3, '0');
+}
+
+// ----- business-day age + time bar -----
+function bizDaysSince(ts) {
+  let count = 0;
+  const cur = new Date(ts); cur.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  while (cur < today) {
+    cur.setDate(cur.getDate()+1);
+    const d = cur.getDay();
+    if (d!==0 && d!==6) count++;
+  }
+  return count;
+}
+function ageClass(days) { return days <= 2 ? 'g' : days <= 5 ? 'a' : 'r'; }
+function timeBar(days) {
+  const cls = ageClass(days);
+  const pct = Math.min(100, (days/10)*100);
+  return `<div class="tbar tbar-${cls}"><span style="width:${pct}%"></span></div>`;
+}
+
+// ----- render -----
+function renderLitiges() {
+  const open    = state.litiges.filter(l => l.status !== 'closed');
+  const closed  = state.litiges.filter(l => l.status === 'closed');
+  const overdue = open.filter(l => bizDaysSince(l.createdAt) >= 3);
+  const value   = open.reduce((sum,l) => sum + (parseFloat(l.economicValue)||0), 0);
+
+  const navL = $('nav-litiges');
+  if (navL) navL.textContent = open.length;
+
+  $('stats-litiges').innerHTML = `
+    <div class="stat stat-total"><div class="stat-icon">${icon('warning',22)}</div><div class="stat-label">Ouverts</div><div class="stat-value">${open.length}</div></div>
+    <div class="stat stat-issue"><div class="stat-icon">${icon('bell',22)}</div><div class="stat-label">En retard &gt;3j</div><div class="stat-value">${overdue.length}</div></div>
+    <div class="stat stat-delivered"><div class="stat-icon">${icon('checkCircle',22)}</div><div class="stat-label">Finalisés</div><div class="stat-value">${closed.length}</div></div>
+    <div class="stat stat-pending"><div class="stat-icon">${icon('chart',22)}</div><div class="stat-label">Valeur en jeu</div><div class="stat-value">${value? '€'+value.toLocaleString('fr-FR'):'€0'}</div></div>
+  `;
+
+  const c = { open:open.length, mine:open.filter(l=>l.handler===state.currentUser).length,
+              overdue:overdue.length, closed:closed.length };
+  $('chips-litiges').innerHTML = `
+    <button class="chip ${state.litigeFilter==='open'?'active':''}" onclick="setLitigeFilter('open')">Ouverts<span class="chip-count">${c.open}</span></button>
+    <button class="chip ${state.litigeFilter==='mine'?'active':''}" onclick="setLitigeFilter('mine')">À moi<span class="chip-count">${c.mine}</span></button>
+    <button class="chip ${state.litigeFilter==='overdue'?'active':''}" onclick="setLitigeFilter('overdue')">En retard<span class="chip-count">${c.overdue}</span></button>
+    <button class="chip ${state.litigeFilter==='closed'?'active':''}" onclick="setLitigeFilter('closed')">Finalisés<span class="chip-count">${c.closed}</span></button>
+    <button class="chip ${state.litigeFilter==='all'?'active':''}" onclick="setLitigeFilter('all')">Tous<span class="chip-count">${state.litiges.length}</span></button>
+  `;
+
+  let list = state.litiges.slice();
+  if (state.litigeFilter === 'open')    list = list.filter(l => l.status !== 'closed');
+  else if (state.litigeFilter === 'closed') list = list.filter(l => l.status === 'closed');
+  else if (state.litigeFilter === 'mine')   list = list.filter(l => l.handler===state.currentUser && l.status!=='closed');
+  else if (state.litigeFilter === 'overdue') list = list.filter(l => l.status!=='closed' && bizDaysSince(l.createdAt)>=3);
+
+  const q = ($('search-litiges').value||'').toLowerCase();
+  if (q) list = list.filter(l => (l.litigeId+' '+l.client+' '+l.product+' '+l.problem).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+
+  const el = $('litiges-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">${icon('checkCircle',44)}</div><div class="empty-title">Aucun litige</div><div class="empty-sub">Rien à afficher dans cette catégorie</div><button class="btn btn-pri" onclick="openAddLitige()">+ Nouveau litige</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(litigeCard).join('');
+}
+
+function litigeCard(l) {
+  const closed = l.status === 'closed';
+  const days = bizDaysSince(l.createdAt);
+  const ac = ageClass(days);
+  const ageBlock = closed
+    ? `<div class="pill pill-delivered"><span class="pill-dot"></span>Finalisé</div>`
+    : `<div style="flex:1">
+         <div style="display:flex;justify-content:space-between;align-items:center">
+           <span class="lit-age ${ac}">${days} jour${days>1?'s':''} ouvré${days>1?'s':''}</span>
+           ${l.deadline?`<span class="meta-lbl">Limite ${esc(l.deadline)}</span>`:''}
+         </div>${timeBar(days)}
+       </div>`;
+  const val = parseFloat(l.economicValue);
+  const valBadge = val ? `<span class="tracking-pill">€${val.toLocaleString('fr-FR')}</span>` : '';
+  const fileBadge = l.fileUrls && l.fileUrls.length
+    ? `<span class="pdf-count">${icon('paperclip',10)} ${l.fileUrls.length}</span>` : '';
+  return `
+    <div class="card ${closed?'s-delivered':'s-pending'}" onclick="openLitigeDetail('${esc(l.litigeId)}')">
+      <div class="card-head">
+        <div class="card-title-block">
+          <div class="card-ref">${esc(l.litigeId)} ${fileBadge}</div>
+          <div class="card-client">${esc(l.client||'(client inconnu)')}</div>
+        </div>
+        <div class="assn-av av-${l.handler}" title="${userName(l.handler)}">${l.handler}</div>
+      </div>
+      <div class="card-meta">
+        ${l.product?`<div><span class="meta-lbl">Produit</span> ${esc(l.product)}</div>`:''}
+        ${l.resolutionType?`<div><span class="restype">${esc(resTypeLabel(l.resolutionType))}</span></div>`:''}
+        ${valBadge?`<div>${valBadge}</div>`:''}
+      </div>
+      ${l.problem?`<div class="card-comment"><span>${esc(l.problem)}</span></div>`:''}
+      <div class="card-foot">${ageBlock}</div>
+    </div>
+  `;
+}
+
+function setLitigeFilter(f) { state.litigeFilter = f; renderLitiges(); }
+
+// ----- option builders -----
+function fillResType(selId, val) {
+  $(selId).innerHTML = RES_TYPES.map(r => `<option value="${r.id}" ${r.id===val?'selected':''}>${r.label}</option>`).join('');
+}
+function renderLitStatusPick(prefix, current) {
+  const target = prefix==='l' ? 'l-status-pick' : 'ld-status-pick';
+  const stateKey = prefix==='l' ? 'litStatus' : 'detLitStatus';
+  $(target).innerHTML = LIT_STATUSES.map(st => `
+    <div class="spo ${current===st.id?'sel':''}" data-s="${st.id==='open'?'pending':'delivered'}" onclick="state.${stateKey}='${st.id}';renderLitStatusPick('${prefix}','${st.id}')">
+      <div class="spo-emoji">${icon(st.icon,22)}</div><div class="spo-lbl">${st.label}</div>
+    </div>`).join('');
+}
+function renderLitHandlerPick(prefix, current) {
+  const target = prefix==='l' ? 'l-handler-pick' : 'ld-handler-pick';
+  const stateKey = prefix==='l' ? 'litHandler' : 'detLitHandler';
+  $(target).innerHTML = USERS.map(u => `
+    <div class="apo ${current===u.id?'sel':''}" onclick="state.${stateKey}='${u.id}';renderLitHandlerPick('${prefix}','${u.id}')">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>`).join('');
+}
+
+// ----- ADD litige -----
+function openAddLitige() {
+  ['l-client','l-email','l-product','l-qty','l-order','l-problem','l-value','l-deadline','l-solution']
+    .forEach(id => { const el=$(id); if(el) el.value=''; });
+  state.litStatus = 'open';
+  state.litHandler = state.currentUser;
+  state.litFiles = [];
+  renderLitigeAddFiles();
+  fillResType('l-restype', '');
+  renderLitStatusPick('l','open');
+  renderLitHandlerPick('l', state.currentUser);
+  openModal('m-litige-add');
+}
+
+// ----- pre-save photo picker for the CREATE modal -----
+function renderLitigeAddFiles() {
+  const el = $('la-files');
+  if (!el) return;
+  if (!state.litFiles || !state.litFiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = state.litFiles.map(p => {
+    const isImg = p.file.type && p.file.type.startsWith('image/');
+    if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+    const thumb = isImg
+      ? `<div class="prev-thumb" onclick="openLitigeAddPreview('${p.id}')"><img src="${p.objUrl}" alt=""></div>`
+      : `<div class="prev-thumb" onclick="openLitigeAddPreview('${p.id}')">${icon('invoice',20)}</div>`;
+    return `<div class="prev-card">
+      ${thumb}
+      <span class="prev-name" title="${esc(p.file.name)}">${esc(p.file.name)}</span>
+      <span class="prev-size">${(p.file.size/1024).toFixed(0)} KB</span>
+      <button class="prev-eye" onclick="openLitigeAddPreview('${p.id}')" title="Aperçu">${icon('search',14)}</button>
+      <button class="prev-x" onclick="removeLitigeAddFile('${p.id}')" title="Retirer">${icon('x',13)}</button>
+    </div>`;
+  }).join('');
+}
+function openLitigeAddPreview(fileId) {
+  const p = state.litFiles.find(x => x.id === fileId);
+  if (!p) return;
+  if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+  $('preview-name').textContent = p.file.name;
+  const isImg = p.file.type && p.file.type.startsWith('image/');
+  $('preview-body').innerHTML = isImg ? `<img src="${p.objUrl}" alt="">` : `<iframe src="${p.objUrl}"></iframe>`;
+  $('preview-bg').classList.add('open');
+}
+function addLitigeAddFiles(files) {
+  const arr = Array.from(files);
+  if (!arr.length) return;
+  if (!state.litFiles) state.litFiles = [];
+  arr.forEach(f => state.litFiles.push({file:f, id:uid(), objUrl:null}));
+  renderLitigeAddFiles();
+}
+function removeLitigeAddFile(id) {
+  const g = (state.litFiles||[]).find(p=>p.id===id);
+  if (g && g.objUrl) { try{URL.revokeObjectURL(g.objUrl);}catch(e){} }
+  state.litFiles = (state.litFiles||[]).filter(p => p.id !== id);
+  renderLitigeAddFiles();
+}
+function handleLitigeAddDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  addLitigeAddFiles(e.dataTransfer.files);
+}
+function handleLitigeAddPick(e) {
+  if (e.target.files.length) addLitigeAddFiles(e.target.files);
+  e.target.value = '';
+}
+
+async function addLitige() {
+  const btn = $('litige-add-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Création…';
+
+  const now = Date.now();
+  const id = nextLitigeId();
+  const client = $('l-client').value.trim();
+  const product = $('l-product').value.trim();
+
+  // 1) create the Drive folder for this litige
+  let folderId = '', folderUrl = '';
+  try {
+    const folderName = `${id} - ${client||'client'} - ${product||'produit'}`;
+    const res = await callScript({action:'createLitigeFolder', folderName});
+    folderId = res.folderId || '';
+    folderUrl = res.folderUrl || '';
+  } catch(e) {
+    toast('Dossier Drive non créé: ' + e.message, 'error');
+    // continue anyway — litige still saved, folder can be retried
+  }
+
+  const litige = {
+    litigeId: id, createdAt: now,
+    client, contactEmail: $('l-email').value.trim(),
+    product, quantity: $('l-qty').value.trim(),
+    problem: $('l-problem').value.trim(),
+    resolutionType: $('l-restype').value,
+    status: state.litStatus, handler: state.litHandler,
+    economicValue: $('l-value').value.trim(),
+    deadline: $('l-deadline').value,
+    solution: $('l-solution').value.trim(),
+    progressNote: '', remarks: '',
+    folderId, fileUrls: [], updatedAt: now,
+    linkedOrderId: $('l-order').value.trim()
+  };
+  state.litiges.unshift(litige);
+
+  // upload any photos chosen before save — needs the folder created above
+  const chosen = state.litFiles || [];
+  if (chosen.length && folderId) {
+    for (let i = 0; i < chosen.length; i++) {
+      const file = chosen[i].file;
+      btn.innerHTML = `<span class="loader"></span> Photo ${i+1}/${chosen.length}…`;
+      try {
+        const base64 = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result.split(',')[1]);
+          r.onerror = () => rej(new Error('Read failed'));
+          r.readAsDataURL(file);
+        });
+        const result = await callScript({
+          action:'uploadLitige', folderId:folderId,
+          fileData:base64, mime:file.type||'application/octet-stream', filename:file.name
+        });
+        litige.fileUrls.push(file.name + '|||' + result.url + '|||' + (result.id||''));
+      } catch(e) {
+        toast('Photo non envoyée: ' + file.name, 'error');
+      }
+    }
+  } else if (chosen.length && !folderId) {
+    toast('Photos non envoyées — dossier Drive absent', 'error');
+  }
+
+  try {
+    btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+    await saveAllLitiges();
+    state.litFiles = [];
+    closeModal('m-litige-add');
+    renderLitiges();
+    toast('Litige ' + id + ' créé');
+  } catch(e) {
+    toast('Erreur: ' + e.message, 'error');
+    state.litiges.shift();
+  }
+  btn.disabled = false;
+  btn.textContent = 'Créer le litige →';
+}
+
+// ----- DETAIL litige -----
+function openLitigeDetail(id) {
+  const l = state.litiges.find(x => x.litigeId === id);
+  if (!l) return;
+  state.currentLitigeId = id;
+
+  $('ld-title').textContent = l.litigeId;
+  const days = bizDaysSince(l.createdAt);
+  $('ld-sub').textContent = `${l.client||'client'} · créé ${fmtAgo(l.createdAt)}` +
+    (l.status==='closed' ? ' · Finalisé' : ` · ${days} j ouvrés`);
+
+  $('ld-client').value  = l.client||'';
+  $('ld-email').value   = l.contactEmail||'';
+  $('ld-product').value = l.product||'';
+  $('ld-qty').value     = l.quantity||'';
+  $('ld-order').value   = l.linkedOrderId||'';
+  $('ld-problem').value = l.problem||'';
+  $('ld-value').value   = l.economicValue||'';
+  $('ld-deadline').value= l.deadline||'';
+  $('ld-solution').value= l.solution||'';
+  $('ld-remarks').value = l.remarks||'';
+
+  fillResType('ld-restype', l.resolutionType);
+  state.detLitStatus = l.status;
+  state.detLitHandler = l.handler;
+  renderLitStatusPick('ld', l.status);
+  renderLitHandlerPick('ld', l.handler);
+
+  // folder link
+  const fs = $('ld-folder-sect');
+  if (l.folderId) {
+    fs.innerHTML = `<a class="litige-folder-link" href="https://drive.google.com/drive/folders/${l.folderId}" target="_blank">${icon('box',14)} Ouvrir le dossier Drive</a>`;
+  } else {
+    fs.innerHTML = `<div class="page-sub" style="color:var(--tomato)">Aucun dossier Drive lié à ce litige.</div>`;
+  }
+
+  renderLitigeFiles();
+  openModal('m-litige-det');
+}
+
+function renderLitigeFiles() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  const el = $('ld-files');
+  if (!l || !l.fileUrls || !l.fileUrls.length) { el.innerHTML = ''; return; }
+  el.innerHTML = l.fileUrls.map((entry, i) => {
+    const url = pdfUrlOf(entry);
+    const nm = pdfNameOf(entry) || ('Fichier ' + (i+1));
+    const did = pdfIdOf(entry);
+    const isImg = isImageName(nm);
+    // Drive thumbnail endpoint — works for images stored in Drive
+    const thumbImg = (isImg && did)
+      ? `<img src="https://drive.google.com/thumbnail?id=${did}&sz=w200" alt="" onerror="this.style.display='none';this.parentNode.classList.add('no-thumb')">`
+      : icon('invoice',20);
+    return `<div class="prev-card">
+      <div class="prev-thumb" onclick="openLitigeFilePreview('${esc(url)}','${esc(nm)}',${isImg})">${thumbImg}</div>
+      <a class="prev-name" href="${url}" target="_blank" title="${esc(nm)}">${esc(nm)}</a>
+      <button class="prev-eye" onclick="openLitigeFilePreview('${esc(url)}','${esc(nm)}',${isImg})" title="Aperçu">${icon('search',14)}</button>
+      <button class="prev-x" onclick="removeLitigeFile(${i})" title="Retirer">${icon('trash',13)}</button>
+    </div>`;
+  }).join('');
+}
+
+// preview an already-uploaded litige file (image inline, else open Drive)
+function openLitigeFilePreview(url, name, isImg) {
+  const body = $('preview-body');
+  $('preview-name').textContent = name;
+  if (isImg) {
+    body.innerHTML = `<iframe src="${url.replace('/view','/preview')}"></iframe>`;
+  } else {
+    body.innerHTML = `<iframe src="${url.replace('/view','/preview')}"></iframe>`;
+  }
+  $('preview-bg').classList.add('open');
+}
+
+async function handleLitigeFiles(files) {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  if (!l.folderId) { toast('Pas de dossier Drive pour ce litige', 'error'); return; }
+  const arr = Array.from(files);
+  if (!arr.length) return;
+
+  const drop = $('ld-drop');
+  if (drop) drop.classList.add('uploading');
+  if (!l.fileUrls) l.fileUrls = [];
+
+  for (const file of arr) {
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('Read failed'));
+        r.readAsDataURL(file);
+      });
+      const result = await callScript({
+        action:'uploadLitige', folderId:l.folderId,
+        fileData:base64, mime:file.type||'application/octet-stream', filename:file.name
+      });
+      l.fileUrls.push(file.name + '|||' + result.url + '|||' + (result.id||''));
+      renderLitigeFiles();
+    } catch(e) {
+      toast('Échec envoi ' + file.name + ': ' + e.message, 'error');
+      if (drop) drop.classList.remove('uploading');
+      return;
+    }
+  }
+  l.updatedAt = Date.now();
+  try {
+    await saveAllLitiges();
+    if (drop) drop.classList.remove('uploading');
+    renderLitigeFiles();
+    renderLitiges();
+    toast(arr.length + ' fichier(s) ajouté(s)');
+  } catch(e) {
+    if (drop) drop.classList.remove('uploading');
+    toast('Erreur: ' + e.message, 'error');
+  }
+}
+function handleLitigeDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  handleLitigeFiles(e.dataTransfer.files);
+}
+function handleLitigePick(e) {
+  if (e.target.files.length) handleLitigeFiles(e.target.files);
+  e.target.value = '';
+}
+
+async function removeLitigeFile(idx) {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l || !l.fileUrls || !l.fileUrls[idx]) return;
+  if (!confirm('Retirer ce fichier ? Il sera aussi supprimé du Drive.')) return;
+  const url = pdfUrlOf(l.fileUrls[idx]);
+  await deletePdfFromDrive(url);
+  l.fileUrls.splice(idx,1);
+  l.updatedAt = Date.now();
+  try { await saveAllLitiges(); renderLitigeFiles(); renderLitiges(); toast('Fichier retiré'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+}
+
+async function saveLitige() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  const btn = $('litige-det-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+
+  l.client = $('ld-client').value.trim();
+  l.contactEmail = $('ld-email').value.trim();
+  l.product = $('ld-product').value.trim();
+  l.quantity = $('ld-qty').value.trim();
+  l.linkedOrderId = $('ld-order').value.trim();
+  l.problem = $('ld-problem').value.trim();
+  l.resolutionType = $('ld-restype').value;
+  l.economicValue = $('ld-value').value.trim();
+  l.deadline = $('ld-deadline').value;
+  l.solution = $('ld-solution').value.trim();
+  l.remarks = $('ld-remarks').value.trim();
+  l.status = state.detLitStatus;
+  l.handler = state.detLitHandler;
+  l.updatedAt = Date.now();
+
+  try { await saveAllLitiges(); closeModal('m-litige-det'); renderLitiges(); toast('Litige enregistré'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer';
+}
+
+async function deleteLitige() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  if (!confirm('Supprimer le litige ' + l.litigeId + ' ?\n\nLe dossier Drive et ses fichiers seront CONSERVÉS (suppression manuelle si besoin).')) return;
+  state.litiges = state.litiges.filter(x => x.litigeId !== state.currentLitigeId);
+  try { await saveAllLitiges(); closeModal('m-litige-det'); renderLitiges(); toast('Litige supprimé', 'error'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+}
+
 
 function init() {
   renderIdentity();
   loadFromSheets();
+  loadLitiges();
   setInterval(loadFromSheets, 30000);
+  setInterval(loadLitiges, 60000);
 }
 
 if (checkAuth()) {
