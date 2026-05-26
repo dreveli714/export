@@ -994,54 +994,45 @@ function pdfUrlOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); r
 function pdfNameOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?'':x.slice(0,i); }
 function pdfIdOf(entry){ const p=String(entry||'').split('|||'); return p.length>2?p[2]:''; }
 function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(String(n||'')); }
-// parse PDF URLs from sheet — handles old '|' separator and new '§§§'
+// parse PDF URLs from sheet — handles ALL formats:
+// new: entry§§§entry  (v4 clean)
+// mid: name|||url|||id  joined by §§§ or |
+// old: name|url|name|url  (v3 broken)
+// oldest: url|url  (plain URLs)
 function parsePdfUrls(raw) {
   if (!raw) return [];
-  // new format: entries separated by §§§
-  if (raw.includes('§§§')) {
-    return raw.split('§§§').filter(Boolean);
-  }
-  // old or broken format with |
-  // Strategy: find all Drive URLs, then match them back to names
-  const driveUrls = [];
-  const regex = /https:\/\/drive\.google\.com\/[^|\s]+/g;
+  // v4 clean format
+  if (raw.includes('§§§')) return raw.split('§§§').filter(Boolean);
+  
+  // extract every Drive/Google URL from the raw string
+  const urlRe = /https:\/\/drive\.google\.com\/[^|§\s]*/g;
+  const urls = [];
   let m;
-  while ((m = regex.exec(raw)) !== null) driveUrls.push(m[0]);
+  while ((m = urlRe.exec(raw)) !== null) urls.push({url: m[0], start: m.index});
   
-  if (driveUrls.length === 0) {
-    // no drive URLs — try splitting by | for plain URLs (http...)
-    return raw.split('|').filter(u => u.startsWith('http'));
+  if (urls.length === 0) {
+    // no drive URLs — maybe plain http URLs
+    return raw.split('|').filter(u => /^https?:/.test(u));
   }
   
-  // for each URL, look for a name before it (name|||url pattern)
+  // for each URL, grab the filename that appears before it
   const entries = [];
-  for (const url of driveUrls) {
-    const idx = raw.indexOf(url);
-    // check if preceded by ||| — means there's a name
-    const before = raw.substring(0, idx);
-    const triplePos = before.lastIndexOf('|||');
-    if (triplePos >= 0) {
-      // find name: text between previous URL end (or start) and |||
-      let nameStart = 0;
-      // find the end of the previous entry
-      for (const prev of entries) {
-        const prevUrl = pdfUrlOf(prev) || prev;
-        const prevEnd = raw.indexOf(prevUrl) + prevUrl.length;
-        if (prevEnd > nameStart) nameStart = prevEnd;
-      }
-      // skip separators
-      while (nameStart < triplePos && raw[nameStart] === '|') nameStart++;
-      const name = raw.substring(nameStart, triplePos);
-      if (name) {
-        entries.push(name + '|||' + url);
-      } else {
-        entries.push(url);
-      }
+  for (let i = 0; i < urls.length; i++) {
+    const u = urls[i];
+    // find where the name starts: after the previous URL ended, or from the beginning
+    let nameStart = 0;
+    if (i > 0) {
+      nameStart = urls[i-1].start + urls[i-1].url.length;
+    }
+    // extract text between nameStart and this URL start, strip separators
+    let namePart = raw.substring(nameStart, u.start).replace(/^[|§]+/, '').replace(/[|§]+$/, '');
+    if (namePart) {
+      entries.push(namePart + '|||' + u.url);
     } else {
-      entries.push(url);
+      entries.push(u.url);
     }
   }
-  return entries.length > 0 ? entries : raw.split('|').filter(Boolean);
+  return entries;
 }
 
 
