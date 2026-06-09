@@ -155,6 +155,18 @@ body::before{display:none}
 .pill-pending .pill-dot{background:var(--tomato)}
 .pill-delivered{background:var(--moss-soft);color:#0F6E56}
 .pill-delivered .pill-dot{background:var(--moss)}
+.pill-printed{background:#dbeafe;color:#1e40af}
+.pill-printed .pill-dot{background:#3b82f6}
+.s-printed{border-left:3px solid #3b82f6}
+/* advanced filters bar */
+.adv-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 14px;padding:10px 12px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px}
+.flt-group{display:flex;align-items:center;gap:6px}
+.flt-lbl{font-size:11px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.flt-sel,.flt-inp{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font-size:13px;font-family:inherit;min-width:120px}
+.flt-sel:focus,.flt-inp:focus{outline:none;border-color:var(--ocean)}
+.flt-clear{margin-left:auto;padding:6px 12px;border:1px solid var(--line);background:transparent;border-radius:6px;color:var(--ink-mute);font-size:12px;cursor:pointer}
+.flt-clear:hover{background:var(--tomato-soft);color:#A32D2D;border-color:var(--tomato)}
+.all-count{margin-left:auto;font-size:12px;color:var(--ink-mute);font-weight:600}
 .assn-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#fff;flex-shrink:0;letter-spacing:.02em}
 .av-DI{background:var(--navy)}
 .av-DA{background:#185fa5}
@@ -267,6 +279,8 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .tl-item.tl-issue::before{background:var(--honey)}
 .tl-item.tl-issue{color:var(--honey)}
 .tl-item.tl-done{color:var(--moss)}
+.tl-item.tl-printed::before{background:#3b82f6}
+.tl-item.tl-printed{color:#1e40af}
 .tl-when{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7;margin-right:4px}
 .tl-body{flex:1;min-width:0;word-break:break-word}
 .tl-body b{font-weight:600}
@@ -423,9 +437,11 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="toolbar">
       <div class="search">
         <span class="search-icon">⌕</span>
-        <input class="search-input" id="search-all" placeholder="Search…" oninput="renderAll()">
+        <input class="search-input" id="search-all" placeholder="Search ref, tracking, note…" oninput="renderAll()">
       </div>
+      <div class="all-count" id="all-count"></div>
     </div>
+    <div class="adv-filters" id="adv-filters"></div>
     <div class="orders" id="orders-all"></div>
   </div>
 
@@ -757,7 +773,7 @@ function icon(name, size = 16) {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxORKhR2wYwYnhWz6UKz99M1PGXfoCiYFH-KDCU6J6hLLVzxYjRLSx6kMubOrxEzlY-kQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyevtXAu4wH6kKREIKy57UjM19zTi_efqdz2jID6Vh0G7fqy7o91xVsZqi0oj2kqRbp6w/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
 const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
@@ -772,16 +788,19 @@ const USERS = [
 ];
 const STATUSES = [
   {id:'pending',label:'Pending',icon:'pending'},
+  {id:'printed',label:'Printed',icon:'invoice'},
   {id:'delivered',label:'Delivered',icon:'checkCircle'}
 ];
 const DATE_RANGES = [
-  {id:'today',label:'Today'},{id:'week',label:'7 days'},
-  {id:'month',label:'30 days'},{id:'quarter',label:'90 days'},{id:'all',label:'All time'}
+  {id:'today',label:'Today'},{id:'yesterday',label:'Yesterday'},{id:'week',label:'This week'},
+  {id:'month',label:'30 days'},{id:'quarter',label:'90 days'},{id:'all',label:'All time'},
+  {id:'custom',label:'Custom range'}
 ];
 
 let state = {
   orders:[], currentUser:localStorage.getItem('export_user')||'DI',
   filter:'all', dateRange:'all', analyticsDateRange:'month',
+  filterUser:'all', filterCarrier:'all', filterClient:'', customFrom:'', customTo:'',
   currentId:null, addStatus:'pending', addAssn:'DI',
   detStatus:'pending', detAssn:'DI',
   addDocs:{pdf:false,bl:false,label:false,issue:false},
@@ -925,7 +944,9 @@ async function loadFromSheets() {
         issueHistory: row[16]||'',
         issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue,
         isSample: row[18]==='TRUE'||row[18]===true,
-        litigeId: row[19]||''
+        litigeId: row[19]||'',
+        printedAt: row[20]||'',
+        printedBy: row[21]||''
       };
     });
     
@@ -960,7 +981,9 @@ async function saveAllToSheets() {
     issueHistory: o.issueHistory || '',
     issue: o.issue?'TRUE':'FALSE',
     isSample: o.isSample?'TRUE':'FALSE',
-    litigeId: o.litigeId||''
+    litigeId: o.litigeId||'',
+    printedAt: o.printedAt||'',
+    printedBy: o.printedBy||''
   }));
 
   await callScript({action: 'save', orders});
@@ -1059,11 +1082,31 @@ function syncNow() {
 // FILTERING
 function inDateRange(ts, range) {
   const now = Date.now(), day = 86400000;
+  const tsN = +ts; // safety: convert
   switch(range) {
-    case 'today': const start = new Date(); start.setHours(0,0,0,0); return ts >= start.getTime();
-    case 'week': return now - ts < 7*day;
-    case 'month': return now - ts < 30*day;
-    case 'quarter': return now - ts < 90*day;
+    case 'today': {
+      const s = new Date(); s.setHours(0,0,0,0);
+      return tsN >= s.getTime();
+    }
+    case 'yesterday': {
+      const e = new Date(); e.setHours(0,0,0,0); // today 00:00
+      const st = e.getTime() - day; // yesterday 00:00
+      return tsN >= st && tsN < e.getTime();
+    }
+    case 'week': {
+      // monday-sunday this week
+      const d = new Date(); d.setHours(0,0,0,0);
+      const dow = d.getDay() || 7; // 1=Mon..7=Sun
+      d.setDate(d.getDate() - (dow-1)); // back to monday
+      return tsN >= d.getTime();
+    }
+    case 'month': return now - tsN < 30*day;
+    case 'quarter': return now - tsN < 90*day;
+    case 'custom': {
+      const from = state.customFrom ? new Date(state.customFrom+'T00:00:00').getTime() : 0;
+      const to = state.customTo ? new Date(state.customTo+'T23:59:59').getTime() : Infinity;
+      return tsN >= from && tsN <= to;
+    }
     default: return true;
   }
 }
@@ -1113,13 +1156,15 @@ function renderChips() {
     all: state.orders.filter(o=>o.status!=='delivered').length,
     mine: state.orders.filter(o=>o.user===state.currentUser && o.status!=='delivered').length,
     pending: state.orders.filter(o=>o.status==='pending').length,
-    issue: state.orders.filter(o=>!!o.issue).length
+    printed: state.orders.filter(o=>o.status==='printed').length,
+    issue: state.orders.filter(o=>!!o.issue && o.status!=='delivered').length,
+    sample: state.orders.filter(o=>o.isSample && o.status!=='delivered').length
   };
-  c.sample = state.orders.filter(o=>o.isSample && o.status!=='delivered').length;
   $('chips').innerHTML = `
     <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="chip-count">${c.all}</span></button>
     <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mine<span class="chip-count">${c.mine}</span></button>
     <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">Pending<span class="chip-count">${c.pending}</span></button>
+    <button class="chip ${state.filter==='printed'?'active':''}" onclick="setFilter('printed')">Printed<span class="chip-count">${c.printed}</span></button>
     <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Issues<span class="chip-count">${c.issue}</span></button>
     <button class="chip ${state.filter==='sample'?'active':''}" onclick="setFilter('sample')">Samples<span class="chip-count">${c.sample}</span></button>
   `;
@@ -1151,17 +1196,83 @@ function renderDateFilter(targetId, currentValue, callback) {
 
 function renderAll() {
   renderDateFilter('date-filter-all', state.dateRange, 'setDateRange');
+  renderAdvancedFilters();
   const q = ($('search-all').value||'').toLowerCase();
+  const qClient = (state.filterClient||'').toLowerCase();
   let list = filterByDate(state.orders, state.dateRange);
-  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking).toLowerCase().includes(q));
+  if (state.filterUser !== 'all') list = list.filter(o => o.user === state.filterUser);
+  if (state.filterCarrier !== 'all') list = list.filter(o => (o.carrier||'') === state.filterCarrier);
+  if (state.filterStatus && state.filterStatus !== 'all') list = list.filter(o => o.status === state.filterStatus);
+  if (qClient) list = list.filter(o => (o.client||'').toLowerCase().includes(qClient));
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+(o.note||'')).toLowerCase().includes(q));
   list.sort((a,b) => b.createdAt - a.createdAt);
+  
+  // counter summary
+  const countEl = $('all-count');
+  if (countEl) countEl.textContent = list.length + ' order' + (list.length===1?'':'s');
   
   const el = $('orders-all');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">No results</div><div class="empty-sub">Try a different date range</div></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">No results</div><div class="empty-sub">Adjust filters or try a different range</div></div>`;
     return;
   }
   el.innerHTML = list.map(orderCard).join('');
+}
+
+function renderAdvancedFilters() {
+  const bar = $('adv-filters');
+  if (!bar) return;
+  // unique carriers from data
+  const carriers = [...new Set(state.orders.map(o=>o.carrier).filter(Boolean))].sort();
+  bar.innerHTML = `
+    <div class="flt-group">
+      <span class="flt-lbl">Person</span>
+      <select class="flt-sel" onchange="setFilterUser(this.value)">
+        <option value="all" ${state.filterUser==='all'?'selected':''}>All</option>
+        ${USERS.map(u=>`<option value="${u.id}" ${state.filterUser===u.id?'selected':''}>${u.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Carrier</span>
+      <select class="flt-sel" onchange="setFilterCarrier(this.value)">
+        <option value="all" ${state.filterCarrier==='all'?'selected':''}>All</option>
+        ${carriers.map(c=>`<option value="${esc(c)}" ${state.filterCarrier===c?'selected':''}>${esc(c)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Status</span>
+      <select class="flt-sel" onchange="setFilterStatus(this.value)">
+        <option value="all" ${(!state.filterStatus||state.filterStatus==='all')?'selected':''}>All</option>
+        ${STATUSES.map(st=>`<option value="${st.id}" ${state.filterStatus===st.id?'selected':''}>${st.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Client</span>
+      <input class="flt-inp" placeholder="contains…" value="${esc(state.filterClient||'')}" oninput="setFilterClient(this.value)">
+    </div>
+    ${state.dateRange==='custom' ? `
+      <div class="flt-group">
+        <span class="flt-lbl">From</span>
+        <input class="flt-inp" type="date" value="${state.customFrom||''}" onchange="setCustomFrom(this.value)">
+      </div>
+      <div class="flt-group">
+        <span class="flt-lbl">To</span>
+        <input class="flt-inp" type="date" value="${state.customTo||''}" onchange="setCustomTo(this.value)">
+      </div>
+    ` : ''}
+    <button class="flt-clear" onclick="clearAdvancedFilters()">Clear filters</button>
+  `;
+}
+function setFilterUser(v){ state.filterUser=v; renderAll(); }
+function setFilterCarrier(v){ state.filterCarrier=v; renderAll(); }
+function setFilterStatus(v){ state.filterStatus=v; renderAll(); }
+function setFilterClient(v){ state.filterClient=v; renderAll(); }
+function setCustomFrom(v){ state.customFrom=v; renderAll(); }
+function setCustomTo(v){ state.customTo=v; renderAll(); }
+function clearAdvancedFilters(){
+  state.filterUser='all'; state.filterCarrier='all'; state.filterStatus='all';
+  state.filterClient=''; state.customFrom=''; state.customTo=''; state.dateRange='all';
+  renderAll();
 }
 
 function setDateRange(r) { state.dateRange = r; renderAll(); }
@@ -1564,6 +1675,9 @@ function renderTimeline(o) {
   if (o.updatedAt && o.updatedAt > o.createdAt + 60000) {
     items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.updatedAt)}</span> · Last edit</div></div>`);
   }
+  if (o.printedAt) {
+    items.push(`<div class="tl-item tl-printed"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(+o.printedAt || new Date(o.printedAt).getTime())}</span> · Printed by <b>${userName(o.printedBy) || '—'}</b></div></div>`);
+  }
   if (o.deliveredAt) {
     items.push(`<div class="tl-item tl-done"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.deliveredAt)}</span> · Delivered by <b>${userName(o.deliveredBy) || '—'}</b></div></div>`);
   }
@@ -1785,9 +1899,23 @@ async function saveOrder() {
 
   // Track status transitions
   if (prevStatus !== newStatus) {
+    if (newStatus === 'printed' && !o.printedAt) {
+      o.printedAt = now;
+      o.printedBy = state.currentUser;
+    }
+    if (newStatus === 'pending' && prevStatus === 'printed') {
+      // optional revert: keep printedAt log? Clear so it can be reset
+      o.printedAt = '';
+      o.printedBy = '';
+    }
     if (newStatus === 'delivered') {
       o.deliveredAt = now;
       o.deliveredBy = state.currentUser;
+      // if went straight from pending to delivered, also stamp printed
+      if (!o.printedAt) {
+        o.printedAt = now;
+        o.printedBy = state.currentUser;
+      }
     }
     if (prevStatus === 'delivered' && newStatus !== 'delivered') {
       o.deliveredAt = null;
