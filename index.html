@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export · Shipping</title>
+<title>Export · Expéditions</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -376,7 +376,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 <div class="lock-screen" id="lock-screen">
   <div class="lock-box">
     <div class="lock-logo">Export<span style="color:var(--tomato)">.</span></div>
-    <div class="lock-title">Shipping Dashboard</div>
+    <div class="lock-title">Tableau de bord Export</div>
     <div class="lock-sub">Enter 6-digit access code</div>
     <div class="pin-row" id="pin-row">
       <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -406,7 +406,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="brand-mark">Export<span style="color:var(--tomato)">.</span></div>
     <div class="brand-dot"></div>
   </div>
-  <div class="brand-sub">Shipping Dashboard</div>
+  <div class="brand-sub">Tableau de bord Export</div>
   <div class="id-card">
     <div class="id-label">Who am I?</div>
     <div class="id-opts" id="id-opts"></div>
@@ -414,13 +414,13 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
   <div class="nav">
     <div class="nav-label">Operations</div>
     <div class="nav-item active" onclick="switchView('today',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span>Active</span><span class="nav-count" id="nav-today">0</span></div>
-    <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>All orders</span><span class="nav-count" id="nav-all">0</span></div>
-    <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Analytics</span></div>
+    <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Toutes les commandes</span><span class="nav-count" id="nav-all">0</span></div>
+    <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Statistiques</span></div>
     <div class="nav-item" onclick="switchView('litiges',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></span><span>Litiges</span><span class="nav-count" id="nav-litiges">0</span></div>
   </div>
   <div class="nav">
     <div class="nav-label">Actions</div>
-    <div class="nav-item" onclick="openAdd()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>New order</span></div>
+    <div class="nav-item" onclick="openAdd()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Nouvelle commande</span></div>
     <div class="nav-item" onclick="syncNow()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>Sync now</span></div>
     <div class="nav-item" onclick="openDriveFolder()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span><span>PDF folder</span></div>
   </div>
@@ -437,17 +437,17 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
   <div id="view-today" class="view active">
     <div class="page-head">
       <div>
-        <div class="greeting" id="greeting">Good morning</div>
-        <h1 class="page-title" id="user-greet">Hello <span class="accent">Diana</span></h1>
+        <div class="greeting" id="greeting">Bonjour</div>
+        <h1 class="page-title" id="user-greet">Bonjour <span class="accent">Diana</span></h1>
         <div class="page-sub" id="page-date">—</div>
       </div>
-      <button class="add-btn" onclick="openAdd()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>New order</button>
+      <button class="add-btn" onclick="openAdd()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle commande</button>
     </div>
     <div class="stats" id="stats"></div>
     <div class="toolbar">
       <div class="search">
         <span class="search-icon">⌕</span>
-        <input class="search-input" id="search" placeholder="Search ref, client, tracking…" oninput="renderBoard()">
+        <input class="search-input" id="search" placeholder="Chercher réf, client, tracking…" oninput="renderBoard()">
       </div>
       <div class="chips" id="chips"></div>
     </div>
@@ -458,15 +458,15 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="page-head">
       <div>
         <div class="greeting">Archive</div>
-        <h1 class="page-title">All <span class="accent">orders</span></h1>
-        <div class="page-sub">Complete order history</div>
+        <h1 class="page-title">Toutes les <span class="accent">commandes</span></h1>
+        <div class="page-sub">Historique complet des commandes</div>
       </div>
     </div>
     <div class="date-filter" id="date-filter-all"></div>
     <div class="toolbar">
       <div class="search">
         <span class="search-icon">⌕</span>
-        <input class="search-input" id="search-all" placeholder="Search ref, tracking, note…" oninput="renderAll()">
+        <input class="search-input" id="search-all" placeholder="Chercher réf, tracking, note…" oninput="renderAll()">
       </div>
       <div class="all-count" id="all-count"></div>
     </div>
@@ -478,14 +478,14 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="page-head">
       <div>
         <div class="greeting">Insights</div>
-        <h1 class="page-title">Analytics <span class="accent">dashboard</span></h1>
+        <h1 class="page-title">Statistiques <span class="accent">dashboard</span></h1>
         <div class="page-sub">Performance overview</div>
       </div>
     </div>
     <div class="date-filter" id="date-filter-analytics"></div>
     <div class="stats" id="stats-analytics"></div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Orders over time</div><div class="chart-box"><canvas id="chart-timeline"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Commandes dans le temps</div><div class="chart-box"><canvas id="chart-timeline"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">Status breakdown</div><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
     </div>
     <div class="charts-grid">
@@ -519,7 +519,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 <div class="modal-bg" id="m-add">
   <div class="modal">
     <div class="modal-head">
-      <div><div class="modal-title">New order</div><div class="modal-sub">All fields optional · Up to 4 PDFs</div></div>
+      <div><div class="modal-title">Nouvelle commande</div><div class="modal-sub">Tous les champs optionnels · Max 4 PDFs</div></div>
       <button class="modal-x" onclick="closeModal('m-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="modal-body">
@@ -534,11 +534,11 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
         <div class="pdf-list" id="pdf-list"></div>
       </div>
       <div class="sect">
-        <div class="sect-lbl">Order details (all optional)</div>
+        <div class="sect-lbl">Détails de la commande</div>
         <div class="fgrid">
           <div class="fld full"><label class="fld-lbl">Reference</label><input class="inp" id="a-ref" placeholder="RF2026/005124"></div>
           <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="a-client" placeholder="MAEGIS BV"></div>
-          <div class="fld"><label class="fld-lbl">Carrier</label>
+          <div class="fld"><label class="fld-lbl">Transporteur</label>
             <select class="inp" id="a-carrier"><option>UPS</option><option>Dascher</option><option>Lyseo</option><option>Hecny</option><option>Other</option></select>
           </div>
           <div class="fld"><label class="fld-lbl">Tracking</label><input class="inp" id="a-tracking" placeholder="1Z…"></div>
@@ -547,26 +547,26 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <div class="sect">
         <div class="sect-lbl">Documents ready</div>
         <div class="docs-row">
-          <div class="doc-pick dp-invoice" id="dp-pdf" onclick="toggleDoc('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="dp-pdf-st">pending</div></div>
+          <div class="doc-pick dp-invoice" id="dp-pdf" onclick="toggleDoc('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="dp-pdf-st">pending</div></div>
           <div class="doc-pick dp-bl" id="dp-bl" onclick="toggleDoc('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="dp-bl-st">pending</div></div>
-          <div class="doc-pick dp-label" id="dp-label" onclick="toggleDoc('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="dp-label-st">pending</div></div>
-          <div class="doc-pick doc-issue" id="dp-issue" onclick="toggleDoc('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Issue</div><div class="doc-pick-state" id="dp-issue-st">no issue</div></div>
+          <div class="doc-pick dp-label" id="dp-label" onclick="toggleDoc('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="dp-label-st">pending</div></div>
+          <div class="doc-pick doc-issue" id="dp-issue" onclick="toggleDoc('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="dp-issue-st">no issue</div></div>
         </div>
       </div>
-      <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="a-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="a-status-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Assign to</div><div class="ap" id="a-assn-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="a-note" placeholder="Notes, instructions…"></textarea></div>
       <div class="sect">
         <div class="sect-lbl">Type d'envoi</div>
         <div class="sample-toggle" id="a-sample-toggle" onclick="toggleSampleAdd()">
           <div class="st-box" id="a-sample-box">M</div>
-          <div><div class="st-txt">Échantillons (Muestra)</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+          <div><div class="st-txt">Échantillons</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
         </div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-gh" onclick="closeModal('m-add')">Cancel</button>
-      <button class="btn btn-pri" id="add-save-btn" onclick="addOrder()">Save order →</button>
+      <button class="btn btn-gh" onclick="closeModal('m-add')">Annuler</button>
+      <button class="btn btn-pri" id="add-save-btn" onclick="addOrder()">Enregistrer →</button>
     </div>
   </div>
 </div>
@@ -590,29 +590,29 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
              ondragleave="handleDetailPdfDragLeave(event)"
              onclick="document.getElementById('d-pdf-input').click()">
           <div class="pdf-drop-icon" style="color:var(--ocean)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-          <div class="pdf-drop-text">Drop PDF or click to browse</div>
-          <div class="pdf-drop-hint">Max 4 PDFs per order</div>
+          <div class="pdf-drop-text">Glisser un PDF ou cliquer</div>
+          <div class="pdf-drop-hint">Max 4 PDFs par commande</div>
         </div>
         <input type="file" id="d-pdf-input" accept="application/pdf" multiple style="display:none" onchange="handleDetailPdfPick(event)">
       </div>
       <div class="sect">
         <div class="sect-lbl">Documents & flags</div>
         <div class="docs-row">
-          <div class="doc-pick dp-invoice" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Invoice</div><div class="doc-pick-state" id="ddp-pdf-st">pending</div></div>
+          <div class="doc-pick dp-invoice" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="ddp-pdf-st">pending</div></div>
           <div class="doc-pick dp-bl" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">pending</div></div>
-          <div class="doc-pick dp-label" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Label</div><div class="doc-pick-state" id="ddp-label-st">pending</div></div>
-          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Issue</div><div class="doc-pick-state" id="ddp-issue-st">no issue</div></div>
+          <div class="doc-pick dp-label" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="ddp-label-st">pending</div></div>
+          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="ddp-issue-st">no issue</div></div>
         </div>
       </div>
-      <div class="sect"><div class="sect-lbl">Status</div><div class="sp" id="d-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="d-status-pick"></div></div>
       <div class="sect"><div class="sect-lbl">Assigned</div><div class="ap" id="d-assn-pick"></div></div>
-      <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Tracking number"></div>
+      <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Numéro de suivi"></div>
       <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="d-note" placeholder="Update notes…"></textarea></div>
       <div class="sect">
         <div class="sect-lbl">Type d'envoi</div>
         <div class="sample-toggle" id="d-sample-toggle" onclick="toggleSampleDet()">
           <div class="st-box" id="d-sample-box">M</div>
-          <div><div class="st-txt">Échantillons (Muestra)</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+          <div><div class="st-txt">Échantillons</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
         </div>
       </div>
       <div class="sect">
@@ -625,10 +625,10 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-dng" onclick="deleteOrder()">Delete</button>
+      <button class="btn btn-dng" onclick="deleteOrder()">Supprimer</button>
       <div style="flex:1"></div>
-      <button class="btn btn-gh" onclick="closeModal('m-det')">Cancel</button>
-      <button class="btn btn-pri" id="det-save-btn" onclick="saveOrder()">Save changes</button>
+      <button class="btn btn-gh" onclick="closeModal('m-det')">Annuler</button>
+      <button class="btn btn-pri" id="det-save-btn" onclick="saveOrder()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -649,7 +649,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
              onclick="document.getElementById('la-file-input').click()">
           <div class="pdf-drop-icon" style="color:var(--plum)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
           <div class="pdf-drop-text">Déposer photos ou documents</div>
-          <div class="pdf-drop-hint">Seront enregistrés en créant le litige</div>
+          <div class="pdf-drop-hint">Seront enregistrés à la création du litige</div>
         </div>
         <input type="file" id="la-file-input" accept="image/*,.pdf,.heic,.heif" multiple style="display:none" onchange="handleLitigeAddPick(event)">
         <div class="prev-list" id="la-files"></div>
@@ -816,14 +816,14 @@ const USERS = [
   {id:'CA',name:'Carla'},{id:'OT',name:'Other'}
 ];
 const STATUSES = [
-  {id:'pending',label:'Pending',icon:'pending'},
-  {id:'printed',label:'Printed',icon:'invoice'},
-  {id:'delivered',label:'Delivered',icon:'checkCircle'}
+  {id:'pending',label:'En attente',icon:'pending'},
+  {id:'printed',label:'Imprimé',icon:'invoice'},
+  {id:'delivered',label:'Livré',icon:'checkCircle'}
 ];
 const DATE_RANGES = [
-  {id:'today',label:'Today'},{id:'yesterday',label:'Yesterday'},{id:'week',label:'This week'},
-  {id:'month',label:'30 days'},{id:'quarter',label:'90 days'},{id:'all',label:'All time'},
-  {id:'custom',label:'Custom range'}
+  {id:'today',label:'Aujourd\'hui'},{id:'yesterday',label:'Hier'},{id:'week',label:'Cette semaine'},
+  {id:'month',label:'30 jours'},{id:'quarter',label:'90 jours'},{id:'all',label:'Tout'},
+  {id:'custom',label:'Période perso'}
 ];
 
 let state = {
@@ -934,7 +934,7 @@ async function callScript(payload) {
 
 async function loadFromSheets() {
   try {
-    $('sync-text').textContent = 'Loading…';
+    $('sync-text').textContent = 'Chargement…';
     $('live-badge').classList.remove('offline');
     
     const resp = await fetch(SCRIPT_URL + '?action=list', {
@@ -980,12 +980,12 @@ async function loadFromSheets() {
     });
     
     render();
-    $('sync-text').textContent = `Live · ${state.orders.length} orders`;
+    $('sync-text').textContent = `Live · ${state.orders.length} commandes`;
   } catch(e) {
-    console.error('Load error:', e);
+    console.error('Erreur de chargement :', e);
     $('sync-text').textContent = 'Offline';
     $('live-badge').classList.add('offline');
-    toast('Connection error: ' + e.message, 'error');
+    toast('Erreur de connexion : ' + e.message, 'error');
   }
 }
 
@@ -1148,10 +1148,10 @@ function renderIdentity() {
       <span class="av av-${u.id}">${u.id}</span><span>${u.name}</span>
     </button>
   `).join('');
-  $('user-greet').innerHTML = `Hello <span class="accent">${userName(state.currentUser)}</span>`;
+  $('user-greet').innerHTML = `Bonjour <span class="accent">${userName(state.currentUser)}</span>`;
   const h = new Date().getHours();
-  $('greeting').textContent = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
-  $('page-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  $('greeting').textContent = h < 12 ? 'Bonjour' : h < 19 ? 'Bon après-midi' : 'Bonsoir';
+  $('page-date').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 function setUser(id) { state.currentUser=id; localStorage.setItem('export_user',id); renderIdentity(); toast(`Hello ${userName(id)}`); }
 
@@ -1164,8 +1164,8 @@ function renderStats() {
   const weekDel = state.orders.filter(o => o.status==='delivered' && inDateRange(o.createdAt,'week')).length;
   
   const stats = [
-    {id:'pending',label:'Pending',iconKey:'pending',count:state.orders.filter(o=>o.status==='pending').length},
-    {id:'delivered',label:'Delivered',iconKey:'checkCircle',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} today`},
+    {id:'pending',label:'En attente',iconKey:'pending',count:state.orders.filter(o=>o.status==='pending').length},
+    {id:'delivered',label:'Livré',iconKey:'checkCircle',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} aujourd'hui`},
     {id:'issue',label:'Issues',iconKey:'warning',count:state.orders.filter(o=>!!o.issue).length},
     {id:'total',label:'Total',iconKey:'box',count:state.orders.length,trend:`${weekDel} this week`}
   ];
@@ -1190,12 +1190,12 @@ function renderChips() {
     sample: state.orders.filter(o=>o.isSample && o.status!=='delivered').length
   };
   $('chips').innerHTML = `
-    <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="chip-count">${c.all}</span></button>
-    <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mine<span class="chip-count">${c.mine}</span></button>
-    <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">Pending<span class="chip-count">${c.pending}</span></button>
-    <button class="chip ${state.filter==='printed'?'active':''}" onclick="setFilter('printed')">Printed<span class="chip-count">${c.printed}</span></button>
-    <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Issues<span class="chip-count">${c.issue}</span></button>
-    <button class="chip ${state.filter==='sample'?'active':''}" onclick="setFilter('sample')">Samples<span class="chip-count">${c.sample}</span></button>
+    <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">Tous<span class="chip-count">${c.all}</span></button>
+    <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mes commandes<span class="chip-count">${c.mine}</span></button>
+    <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">En attente<span class="chip-count">${c.pending}</span></button>
+    <button class="chip ${state.filter==='printed'?'active':''}" onclick="setFilter('printed')">Imprimé<span class="chip-count">${c.printed}</span></button>
+    <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Problèmes<span class="chip-count">${c.issue}</span></button>
+    <button class="chip ${state.filter==='sample'?'active':''}" onclick="setFilter('sample')">Échantillons<span class="chip-count">${c.sample}</span></button>
   `;
 }
 
@@ -1211,7 +1211,7 @@ function renderOrders() {
 
   const el = $('orders');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">All caught up!</div><div class="empty-sub">No orders in this category</div><button class="btn btn-pri" onclick="openAdd()">+ Create order</button></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">Tout est à jour !</div><div class="empty-sub">Aucune commande dans cette catégorie</div><button class="btn btn-pri" onclick="openAdd()">+ Créer commande</button></div>`;
     return;
   }
   el.innerHTML = list.map(orderCard).join('');
@@ -1238,11 +1238,11 @@ function renderAll() {
   
   // counter summary
   const countEl = $('all-count');
-  if (countEl) countEl.textContent = list.length + ' order' + (list.length===1?'':'s');
+  if (countEl) countEl.textContent = list.length + ' commande' + (list.length===1?'':'s');
   
   const el = $('orders-all');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">No results</div><div class="empty-sub">Adjust filters or try a different range</div></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">Aucun résultat</div><div class="empty-sub">Ajustez les filtres ou changez la période</div></div>`;
     return;
   }
   el.innerHTML = list.map(orderCard).join('');
@@ -1255,21 +1255,21 @@ function renderAdvancedFilters() {
   const carriers = [...new Set(state.orders.map(o=>o.carrier).filter(Boolean))].sort();
   bar.innerHTML = `
     <div class="flt-group">
-      <span class="flt-lbl">Person</span>
+      <span class="flt-lbl">Personne</span>
       <select class="flt-sel" onchange="setFilterUser(this.value)">
         <option value="all" ${state.filterUser==='all'?'selected':''}>All</option>
         ${USERS.map(u=>`<option value="${u.id}" ${state.filterUser===u.id?'selected':''}>${u.name}</option>`).join('')}
       </select>
     </div>
     <div class="flt-group">
-      <span class="flt-lbl">Carrier</span>
+      <span class="flt-lbl">Transporteur</span>
       <select class="flt-sel" onchange="setFilterCarrier(this.value)">
         <option value="all" ${state.filterCarrier==='all'?'selected':''}>All</option>
         ${carriers.map(c=>`<option value="${esc(c)}" ${state.filterCarrier===c?'selected':''}>${esc(c)}</option>`).join('')}
       </select>
     </div>
     <div class="flt-group">
-      <span class="flt-lbl">Status</span>
+      <span class="flt-lbl">Statut</span>
       <select class="flt-sel" onchange="setFilterStatus(this.value)">
         <option value="all" ${(!state.filterStatus||state.filterStatus==='all')?'selected':''}>All</option>
         ${STATUSES.map(st=>`<option value="${st.id}" ${state.filterStatus===st.id?'selected':''}>${st.label}</option>`).join('')}
@@ -1277,19 +1277,19 @@ function renderAdvancedFilters() {
     </div>
     <div class="flt-group">
       <span class="flt-lbl">Client</span>
-      <input class="flt-inp" placeholder="contains…" value="${esc(state.filterClient||'')}" oninput="setFilterClient(this.value)">
+      <input class="flt-inp" placeholder="contient…" value="${esc(state.filterClient||'')}" oninput="setFilterClient(this.value)">
     </div>
     ${state.dateRange==='custom' ? `
       <div class="flt-group">
-        <span class="flt-lbl">From</span>
+        <span class="flt-lbl">Du</span>
         <input class="flt-inp" type="date" value="${state.customFrom||''}" onchange="setCustomFrom(this.value)">
       </div>
       <div class="flt-group">
-        <span class="flt-lbl">To</span>
+        <span class="flt-lbl">Au</span>
         <input class="flt-inp" type="date" value="${state.customTo||''}" onchange="setCustomTo(this.value)">
       </div>
     ` : ''}
-    <button class="flt-clear" onclick="clearAdvancedFilters()">Clear filters</button>
+    <button class="flt-clear" onclick="clearAdvancedFilters()">Effacer filtres</button>
   `;
 }
 function setFilterUser(v){ state.filterUser=v; renderAll(); }
@@ -1305,7 +1305,7 @@ function clearAdvancedFilters(){
 }
 
 function setDateRange(r) { state.dateRange = r; renderAll(); }
-function setAnalyticsDateRange(r) { state.analyticsDateRange = r; renderAnalytics(); }
+function setStatistiquesDateRange(r) { state.analyticsDateRange = r; renderStatistiques(); }
 
 function orderCard(o) {
   const s = getStatus(o.status) || {label: o.status, icon: 'circle'};
@@ -1332,13 +1332,13 @@ function orderCard(o) {
         <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
       </div>
       <div class="card-docs">
-        <div class="doc-tick ${o.pdf?'on':'off'}">${o.pdf?icon('check',11):icon('circle',11)}<span>Inv</span></div>
+        <div class="doc-tick ${o.pdf?'on':'off'}">${o.pdf?icon('check',11):icon('circle',11)}<span>Fact</span></div>
         <div class="doc-tick ${o.bl?'on':'off'}">${o.bl?icon('check',11):icon('circle',11)}<span>BL</span></div>
-        <div class="doc-tick ${o.label?'on':'off'}">${o.label?icon('check',11):icon('circle',11)}<span>Label</span></div>
+        <div class="doc-tick ${o.label?'on':'off'}">${o.label?icon('check',11):icon('circle',11)}<span>Étiquette</span></div>
       </div>
       <div class="card-meta">
         <div><span class="meta-lbl">Via</span> ${esc(o.carrier)}</div>
-        ${o.tracking?`<div><span class="meta-lbl">Track</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}
+        ${o.tracking?`<div><span class="meta-lbl">Suivi</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}
         <div class="card-ago">${fmtAgo(o.createdAt)}</div>
       </div>
       ${cmt}
@@ -1364,9 +1364,9 @@ function renderBoard() {
   if (q) base = base.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+(o.note||'')).toLowerCase().includes(q));
 
   const cols = [
-    {id:'pending',   label:'Pending',   sub:'Awaiting print',  icon:'pending'},
-    {id:'printed',   label:'Printed',   sub:'Ready to ship',   icon:'invoice'},
-    {id:'delivered', label:'Delivered', sub:'Shipped',         icon:'checkCircle'}
+    {id:'pending',   label:'En attente',   sub:'À imprimer',  icon:'pending'},
+    {id:'printed',   label:'Imprimé',   sub:'Prêt à expédier',   icon:'invoice'},
+    {id:'delivered', label:'Livré', sub:'Expédié',         icon:'checkCircle'}
   ];
 
   el.innerHTML = cols.map(col => {
@@ -1374,7 +1374,7 @@ function renderBoard() {
     items.sort((a,b) => b.createdAt - a.createdAt);
     const cards = items.length
       ? items.map(boardCard).join('')
-      : `<div class="col-empty">No orders</div>`;
+      : `<div class="col-empty">Aucune commande</div>`;
     return `
       <div class="col col-${col.id}">
         <div class="col-head">
@@ -1404,7 +1404,7 @@ function boardCard(o) {
   const issueClass = o.issue ? 'has-issue' : '';
   // reference data: created date + creator
   const created = new Date(o.createdAt);
-  const createdStr = created.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  const createdStr = created.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
   return `
     <div class="bcard ${issueClass} ${sampleClass}" onclick="openDetail('${esc(o.id)}')">
       <div class="bcard-top">
@@ -1413,9 +1413,9 @@ function boardCard(o) {
       </div>
       <div class="bcard-client">${esc(displayClient)}</div>
       <div class="bcard-flags">
-        <span class="dt ${o.pdf?'on':''}">Inv</span>
+        <span class="dt ${o.pdf?'on':''}">Fact</span>
         <span class="dt ${o.bl?'on':''}">BL</span>
-        <span class="dt ${o.label?'on':''}">Label</span>
+        <span class="dt ${o.label?'on':''}">Étiquette</span>
         ${pdfBadge} ${issueBadge}
       </div>
       <div class="bcard-foot">
@@ -1434,15 +1434,15 @@ function switchView(v, el) {
   $('view-'+v).classList.add('active');
   if (el) el.classList.add('active');
   if (v === 'all') renderAll();
-  if (v === 'analytics') renderAnalytics();
+  if (v === 'analytics') renderStatistiques();
   if (v === 'litiges') renderLitiges();
 }
 
 function render() { renderStats(); renderChips(); renderBoard(); }
 
 // ANALYTICS
-function renderAnalytics() {
-  renderDateFilter('date-filter-analytics', state.analyticsDateRange, 'setAnalyticsDateRange');
+function renderStatistiques() {
+  renderDateFilter('date-filter-analytics', state.analyticsDateRange, 'setStatistiquesDateRange');
   const filtered = filterByDate(state.orders, state.analyticsDateRange);
   
   const pending = filtered.filter(o => o.status==='pending').length;
@@ -1487,7 +1487,7 @@ function renderTimelineChart(orders) {
     type: 'line',
     data: {labels, datasets:[
       {label:'Created', data:sorted.map(d=>days[d].created), borderColor:'#2d6987', backgroundColor:'rgba(45,105,135,.1)', tension:.3, fill:true},
-      {label:'Delivered', data:sorted.map(d=>days[d].delivered), borderColor:'#4d7a3a', backgroundColor:'rgba(77,122,58,.1)', tension:.3, fill:true}
+      {label:'Livré', data:sorted.map(d=>days[d].delivered), borderColor:'#4d7a3a', backgroundColor:'rgba(77,122,58,.1)', tension:.3, fill:true}
     ]},
     options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
   });
@@ -1503,7 +1503,7 @@ function renderStatusChart(orders) {
   const issue = orders.filter(o => !!o.issue).length;
   state.charts.status = new Chart(ctx, {
     type: 'doughnut',
-    data: {labels:['Pending','Delivered','Issue'], datasets:[{data:[pending, delivered, issue], backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
+    data: {labels:['En attente','Livré','Issue'], datasets:[{data:[pending, delivered, issue], backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
     options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11}}}}}
   });
 }
@@ -1538,7 +1538,7 @@ async function quickDone(id) {
   if (!o) return;
   o.status = 'delivered';
   try { await saveAllToSheets(); render(); toast(`Marked delivered`); }
-  catch(e) { toast('Error: ' + e.message, 'error'); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
 }
 
 // ADD
@@ -1576,10 +1576,10 @@ function renderAddDocs() {
     if (!el) return;
     if (state.addDocs[k]) {
       el.classList.add('checked');
-      st.textContent = k === 'issue' ? 'flagged' : 'ready';
+      st.textContent = k === 'issue' ? 'signalé' : 'prêt';
     } else {
       el.classList.remove('checked');
-      st.textContent = k === 'issue' ? 'no issue' : 'pending';
+      st.textContent = k === 'issue' ? 'aucun' : 'pending';
     }
   });
 }
@@ -1601,7 +1601,7 @@ function addFiles(files) {
   if (remaining <= 0) { toast(`Maximum ${MAX_PDFS} files`, 'error'); return; }
   const toAdd = files.slice(0, remaining);
   if (files.length > remaining) toast(`Only ${remaining} added (max ${MAX_PDFS})`, 'error');
-  state.pdfFiles.push(...toAdd.map(f => ({file:f, id:uid(), status:'ready', url:''})));
+  state.pdfFiles.push(...toAdd.map(f => ({file:f, id:uid(), status:'prêt', url:''})));
   if (state.pdfFiles.length > 0) { state.addDocs.pdf = true; renderAddDocs(); }
   renderPdfList();
 }
@@ -1630,7 +1630,7 @@ function renderPdfList() {
         <span class="prev-name" title="${esc(p.file.name)}">${esc(p.file.name)}</span>
         <span class="prev-size">${stTxt}</span>
         <button class="prev-eye" onclick="openPreview('${p.id}')" title="Aperçu">${icon('search',14)}</button>
-        ${p.status==='ready'?`<button class="prev-x" onclick="removePdf('${p.id}')" title="Retirer">${icon('x',13)}</button>`:''}
+        ${p.status==='prêt'?`<button class="prev-x" onclick="removePdf('${p.id}')" title="Retirer">${icon('x',13)}</button>`:''}
       </div>`;
   }).join('');
 }
@@ -1655,7 +1655,7 @@ function closePreview() {
 async function addOrder() {
   const btn = $('add-save-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loader"></span> Saving…';
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
   
   const ref = $('a-ref').value.trim();
   const client = $('a-client').value.trim();
@@ -1680,7 +1680,7 @@ async function addOrder() {
       renderPdfList();
       toast('Upload failed: ' + e.message, 'error');
       btn.disabled = false;
-      btn.textContent = 'Save order →';
+      btn.textContent = 'Enregistrer →';
       return;
     }
   }
@@ -1705,24 +1705,24 @@ async function addOrder() {
     isSample: !!state.addSample,
     litigeId: '',
     pdfUrls: uploadedUrls,
-    issueHistory: state.addDocs.issue ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} flagged as issue` : ''
+    issueHistory: state.addDocs.issue ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} signalé comme problème` : ''
   };
   
   state.orders.unshift(newOrder);
   
   try {
-    btn.innerHTML = '<span class="loader"></span> Saving order…';
+    btn.innerHTML = '<span class="loader"></span> Enregistrement…';
     await saveAllToSheets();
     closeModal('m-add');
     render();
-    toast(`Order saved`);
+    toast('Commande enregistrée');
   } catch(e) {
-    toast('Save error: ' + e.message, 'error');
+    toast('Erreur : ' + e.message, 'error');
     state.orders.shift();
   }
   
   btn.disabled = false;
-  btn.textContent = 'Save order →';
+  btn.textContent = 'Enregistrer →';
 }
 
 // DETAIL
@@ -1763,7 +1763,7 @@ function renderDetPdfs() {
       return `<div class="pdf-item uploaded" style="margin-bottom:6px">
         <span class="pdf-item-icon">${icon('invoice',16)}</span>
         <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
-        <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">${icon('trash',13)}</button>
+        <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Retirer ce PDF">${icon('trash',13)}</button>
       </div>`;
     }).join('');
   } else {
@@ -1776,15 +1776,15 @@ function renderTimeline(o) {
   const tl = $('d-timeline');
   if (!tl) return;
   const items = [];
-  items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.createdAt)}</span> · Created by <b>${userName(o.user)}</b></div></div>`);
+  items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.createdAt)}</span> · Créé par <b>${userName(o.user)}</b></div></div>`);
   if (o.updatedAt && o.updatedAt > o.createdAt + 60000) {
-    items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.updatedAt)}</span> · Last edit</div></div>`);
+    items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.updatedAt)}</span> · Dernière modif</div></div>`);
   }
   if (o.printedAt) {
-    items.push(`<div class="tl-item tl-printed"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(+o.printedAt || new Date(o.printedAt).getTime())}</span> · Printed by <b>${userName(o.printedBy) || '—'}</b></div></div>`);
+    items.push(`<div class="tl-item tl-printed"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(+o.printedAt || new Date(o.printedAt).getTime())}</span> · Imprimé par <b>${userName(o.printedBy) || '—'}</b></div></div>`);
   }
   if (o.deliveredAt) {
-    items.push(`<div class="tl-item tl-done"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.deliveredAt)}</span> · Delivered by <b>${userName(o.deliveredBy) || '—'}</b></div></div>`);
+    items.push(`<div class="tl-item tl-done"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.deliveredAt)}</span> · Livré par <b>${userName(o.deliveredBy) || '—'}</b></div></div>`);
   }
   if (o.issueHistory) {
     const entries = o.issueHistory.split('\n').filter(Boolean);
@@ -1844,7 +1844,7 @@ async function removePdfFromOrder(idx) {
     render();
     toast('PDF removed');
   } catch(e) {
-    toast('Error: ' + e.message, 'error');
+    toast('Erreur : ' + e.message, 'error');
   }
 }
 
@@ -1854,7 +1854,7 @@ async function addPdfToOrder(files) {
   const current = (o.pdfUrls || []).length;
   const remaining = MAX_PDFS - current;
   if (remaining <= 0) {
-    toast(`Max ${MAX_PDFS} PDFs per order`, 'error');
+    toast(`Max ${MAX_PDFS} PDFs par commande`, 'error');
     return;
   }
   const toUpload = Array.from(files).filter(f => f.type === 'application/pdf').slice(0, remaining);
@@ -1877,7 +1877,7 @@ async function addPdfToOrder(files) {
     return `<div class="pdf-item uploaded" style="margin-bottom:6px">
       <span class="pdf-item-icon">${icon('invoice',16)}</span>
       <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
-      <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Remove this PDF">${icon('trash',13)}</button>
+      <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Retirer ce PDF">${icon('trash',13)}</button>
     </div>`;
   }).join('');
   const pendingHtml = toUpload.map((f, i) =>
@@ -1928,7 +1928,7 @@ async function addPdfToOrder(files) {
     toast(`${toUpload.length} PDF(s) added`);
   } catch(e) {
     if (drop) drop.classList.remove('uploading');
-    toast('Error: ' + e.message, 'error');
+    toast('Erreur : ' + e.message, 'error');
   }
 }
 
@@ -1968,10 +1968,10 @@ function renderDetDocs() {
     if (!el) return;
     if (state.detDocs[k]) {
       el.classList.add('checked');
-      st.textContent = k === 'issue' ? 'flagged' : 'ready';
+      st.textContent = k === 'issue' ? 'signalé' : 'prêt';
     } else {
       el.classList.remove('checked');
-      st.textContent = k === 'issue' ? 'no issue' : 'pending';
+      st.textContent = k === 'issue' ? 'aucun' : 'pending';
     }
   });
 }
@@ -1983,7 +1983,7 @@ async function saveOrder() {
   if (!o) return;
   const btn = $('det-save-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loader"></span> Saving…';
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
 
   const now = Date.now();
   const prevStatus = o.status;
@@ -1994,11 +1994,11 @@ async function saveOrder() {
 
   // Track issue toggle
   if (!prevIssue && newIssue) {
-    const entry = `[${new Date(now).toISOString()}] ${actor} flagged as issue`;
+    const entry = `[${new Date(now).toISOString()}] ${actor} signalé comme problème`;
     o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
   }
   if (prevIssue && !newIssue) {
-    const entry = `[${new Date(now).toISOString()}] ${actor} cleared issue flag`;
+    const entry = `[${new Date(now).toISOString()}] ${actor} problème résolu`;
     o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
   }
 
@@ -2039,29 +2039,29 @@ async function saveOrder() {
   o.isSample = !!state.detSample;
   o.updatedAt = now;
 
-  try { await saveAllToSheets(); closeModal('m-det'); render(); toast(`Order updated`); }
-  catch(e) { toast('Error: ' + e.message, 'error'); }
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Commande mise à jour'); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
 
   btn.disabled = false;
-  btn.textContent = 'Save changes';
+  btn.textContent = 'Enregistrer';
 }
 
 async function deleteOrder() {
   const o = state.orders.find(x => x.id === state.currentId);
   if (!o) return;
-  if (!confirm(`Delete this order? This will also remove all its PDFs from Drive.`)) return;
+  if (!confirm(`Supprimer cette commande ? Les PDFs seront aussi supprimés de Drive.`)) return;
 
   // Delete PDFs from Drive first (best effort)
   if (o.pdfUrls && o.pdfUrls.length) {
-    toast('Deleting PDFs from Drive…');
+    toast('Suppression des PDFs…');
     for (const url of o.pdfUrls) {
       await deletePdfFromDrive(url);
     }
   }
 
   state.orders = state.orders.filter(x => x.id !== state.currentId);
-  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Deleted', 'error'); }
-  catch(e) { toast('Error: ' + e.message, 'error'); }
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Supprimé', 'error'); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
 }
 
 function openModal(id) { $(id).classList.add('open'); }
@@ -2420,7 +2420,7 @@ async function addLitige() {
         });
         litige.fileUrls.push(file.name + '|||' + result.url + '|||' + (result.id||''));
       } catch(e) {
-        toast('Photo non envoyée: ' + file.name, 'error');
+        toast('Photo non envoyée : ' + file.name, 'error');
       }
     }
   } else if (chosen.length && !folderId) {
