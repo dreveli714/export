@@ -8,24 +8,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  /* Surfaces — clean whites and cool grays */
-  --paper:#ffffff;--paper-2:#f4f6fa;--paper-3:#e8edf3;
-  /* Text — navy ink */
-  --ink:#0a2540;--ink-soft:#3d5775;--ink-mute:#7d8ba0;--ink-fade:#aab3c3;
-  /* Borders */
-  --line:#e1e6ef;--line-soft:#eef1f6;
-  /* Semantic accents */
-  --tomato:#e24b4a;--tomato-soft:#fef0eb;            /* pending / danger */
-  --honey:#ef9f27;--honey-soft:#fdf3e1;              /* issue / warning */
-  --moss:#1d9e75;--moss-soft:#e8f5ef;                /* delivered / success */
-  --plum:#7f77dd;--plum-soft:#eeedfe;
-  --ocean:#378add;--ocean-soft:#e6f1fb;              /* info / accent */
-  /* Brand — primary navy used for headers, buttons, focus */
-  --navy:#0a2540;--navy-2:#143358;--navy-soft:#f0f4fa;
-  --r-md:10px;--r-lg:14px;--r-xl:22px;--r-full:999px;
-  --sh-sm:0 1px 2px rgba(10,37,64,.04);
-  --sh-md:0 2px 4px rgba(10,37,64,.04),0 4px 16px rgba(10,37,64,.06);
-  --sh-lg:0 4px 8px rgba(10,37,64,.04),0 12px 32px rgba(10,37,64,.10);
+  /* Surfaces — Apple-like neutral grays */
+  --paper:#ffffff;--paper-2:#f5f5f7;--paper-3:#ececee;
+  /* Text — near-black neutral ink */
+  --ink:#1d1d1f;--ink-soft:#43434a;--ink-mute:#86868b;--ink-fade:#b0b0b6;
+  /* Borders — hairline */
+  --line:#e3e3e6;--line-soft:#f0f0f2;
+  /* Semantic accents — muted, sober */
+  --tomato:#d9544d;--tomato-soft:#fbeceb;            /* pending / danger */
+  --honey:#d99421;--honey-soft:#faf2e2;              /* issue / warning */
+  --moss:#34a853;--moss-soft:#e9f5ec;                /* delivered / success */
+  --plum:#8b80d6;--plum-soft:#efeefb;
+  --ocean:#0071e3;--ocean-soft:#e8f2fd;              /* Apple blue accent */
+  /* Brand — refined dark used for headers, buttons, focus */
+  --navy:#1d1d1f;--navy-2:#2c2c2e;--navy-soft:#f2f2f4;
+  --r-md:10px;--r-lg:14px;--r-xl:20px;--r-full:999px;
+  --sh-sm:0 1px 2px rgba(0,0,0,.03);
+  --sh-md:0 1px 3px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.05);
+  --sh-lg:0 2px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
   --ease:cubic-bezier(.22,.61,.36,1);
   --bounce:cubic-bezier(.34,1.56,.64,1);
 }
@@ -124,6 +124,35 @@ body::before{display:none}
 .chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .chip.active .chip-count{background:rgba(255,255,255,.18);color:#fff}
 .orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+/* ===== Kanban board ===== */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.col{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-height:200px}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.col-head-left{display:flex;align-items:center;gap:11px}
+.col-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.col-icon-pending{background:var(--tomato-soft);color:var(--tomato)}
+.col-icon-printed{background:var(--ocean-soft);color:var(--ocean)}
+.col-icon-delivered{background:var(--moss-soft);color:var(--moss)}
+.col-title{font-size:14px;font-weight:650;color:var(--ink);letter-spacing:-.01em}
+.col-sub{font-size:11px;color:var(--ink-mute);margin-top:1px}
+.col-count{font-size:13px;font-weight:650;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:var(--r-full);min-width:26px;height:24px;display:flex;align-items:center;justify-content:center;padding:0 8px}
+.col-body{padding:12px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 320px);overflow-y:auto}
+.col-empty{text-align:center;color:var(--ink-fade);font-size:13px;padding:28px 12px}
+/* board card — clean Apple-like */
+.bcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px;cursor:pointer;transition:all .16s var(--ease);box-shadow:var(--sh-sm)}
+.bcard:hover{box-shadow:var(--sh-md);transform:translateY(-1px);border-color:var(--ink-fade)}
+.bcard.has-issue{border-left:3px solid var(--honey)}
+.bcard.is-sample{border-left:3px solid var(--plum)}
+.bcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.bcard-ref{font-size:13.5px;font-weight:650;color:var(--ink);letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+.bcard-client{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard-flags{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.bcard-flags .dt{font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--r-full);background:var(--paper-3);color:var(--ink-fade);letter-spacing:.02em}
+.bcard-flags .dt.on{background:var(--moss-soft);color:var(--moss)}
+.bcard-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid var(--line-soft)}
+.bcard-via{font-size:11px;color:var(--ink-mute);font-weight:550}
+.bcard-created{font-size:11px;color:var(--ink-mute)}
+@media(max-width:900px){.board{grid-template-columns:1fr;gap:14px}.col-body{max-height:none}}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh-sm)}
 .card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--navy)}
 .card::before{content:'';position:absolute;top:14px;bottom:14px;left:0;width:3px;background:var(--ink-fade);border-radius:0 3px 3px 0;transition:width .2s var(--ease)}
@@ -418,11 +447,11 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="toolbar">
       <div class="search">
         <span class="search-icon">⌕</span>
-        <input class="search-input" id="search" placeholder="Search…" oninput="render()">
+        <input class="search-input" id="search" placeholder="Search ref, client, tracking…" oninput="renderBoard()">
       </div>
       <div class="chips" id="chips"></div>
     </div>
-    <div class="orders" id="orders"></div>
+    <div class="board" id="board"></div>
   </div>
 
   <div id="view-all" class="view">
@@ -773,7 +802,7 @@ function icon(name, size = 16) {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyevtXAu4wH6kKREIKy57UjM19zTi_efqdz2jID6Vh0G7fqy7o91xVsZqi0oj2kqRbp6w/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyevtXAu4wH6kKREIKy57UjM19zTi_efqdz2jID6Vh0G7fqy7091xVsZqi0oj2kqRbp6w/exec';
 
 const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
 const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
@@ -1320,6 +1349,82 @@ function orderCard(o) {
   `;
 }
 
+
+// ===== KANBAN BOARD (3 columns) =====
+function renderBoard() {
+  const el = $('board');
+  if (!el) return;
+  const q = ($('search')?.value||'').toLowerCase();
+
+  // base list: respect chip filter (mine / issue / sample), but NOT status (board shows all 3)
+  let base = state.orders.slice();
+  if (state.filter === 'mine') base = base.filter(o => o.user === state.currentUser);
+  else if (state.filter === 'issue') base = base.filter(o => !!o.issue);
+  else if (state.filter === 'sample') base = base.filter(o => !!o.isSample);
+  if (q) base = base.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+(o.note||'')).toLowerCase().includes(q));
+
+  const cols = [
+    {id:'pending',   label:'Pending',   sub:'Awaiting print',  icon:'pending'},
+    {id:'printed',   label:'Printed',   sub:'Ready to ship',   icon:'invoice'},
+    {id:'delivered', label:'Delivered', sub:'Shipped',         icon:'checkCircle'}
+  ];
+
+  el.innerHTML = cols.map(col => {
+    let items = base.filter(o => o.status === col.id);
+    items.sort((a,b) => b.createdAt - a.createdAt);
+    const cards = items.length
+      ? items.map(boardCard).join('')
+      : `<div class="col-empty">No orders</div>`;
+    return `
+      <div class="col col-${col.id}">
+        <div class="col-head">
+          <div class="col-head-left">
+            <span class="col-icon col-icon-${col.id}">${icon(col.icon,15)}</span>
+            <div>
+              <div class="col-title">${col.label}</div>
+              <div class="col-sub">${col.sub}</div>
+            </div>
+          </div>
+          <span class="col-count">${items.length}</span>
+        </div>
+        <div class="col-body">${cards}</div>
+      </div>`;
+  }).join('');
+}
+
+// compact card for the board columns
+function boardCard(o) {
+  const displayRef = o.ref || '(no ref)';
+  const displayClient = o.client || '(no client)';
+  const pdfBadge = o.pdfUrls && o.pdfUrls.length
+    ? `<span class="pdf-count">${icon('paperclip',10)} ${o.pdfUrls.length}</span>` : '';
+  const issueBadge = o.issue ? `<span class="issue-badge">${icon('warning',9)} Issue</span>` : '';
+  const sampleBadge = o.isSample ? `<span class="sample-badge" title="Échantillons">M</span>` : '';
+  const sampleClass = o.isSample ? 'is-sample' : '';
+  const issueClass = o.issue ? 'has-issue' : '';
+  // reference data: created date + creator
+  const created = new Date(o.createdAt);
+  const createdStr = created.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  return `
+    <div class="bcard ${issueClass} ${sampleClass}" onclick="openDetail('${esc(o.id)}')">
+      <div class="bcard-top">
+        <div class="bcard-ref">${esc(displayRef)} ${sampleBadge}</div>
+        <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
+      </div>
+      <div class="bcard-client">${esc(displayClient)}</div>
+      <div class="bcard-flags">
+        <span class="dt ${o.pdf?'on':''}">Inv</span>
+        <span class="dt ${o.bl?'on':''}">BL</span>
+        <span class="dt ${o.label?'on':''}">Label</span>
+        ${pdfBadge} ${issueBadge}
+      </div>
+      <div class="bcard-foot">
+        <span class="bcard-via">${esc(o.carrier||'—')}</span>
+        <span class="bcard-created">${createdStr} · ${o.user}</span>
+      </div>
+    </div>`;
+}
+
 function setFilter(f) { state.filter = f; render(); }
 function filterBy(s) { state.filter = s; render(); }
 
@@ -1333,7 +1438,7 @@ function switchView(v, el) {
   if (v === 'litiges') renderLitiges();
 }
 
-function render() { renderStats(); renderChips(); renderOrders(); }
+function render() { renderStats(); renderChips(); renderBoard(); }
 
 // ANALYTICS
 function renderAnalytics() {
