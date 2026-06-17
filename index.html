@@ -4,38 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Export · Expéditions</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  /* Surfaces — Apple-like neutral grays */
-  --paper:#ffffff;--paper-2:#f5f5f7;--paper-3:#ececee;
-  /* Text — near-black neutral ink */
-  --ink:#1d1d1f;--ink-soft:#43434a;--ink-mute:#86868b;--ink-fade:#b0b0b6;
-  /* Borders — hairline */
-  --line:#e3e3e6;--line-soft:#f0f0f2;
-  /* Semantic accents — muted, sober */
-  --tomato:#d9544d;--tomato-soft:#fbeceb;            /* pending / danger */
-  --honey:#d99421;--honey-soft:#faf2e2;              /* issue / warning */
-  --moss:#34a853;--moss-soft:#e9f5ec;                /* delivered / success */
-  --plum:#8b80d6;--plum-soft:#efeefb;
-  --ocean:#0071e3;--ocean-soft:#e8f2fd;              /* Apple blue accent */
-  /* Brand — refined dark used for headers, buttons, focus */
-  --navy:#1d1d1f;--navy-2:#2c2c2e;--navy-soft:#f2f2f4;
-  --r-md:10px;--r-lg:14px;--r-xl:20px;--r-full:999px;
-  --sh-sm:0 1px 2px rgba(0,0,0,.03);
-  --sh-md:0 1px 3px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.05);
-  --sh-lg:0 2px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+  /* Surfaces — warm paper, grounded in the shipping/atelier world */
+  --paper:#ffffff;--paper-2:#f6f4ef;--paper-3:#ece8df;
+  --warm-tint:#faf8f3;
+  /* Text — warm near-black ink */
+  --ink:#1c1b18;--ink-soft:#56544c;--ink-mute:#928f86;--ink-fade:#bdbab1;
+  /* Borders — warm hairline */
+  --line:#e7e3d9;--line-soft:#f1eee7;
+  /* Semantic status — each colour MEANS its stage */
+  --honey:#e0922a;--honey-soft:#fbf0dd;              /* PENDING — waiting, attention */
+  --ocean:#3551e0;--ocean-soft:#e8ecfc;              /* PRINTED — in motion */
+  --moss:#1f9d6b;--moss-soft:#e4f4ec;                /* DELIVERED — done */
+  --tomato:#dd4f3a;--tomato-soft:#fcebe7;            /* ISSUE — problem */
+  --plum:#7c5ce0;--plum-soft:#efeafc;                /* SAMPLE — special */
+  /* Brand — deep warm ink for nav/headers/buttons */
+  --navy:#23211c;--navy-2:#33302a;--navy-soft:#f1eee7;
+  --r-md:11px;--r-lg:16px;--r-xl:22px;--r-full:999px;
+  --sh-sm:0 1px 2px rgba(40,34,20,.04);
+  --sh-md:0 1px 3px rgba(40,34,20,.05),0 5px 16px rgba(40,34,20,.06);
+  --sh-lg:0 2px 8px rgba(40,34,20,.05),0 14px 36px rgba(40,34,20,.10);
+  --font-display:'Bricolage Grotesque','Inter',sans-serif;
   --ease:cubic-bezier(.22,.61,.36,1);
   --bounce:cubic-bezier(.34,1.56,.64,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--paper-2);color:var(--ink);font-family:'Inter','Bricolage Grotesque',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;letter-spacing:-.005em}
+body{background:var(--paper-2);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;letter-spacing:-.006em}
 body::before{display:none}
 .lock-screen{position:fixed;inset:0;background:var(--paper);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column}
 .lock-screen.hidden{display:none}
 .lock-box{text-align:center;max-width:380px;width:100%}
-.lock-logo{font-size:34px;font-weight:700;margin-bottom:8px;letter-spacing:-.03em;color:var(--navy);display:inline-flex;align-items:center;gap:10px}
+.lock-logo{font-family:var(--font-display);font-size:36px;font-weight:800;margin-bottom:8px;letter-spacing:-.04em;color:var(--navy);display:inline-flex;align-items:center;gap:10px}
 .lock-logo::after{content:'';width:8px;height:8px;background:var(--moss);border-radius:50%;animation:pulse 3s ease-in-out infinite}
 .lock-title{font-size:15px;font-weight:500;color:var(--ink-soft);margin-bottom:4px}
 .lock-sub{font-size:10px;color:var(--ink-mute);letter-spacing:.08em;margin-bottom:36px;text-transform:uppercase;font-weight:600}
@@ -53,7 +55,7 @@ body::before{display:none}
 .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh;position:relative;z-index:1}
 .sidebar{background:var(--paper);border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
 .brand{display:flex;align-items:center;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.brand-mark{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--navy)}
+.brand-mark{font-family:var(--font-display);font-size:23px;font-weight:800;letter-spacing:-.035em;color:var(--navy)}
 .brand-dot{width:8px;height:8px;background:var(--moss);border-radius:50%;animation:pulse 3s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
 .brand-sub{font-size:10px;color:var(--ink-mute);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
@@ -62,15 +64,15 @@ body::before{display:none}
 .id-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .id-btn{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:7px 9px;font-family:inherit;font-size:11px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .15s var(--ease)}
 .id-btn:hover{border-color:var(--navy);color:var(--navy)}
-.id-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.id-btn.active{background:var(--ocean);color:#fff;border-color:var(--ocean)}
 .av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;font-family:'JetBrains Mono',monospace}
 .id-btn:not(.active) .av{background:var(--paper-3);color:var(--ink-soft)}
 .id-btn.active .av{background:rgba(255,255,255,.15);color:#fff}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px;padding:0 8px;font-weight:600}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r-md);cursor:pointer;font-size:13px;font-weight:500;color:var(--ink-soft);transition:all .15s var(--ease);position:relative;user-select:none}
-.nav-item:hover{background:var(--paper-2);color:var(--navy)}
-.nav-item.active{background:var(--navy);color:#fff}
+.nav-item:hover{background:var(--ocean-soft);color:var(--ocean)}
+.nav-item.active{background:var(--ocean);color:#fff}
 .nav-item.active::before{display:none}
 .nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nav-icon svg{display:block}
@@ -85,10 +87,10 @@ body::before{display:none}
 .main{padding:30px 36px;overflow-y:auto;max-height:100vh}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;gap:24px;flex-wrap:wrap}
 .greeting{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;font-weight:600}
-.page-title{font-size:clamp(24px,3.4vw,34px);font-weight:600;letter-spacing:-.025em;line-height:1.1;color:var(--navy)}
-.accent{color:var(--tomato);font-style:normal}
+.page-title{font-family:var(--font-display);font-size:clamp(25px,3.5vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.04;color:var(--navy)}
+.accent{color:var(--honey);font-style:normal}
 .page-sub{font-size:13px;color:var(--ink-soft);margin-top:6px}
-.add-btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:11px 20px;border:none;border-radius:var(--r-full);font-family:inherit;font-weight:500;font-size:13px;cursor:pointer;transition:all .2s var(--ease);box-shadow:var(--sh-sm)}
+.add-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ocean);color:#fff;padding:11px 20px;border:none;border-radius:var(--r-full);font-family:inherit;font-weight:500;font-size:13px;cursor:pointer;transition:all .2s var(--ease);box-shadow:0 2px 8px rgba(0,113,227,.25)}
 .add-btn:hover{background:var(--navy-2);transform:translateY(-1px);box-shadow:var(--sh-md)}
 .add-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .2s var(--ease)}
 .add-btn:hover .add-icon{transform:rotate(90deg)}
@@ -98,16 +100,23 @@ body::before{display:none}
 .stat::after{display:none}
 .stat-total::after{background:var(--ocean)}
 .stat-icon{margin-bottom:10px;color:var(--navy);display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--navy-soft);border-radius:8px}
-.stat-pending .stat-icon{color:var(--tomato);background:var(--tomato-soft)}
+.stat-pending .stat-icon{color:var(--honey);background:var(--honey-soft)}
 .stat-delivered .stat-icon{color:var(--moss);background:var(--moss-soft)}
-.stat-issue .stat-icon{color:var(--honey);background:var(--honey-soft)}
+.stat-issue .stat-icon{color:var(--tomato);background:var(--tomato-soft)}
 .stat-label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;font-weight:600}
-.stat-value{font-size:28px;font-weight:600;letter-spacing:-.025em;line-height:1;font-variant-numeric:tabular-nums;color:var(--navy)}
+.stat-value{font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums;color:var(--navy)}
 .stat-trend{font-size:11px;color:var(--moss);margin-top:6px;font-weight:500}
 .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:28px}
 .chart-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
 .chart-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
 .chart-box{position:relative;height:220px}
+.chart-card-wide{grid-column:1/-1}
+.peak-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.peak-card{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px}
+.peak-icon{width:42px;height:42px;border-radius:11px;background:var(--ocean-soft);color:var(--ocean);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.peak-big{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.025em}
+.peak-lbl{font-size:11.5px;color:var(--ink-mute);margin-top:2px}
+.peak-empty{grid-column:1/-1;text-align:center;color:var(--ink-fade);padding:20px;font-size:13px}
 .date-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
 .date-btn{padding:7px 14px;border-radius:var(--r-full);font-size:12px;font-weight:600;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);transition:all .2s var(--ease);font-family:inherit}
 .date-btn:hover{border-color:var(--ink-fade)}
@@ -126,25 +135,29 @@ body::before{display:none}
 .orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
 /* ===== Kanban board ===== */
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
-.col{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-height:200px}
+.col{background:var(--warm-tint);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-height:200px;position:relative}
+.col::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.col-pending::before{background:var(--honey)}
+.col-printed::before{background:var(--ocean)}
+.col-delivered::before{background:var(--moss)}
 .col-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
 .col-head-left{display:flex;align-items:center;gap:11px}
 .col-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.col-icon-pending{background:var(--tomato-soft);color:var(--tomato)}
+.col-icon-pending{background:var(--honey-soft);color:var(--honey)}
 .col-icon-printed{background:var(--ocean-soft);color:var(--ocean)}
 .col-icon-delivered{background:var(--moss-soft);color:var(--moss)}
-.col-title{font-size:14px;font-weight:650;color:var(--ink);letter-spacing:-.01em}
+.col-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .col-sub{font-size:11px;color:var(--ink-mute);margin-top:1px}
 .col-count{font-size:13px;font-weight:650;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:var(--r-full);min-width:26px;height:24px;display:flex;align-items:center;justify-content:center;padding:0 8px}
 .col-body{padding:12px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 320px);overflow-y:auto}
 .col-empty{text-align:center;color:var(--ink-fade);font-size:13px;padding:28px 12px}
 /* board card — clean Apple-like */
-.bcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px;cursor:pointer;transition:all .16s var(--ease);box-shadow:var(--sh-sm)}
-.bcard:hover{box-shadow:var(--sh-md);transform:translateY(-1px);border-color:var(--ink-fade)}
+.bcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 15px;cursor:pointer;transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s var(--ease);box-shadow:var(--sh-sm)}
+.bcard:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:var(--ink-fade)}
 .bcard.has-issue{border-left:3px solid var(--honey)}
 .bcard.is-sample{border-left:3px solid var(--plum)}
 .bcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
-.bcard-ref{font-size:13.5px;font-weight:650;color:var(--ink);letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+.bcard-ref{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
 .bcard-client{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bcard-flags{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
 .bcard-flags .dt{font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--r-full);background:var(--paper-3);color:var(--ink-fade);letter-spacing:.02em}
@@ -152,6 +165,17 @@ body::before{display:none}
 .bcard-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid var(--line-soft)}
 .bcard-via{font-size:11px;color:var(--ink-mute);font-weight:550}
 .bcard-created{font-size:11px;color:var(--ink-mute)}
+/* aging timer bar */
+.aging{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.aging-track{flex:1;height:5px;background:var(--paper-3);border-radius:var(--r-full);overflow:hidden}
+.aging-fill{height:100%;border-radius:var(--r-full);transition:width .4s var(--ease),background .4s}
+.aging-txt{font-size:11px;font-weight:650;white-space:nowrap;letter-spacing:-.01em}
+.aging.age-g .aging-fill{background:#34a853}.aging.age-g .aging-txt{color:#1e7e34}
+.aging.age-a .aging-fill{background:#f5b400}.aging.age-a .aging-txt{color:#b8860b}
+.aging.age-o .aging-fill{background:#ff8c00}.aging.age-o .aging-txt{color:#d2691e}
+.aging.age-r .aging-fill{background:#e0352b}.aging.age-r .aging-txt{color:#c0271d}
+.aging.age-r{animation:agingPulse 2s ease-in-out infinite}
+@keyframes agingPulse{0%,100%{opacity:1}50%{opacity:.6}}
 @media(max-width:900px){.board{grid-template-columns:1fr;gap:14px}.col-body{max-height:none}}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh-sm)}
 .card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--navy)}
@@ -180,13 +204,13 @@ body::before{display:none}
 .card-foot{display:flex;justify-content:flex-start;align-items:center;padding-top:10px;border-top:1px solid var(--line-soft)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:var(--r-full);font-size:11px;font-weight:600;letter-spacing:.01em}
 .pill-dot{width:6px;height:6px;border-radius:50%}
-.pill-pending{background:var(--tomato-soft);color:#A32D2D}
-.pill-pending .pill-dot{background:var(--tomato)}
-.pill-delivered{background:var(--moss-soft);color:#0F6E56}
+.pill-pending{background:var(--honey-soft);color:#9a630f}
+.pill-pending .pill-dot{background:var(--honey)}
+.pill-delivered{background:var(--moss-soft);color:#137551}
 .pill-delivered .pill-dot{background:var(--moss)}
-.pill-printed{background:#dbeafe;color:#1e40af}
-.pill-printed .pill-dot{background:#3b82f6}
-.s-printed{border-left:3px solid #3b82f6}
+.pill-printed{background:var(--ocean-soft);color:#2740b8}
+.pill-printed .pill-dot{background:var(--ocean)}
+.s-printed{border-left:3px solid var(--ocean)}
 /* advanced filters bar */
 .adv-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 14px;padding:10px 12px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px}
 .flt-group{display:flex;align-items:center;gap:6px}
@@ -197,11 +221,11 @@ body::before{display:none}
 .flt-clear:hover{background:var(--tomato-soft);color:#A32D2D;border-color:var(--tomato)}
 .all-count{margin-left:auto;font-size:12px;color:var(--ink-mute);font-weight:600}
 .assn-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#fff;flex-shrink:0;letter-spacing:.02em}
-.av-DI{background:var(--navy)}
-.av-DA{background:#185fa5}
-.av-MA{background:var(--moss)}
-.av-CA{background:var(--plum)}
-.av-OT{background:var(--ink-mute)}
+.av-DI{background:#23211c}
+.av-DA{background:#3551e0}
+.av-MA{background:#1f9d6b}
+.av-CA{background:#7c5ce0}
+.av-OT{background:#d97742}
 .empty{text-align:center;padding:48px 24px;background:var(--paper);border:1px dashed var(--line);border-radius:var(--r-lg);grid-column:1/-1}
 .empty-emoji{font-size:48px;margin-bottom:14px;display:inline-block;opacity:.4}
 .empty-title{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--navy)}
@@ -478,20 +502,24 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="page-head">
       <div>
         <div class="greeting">Insights</div>
-        <h1 class="page-title">Statistiques <span class="accent">dashboard</span></h1>
-        <div class="page-sub">Performance overview</div>
+        <h1 class="page-title">Statistiques <span class="accent">expéditions</span></h1>
+        <div class="page-sub">Aperçu des performances</div>
       </div>
     </div>
     <div class="date-filter" id="date-filter-analytics"></div>
     <div class="stats" id="stats-analytics"></div>
     <div class="charts-grid">
       <div class="chart-card"><div class="chart-title">Commandes dans le temps</div><div class="chart-box"><canvas id="chart-timeline"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Status breakdown</div><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Répartition par statut</div><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
     </div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">By carrier</div><div class="chart-box"><canvas id="chart-carrier"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">By assignee</div><div class="chart-box"><canvas id="chart-assignee"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Par transporteur</div><div class="chart-box"><canvas id="chart-carrier"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Par personne</div><div class="chart-box"><canvas id="chart-assignee"></canvas></div></div>
     </div>
+    <div class="charts-grid">
+      <div class="chart-card chart-card-wide"><div class="chart-title">Heures de dépôt — quand arrivent les commandes</div><div class="chart-box"><canvas id="chart-hours"></canvas></div></div>
+    </div>
+    <div class="peak-summary" id="peak-summary"></div>
   </div>
   <div id="view-litiges" class="view">
     <div class="page-head">
@@ -519,7 +547,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 <div class="modal-bg" id="m-add">
   <div class="modal">
     <div class="modal-head">
-      <div><div class="modal-title">Nouvelle commande</div><div class="modal-sub">Tous les champs optionnels · Max 4 PDFs</div></div>
+      <div><div class="modal-title">Nouvelle commande</div><div class="modal-sub">Tous les champs optionnels · Max 10 PDFs</div></div>
       <button class="modal-x" onclick="closeModal('m-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="modal-body">
@@ -579,11 +607,11 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     </div>
     <div class="modal-body">
       <div class="sect" id="d-pdf-sect" style="display:none">
-        <div class="sect-lbl">Attached PDFs</div>
+        <div class="sect-lbl">PDFs attachés</div>
         <div id="d-pdf-links"></div>
       </div>
       <div class="sect">
-        <div class="sect-lbl">Add more PDFs</div>
+        <div class="sect-lbl">Ajouter / corriger des PDFs</div>
         <div class="pdf-drop" id="d-pdf-drop"
              ondrop="handleDetailPdfDrop(event)"
              ondragover="handleDetailPdfDragOver(event)"
@@ -591,17 +619,17 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
              onclick="document.getElementById('d-pdf-input').click()">
           <div class="pdf-drop-icon" style="color:var(--ocean)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
           <div class="pdf-drop-text">Glisser un PDF ou cliquer</div>
-          <div class="pdf-drop-hint">Max 4 PDFs par commande</div>
+          <div class="pdf-drop-hint">Max 10 PDFs par commande</div>
         </div>
-        <input type="file" id="d-pdf-input" accept="application/pdf" multiple style="display:none" onchange="handleDetailPdfPick(event)">
+        <input type="file" id="d-pdf-input" accept="application/pdf,image/*" multiple style="display:none" onchange="handleDetailPdfPick(event)">
       </div>
       <div class="sect">
-        <div class="sect-lbl">Documents & flags</div>
+        <div class="sect-lbl">Documents & indicateurs</div>
         <div class="docs-row">
-          <div class="doc-pick dp-invoice" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="ddp-pdf-st">pending</div></div>
-          <div class="doc-pick dp-bl" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">pending</div></div>
-          <div class="doc-pick dp-label" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="ddp-label-st">pending</div></div>
-          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="ddp-issue-st">no issue</div></div>
+          <div class="doc-pick dp-invoice" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="ddp-pdf-st">en attente</div></div>
+          <div class="doc-pick dp-bl" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">en attente</div></div>
+          <div class="doc-pick dp-label" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="ddp-label-st">en attente</div></div>
+          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="ddp-issue-st">aucun</div></div>
         </div>
       </div>
       <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="d-status-pick"></div></div>
@@ -809,11 +837,11 @@ const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
 const DRIVE_URL = `https://drive.google.com/drive/folders/${FOLDER_ID}`;
 const ACCESS_PIN = '220202';
 const PIN_VALID_HOURS = 8;
-const MAX_PDFS = 4;
+const MAX_PDFS = 10;
 
 const USERS = [
   {id:'DI',name:'Diana'},{id:'DA',name:'Daniel'},{id:'MA',name:'Martina'},
-  {id:'CA',name:'Carla'},{id:'OT',name:'Other'}
+  {id:'CA',name:'Carla'},{id:'OT',name:'Hayet'}
 ];
 const STATUSES = [
   {id:'pending',label:'En attente',icon:'pending'},
@@ -1166,8 +1194,8 @@ function renderStats() {
   const stats = [
     {id:'pending',label:'En attente',iconKey:'pending',count:state.orders.filter(o=>o.status==='pending').length},
     {id:'delivered',label:'Livré',iconKey:'checkCircle',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} aujourd'hui`},
-    {id:'issue',label:'Issues',iconKey:'warning',count:state.orders.filter(o=>!!o.issue).length},
-    {id:'total',label:'Total',iconKey:'box',count:state.orders.length,trend:`${weekDel} this week`}
+    {id:'issue',label:'Problèmes',iconKey:'warning',count:state.orders.filter(o=>!!o.issue).length},
+    {id:'total',label:'Total',iconKey:'box',count:state.orders.length,trend:`${weekDel} cette semaine`}
   ];
 
   $('stats').innerHTML = stats.map(s => `
@@ -1393,6 +1421,35 @@ function renderBoard() {
 }
 
 // compact card for the board columns
+// ===== Aging timer for pending cards (4h target) =====
+function hoursSince(ts) {
+  return (Date.now() - (+ts)) / 3600000;
+}
+function ageColor(h) {
+  // 0-2h green, 2-3h amber, 3-4h orange, 4h+ red
+  if (h < 2) return {cls:'age-g', pct: Math.min(h/4*100,100)};
+  if (h < 3) return {cls:'age-a', pct: Math.min(h/4*100,100)};
+  if (h < 4) return {cls:'age-o', pct: Math.min(h/4*100,100)};
+  return {cls:'age-r', pct: 100};
+}
+function fmtElapsed(h) {
+  if (h < 1) { const m = Math.round(h*60); return m + ' min'; }
+  if (h < 24) { const hh = Math.floor(h); const m = Math.round((h-hh)*60); return hh + 'h' + (m>0?(' '+m+'m'):''); }
+  const d = Math.floor(h/24); return d + 'j';
+}
+function agingBar(o) {
+  // only show for pending orders
+  if (o.status !== 'pending') return '';
+  const h = hoursSince(o.createdAt);
+  const a = ageColor(h);
+  const overdue = h >= 4;
+  return `
+    <div class="aging ${a.cls}">
+      <div class="aging-track"><div class="aging-fill" style="width:${a.pct}%"></div></div>
+      <span class="aging-txt">${overdue ? '⚠ ' : ''}${fmtElapsed(h)}${overdue ? ' · retard' : ''}</span>
+    </div>`;
+}
+
 function boardCard(o) {
   const displayRef = o.ref || '(no ref)';
   const displayClient = o.client || '(no client)';
@@ -1418,6 +1475,7 @@ function boardCard(o) {
         <span class="dt ${o.label?'on':''}">Étiquette</span>
         ${pdfBadge} ${issueBadge}
       </div>
+      ${agingBar(o)}
       <div class="bcard-foot">
         <span class="bcard-via">${esc(o.carrier||'—')}</span>
         <span class="bcard-created">${createdStr} · ${o.user}</span>
@@ -1453,9 +1511,9 @@ function renderStatistiques() {
   
   $('stats-analytics').innerHTML = `
     <div class="stat stat-total"><div class="stat-icon">${icon('box',22)}</div><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
-    <div class="stat stat-delivered"><div class="stat-icon">${icon('checkCircle',22)}</div><div class="stat-label">Delivered</div><div class="stat-value">${delivered}</div><div class="stat-trend">${rate}% rate</div></div>
-    <div class="stat stat-pending"><div class="stat-icon">${icon('pending',22)}</div><div class="stat-label">Pending</div><div class="stat-value">${pending}</div></div>
-    <div class="stat stat-issue"><div class="stat-icon">${icon('warning',22)}</div><div class="stat-label">Issues</div><div class="stat-value">${issue}</div></div>
+    <div class="stat stat-delivered"><div class="stat-icon">${icon('checkCircle',22)}</div><div class="stat-label">Livré</div><div class="stat-value">${delivered}</div><div class="stat-trend">${rate}% taux</div></div>
+    <div class="stat stat-pending"><div class="stat-icon">${icon('pending',22)}</div><div class="stat-label">En attente</div><div class="stat-value">${pending}</div></div>
+    <div class="stat stat-issue"><div class="stat-icon">${icon('warning',22)}</div><div class="stat-label">Problèmes</div><div class="stat-value">${issue}</div></div>
   `;
   
   setTimeout(() => {
@@ -1463,7 +1521,80 @@ function renderStatistiques() {
     renderStatusChart(filtered);
     renderCarrierChart(filtered);
     renderAssigneeChart(filtered);
+    renderHoursChart(filtered);
   }, 50);
+}
+
+// ===== Peak hours: when do orders get uploaded =====
+function renderHoursChart(orders) {
+  const ctx = $('chart-hours');
+  if (!ctx) return;
+  destroyChart('hours');
+  // bucket by hour 0-23 using createdAt
+  const buckets = new Array(24).fill(0);
+  orders.forEach(o => {
+    const d = new Date(o.createdAt);
+    buckets[d.getHours()]++;
+  });
+  // working hours focus 6-20 but show all
+  const labels = buckets.map((_,h)=> String(h).padStart(2,'0')+'h');
+  // split morning (until 13h) vs afternoon (13h+) — work hours 9-12:30 & 14-18:20
+  let totalN = 0;
+  let amH = -1, amV = 0, pmH = -1, pmV = 0;
+  buckets.forEach((v,h)=>{
+    totalN += v;
+    if (h < 13) { if (v > amV) { amV = v; amH = h; } }
+    else        { if (v > pmV) { pmV = v; pmH = h; } }
+  });
+  const amTotal = buckets.slice(0,13).reduce((a,b)=>a+b,0);
+  const pmTotal = buckets.slice(13).reduce((a,b)=>a+b,0);
+
+  // colour bars by work period: morning amber, afternoon blue, off-hours faded
+  const bg = buckets.map((v,h)=>{
+    const working = (h>=9 && h<13) || (h>=14 && h<19);
+    if (!working) return '#e8e6e0';            // off-hours, muted
+    return h < 13 ? '#e8a33d' : '#3551e0';     // morning amber / afternoon blue
+  });
+
+  state.charts['hours'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: buckets, backgroundColor: bg, borderRadius: 5, barPercentage: .9, categoryPercentage: .92 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>`${c.parsed.y} commande(s)`}} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:12, color:'#86868b' } },
+        y:{ beginAtZero:true, ticks:{ precision:0, font:{size:10}, color:'#86868b' }, grid:{color:'#f0f0f2'} }
+      }
+    }
+  });
+
+  // summary text
+  const sum = $('peak-summary');
+  if (sum) {
+    if (totalN === 0) {
+      sum.innerHTML = '<div class="peak-empty">Pas encore de données pour cette période</div>';
+    } else {
+      const amLabel = amH>=0 ? `${String(amH).padStart(2,'0')}h–${String(amH+1).padStart(2,'0')}h` : '—';
+      const pmLabel = pmH>=0 ? `${String(pmH).padStart(2,'0')}h–${String(pmH+1).padStart(2,'0')}h` : '—';
+      sum.innerHTML = `
+        <div class="peak-card peak-am">
+          <div class="peak-icon">☀️</div>
+          <div><div class="peak-big">${amLabel}</div>
+          <div class="peak-lbl">Pic du matin · ${amTotal} commande(s)</div></div>
+        </div>
+        <div class="peak-card peak-pm">
+          <div class="peak-icon">🌤️</div>
+          <div><div class="peak-big">${pmLabel}</div>
+          <div class="peak-lbl">Pic de l'après-midi · ${pmTotal} commande(s)</div></div>
+        </div>
+        <div class="peak-card">
+          <div class="peak-icon">${icon('box',20)}</div>
+          <div><div class="peak-big">${totalN}</div>
+          <div class="peak-lbl">Total sur la période</div></div>
+        </div>`;
+    }
+  }
 }
 
 function destroyChart(id) {
@@ -1598,9 +1729,9 @@ function handleFiles(inp) {
 }
 function addFiles(files) {
   const remaining = MAX_PDFS - state.pdfFiles.length;
-  if (remaining <= 0) { toast(`Maximum ${MAX_PDFS} files`, 'error'); return; }
+  if (remaining <= 0) { toast(`Maximum ${MAX_PDFS} fichiers`, 'error'); return; }
   const toAdd = files.slice(0, remaining);
-  if (files.length > remaining) toast(`Only ${remaining} added (max ${MAX_PDFS})`, 'error');
+  if (files.length > remaining) toast(`Seulement ${remaining} ajouté(s) (max ${MAX_PDFS})`, 'error');
   state.pdfFiles.push(...toAdd.map(f => ({file:f, id:uid(), status:'prêt', url:''})));
   if (state.pdfFiles.length > 0) { state.addDocs.pdf = true; renderAddDocs(); }
   renderPdfList();
@@ -2625,6 +2756,8 @@ function init() {
   loadLitiges();
   setInterval(loadFromSheets, 30000);
   setInterval(loadLitiges, 60000);
+  // repaint board every 60s so aging timers advance without full reload
+  setInterval(() => { if ($('view-today')?.closest('.view')?.classList.contains('active') !== false) renderBoard(); }, 60000);
 }
 
 if (checkAuth()) {
