@@ -393,6 +393,15 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .litige-folder-link{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--plum-soft);color:var(--plum);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s}
 .litige-folder-link:hover{background:var(--plum);color:#fff}
 @media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:20px}.charts-grid{grid-template-columns:1fr}}
+/* ===== Stock module ===== */
+.historic-title{font-size:11px;font-weight:600;color:var(--ink-mute);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.historic-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--paper-2);border-radius:var(--r-md);border:1px solid var(--line);margin-bottom:8px;font-size:13px}
+.historic-item-icon{font-size:18px;flex-shrink:0}
+.historic-item-text{flex:1;min-width:0}
+.historic-item-main{font-weight:500;color:var(--ink);margin-bottom:2px}
+.historic-item-sub{font-size:12px;color:var(--ink-mute)}
+.btn-action-mail.pending{position:relative}
+.btn-action-mail.pending::after{content:'';position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--tomato);border-radius:50%;border:1px solid var(--paper)}
 </style>
 </head>
 <body>
@@ -441,6 +450,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
     <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Toutes les commandes</span><span class="nav-count" id="nav-all">0</span></div>
     <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Statistiques</span></div>
     <div class="nav-item" onclick="switchView('litiges',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></span><span>Litiges</span><span class="nav-count" id="nav-litiges">0</span></div>
+    <div class="nav-item" onclick="switchView('stock',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Stock</span></div>
   </div>
   <div class="nav">
     <div class="nav-label">Actions</div>
@@ -539,6 +549,29 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       <div class="chips" id="chips-litiges"></div>
     </div>
     <div class="orders" id="litiges-list"></div>
+  </div>
+
+  <div id="view-stock" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Inventory</div>
+        <h1 class="page-title">Fuera de <span class="accent">stock</span></h1>
+        <div class="page-sub">Rastreo de referencias pendientes · Asignación inteligente</div>
+      </div>
+      <button class="add-btn" onclick="openAddStockPending()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nuevo pendiente</button>
+    </div>
+    <div class="stats" id="stock-summary"></div>
+    <div class="toolbar" style="margin-bottom:18px">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-stock" placeholder="Buscar referencia (SOL 102, INT 129...)…" oninput="renderStock()">
+      </div>
+    </div>
+    <div id="stock-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="historic" style="margin-top:28px;padding-top:20px;border-top:1px solid var(--line)">
+      <div class="historic-title">Histórico · Enviados</div>
+      <div id="stock-historic"></div>
+    </div>
   </div>
 
 </main>
@@ -785,6 +818,70 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
   </div>
 </div>
 
+
+<!-- ===== STOCK: ADD & ALLOCATION MODALS ===== -->
+<div class="modal-bg" id="m-stock-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Nuevo pendiente de stock</div><div class="modal-sub">Marcar referencias faltantes</div></div>
+      <button class="modal-x" onclick="closeModal('m-stock-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Referencia &amp; cliente</div>
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Referencia (SKU)</label><input class="inp" id="sa-sku" placeholder="SOL 102"></div>
+          <div class="fld"><label class="fld-lbl">Cliente</label><input class="inp" id="sa-client" placeholder="Jesvy"></div>
+          <div class="fld"><label class="fld-lbl">Cantidad</label><input class="inp" id="sa-qty" type="number" placeholder="8"></div>
+          <div class="fld"><label class="fld-lbl">ETA (fecha estimada)</label><input class="inp" id="sa-eta" type="date"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-add')">Cancelar</button>
+      <button class="btn btn-pri" onclick="addStockPending()">Guardar pendiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ¿A quién le envío? -->
+<div class="modal-bg" id="m-stock-allocation">
+  <div class="modal">
+    <div class="modal-title" style="padding:24px 28px 14px">¿A quién le envío?</div>
+    <div class="modal-body">
+      <div id="allocation-list"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-allocation')">Cancelar</button>
+      <button class="btn btn-pri" onclick="confirmStockAllocation()">Confirmar envío</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Marcar llegada de stock -->
+<div class="modal-bg" id="m-stock-arrival">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Marcar llegada</div><div class="modal-sub" id="ar-sku-lbl">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-stock-arrival')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Restock recibido</div>
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Cantidad que llegó</label><input class="inp" id="ar-qty" type="number" placeholder="100"></div>
+          <div class="fld"><label class="fld-lbl">Fecha de llegada</label><input class="inp" id="ar-date" type="date"></div>
+          <div class="fld full"><label class="fld-lbl">Nota (opcional)</label><textarea class="inp" id="ar-note" placeholder="Ej: Lote parcial, resto llega la próxima semana…"></textarea></div>
+        </div>
+        <div id="ar-demand-hint" style="font-size:12px;color:#928f86;margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-arrival')">Cancelar</button>
+      <button class="btn btn-pri" onclick="saveMarkArrival()">Guardar llegada</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1494,6 +1591,7 @@ function switchView(v, el) {
   if (v === 'all') renderAll();
   if (v === 'analytics') renderStatistiques();
   if (v === 'litiges') renderLitiges();
+  if (v === 'stock') renderStock();
 }
 
 function render() { renderStats(); renderChips(); renderBoard(); }
@@ -2750,10 +2848,400 @@ async function deleteLitige() {
 }
 
 
+// ============================================================
+// STOCK PENDENTE MODULE
+// ============================================================
+// Stock llega DE GOLPE para todo el SKU (arrivedQty/arrivedDate/arrivedNote a nivel de referencia).
+// Estado del SKU: 'absent' (nada llegó) | 'arrived' (ya hay stock para repartir) | 'sent' (todo enviado).
+let stockState = {
+  pendingStocks: [
+    {id:'sk1', sku:'SOL 102', arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[
+      {name:'Jesvy', qty:8, reportedDate:'15 jun', eta:'20 jun', mailPending:true},
+      {name:'Graficon', qty:3, reportedDate:'14 jun', eta:'21 jun', mailPending:true},
+      {name:'PrintX', qty:5, reportedDate:'13 jun', eta:'19 jun', mailPending:false}
+    ]},
+    {id:'sk2', sku:'SOL 105', arrived:true, arrivedQty:100, arrivedDate:'18 jun', arrivedNote:'Lote entero recibido de fábrica', clients:[
+      {name:'Jesvy', qty:5, reportedDate:'16 jun', eta:'20 jun', mailPending:false},
+      {name:'Graficon', qty:3, reportedDate:'15 jun', eta:'20 jun', mailPending:false},
+      {name:'PrintX', qty:5, reportedDate:'14 jun', eta:'20 jun', mailPending:false}
+    ]},
+    {id:'sk3', sku:'INT 129', arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[
+      {name:'Jesvy', qty:8, reportedDate:'17 jun', eta:'22 jun', mailPending:true}
+    ]}
+  ],
+  historic: [
+    {sku:'SOL 110', clients:'Jesvy', qty:2, sentDate:'17 jun'},
+    {sku:'SOL 108', clients:'PrintX', qty:10, sentDate:'16 jun'}
+  ],
+  currentSKU: null,
+  allocationChecks: {},
+  statusFilter: 'all'
+};
+
+// unidades ya repartidas (enviadas) de un SKU
+function skuSentQty(skuItem) {
+  return (skuItem.clients||[]).filter(c => c.sent).reduce((s,c) => s + (c.qty||0), 0);
+}
+// unidades libres = lo que llegó - lo ya enviado
+function skuFreeQty(skuItem) {
+  return Math.max(0, (skuItem.arrivedQty||0) - skuSentQty(skuItem));
+}
+// estado global del SKU
+function skuState(skuItem) {
+  const clients = skuItem.clients || [];
+  if (clients.length && clients.every(c => c.sent)) return 'sent';
+  return skuItem.arrived ? 'arrived' : 'absent';
+}
+
+function renderStockSummary() {
+  const el = $('stock-summary');
+  if (!el) return;
+  const skus = stockState.pendingStocks;
+
+  const totalRefs   = skus.length;
+  const absentRefs  = skus.filter(s => skuState(s) === 'absent').length;
+  const arrivedRefs = skus.filter(s => skuState(s) === 'arrived').length;
+  const sentRefs    = skus.filter(s => skuState(s) === 'sent').length;
+
+  // unidades
+  const demand    = skus.reduce((t,s)=> t + s.clients.reduce((x,c)=>x+(c.qty||0),0), 0);
+  const arrivedU  = skus.reduce((t,s)=> t + (s.arrivedQty||0), 0);
+  const freeU     = skus.reduce((t,s)=> t + skuFreeQty(s), 0);
+  // unidades aún faltantes por recibir (demanda no cubierta por llegadas)
+  const missingU  = skus.reduce((t,s)=>{
+    const dem = s.clients.reduce((x,c)=>x+(c.qty||0),0);
+    return t + Math.max(0, dem - (s.arrivedQty||0));
+  }, 0);
+
+  const f = stockState.statusFilter;
+  const sel = k => f===k ? 'box-shadow:0 0 0 2px var(--navy);border-color:var(--navy)' : '';
+  el.innerHTML = `
+    <div class="stat stat-pending" style="${sel('absent')}" onclick="setStockFilter('absent')">
+      <div class="stat-icon">${icon('warning',22)}</div>
+      <div class="stat-label">Referencias ausentes</div>
+      <div class="stat-value">${absentRefs}</div>
+      <div class="stat-trend" style="color:var(--tomato)">${missingU} uds por recibir</div>
+    </div>
+    <div class="stat" style="${sel('arrived')}" onclick="setStockFilter('arrived')">
+      <div class="stat-icon" style="color:var(--honey);background:var(--honey-soft)">${icon('box',22)}</div>
+      <div class="stat-label">Ya llegaron</div>
+      <div class="stat-value">${arrivedRefs}</div>
+      <div class="stat-trend" style="color:var(--honey)">${arrivedU} uds · ${freeU} libres</div>
+    </div>
+    <div class="stat stat-delivered" style="${sel('sent')}" onclick="setStockFilter('sent')">
+      <div class="stat-icon">${icon('checkCircle',22)}</div>
+      <div class="stat-label">Enviadas completas</div>
+      <div class="stat-value">${sentRefs}</div>
+      <div class="stat-trend">de ${totalRefs} referencias</div>
+    </div>
+    <div class="stat stat-total" style="${sel('all')}" onclick="setStockFilter('all')">
+      <div class="stat-icon">${icon('chart',22)}</div>
+      <div class="stat-label">Demanda total</div>
+      <div class="stat-value">${demand}</div>
+      <div class="stat-trend">${f==='all'?'unidades pedidas':'ver todas ↩'}</div>
+    </div>
+  `;
+}
+
+function setStockFilter(status) {
+  // toggle: si clicas la misma tarjeta activa, vuelve a 'all'
+  stockState.statusFilter = (stockState.statusFilter === status && status !== 'all') ? 'all' : status;
+  renderStock();
+}
+
+function renderStock() {
+  renderStockSummary();
+  const q = ($('search-stock')?.value||'').toLowerCase();
+  const sf = stockState.statusFilter;
+  const filtered = stockState.pendingStocks
+    .filter(item => item.sku.toLowerCase().includes(q))
+    .filter(item => sf === 'all' ? true : skuState(item) === sf);
+  const list = $('stock-list');
+
+  // aviso de filtro activo
+  const filterLabels = {absent:'ausentes', arrived:'que ya llegaron', sent:'enviadas completas'};
+  const banner = (sf !== 'all')
+    ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--navy-soft);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--ink-soft)">
+         <span>Mostrando solo referencias <b>${filterLabels[sf]}</b> (${filtered.length})</span>
+         <button onclick="setStockFilter('all')" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:500">Ver todas ✕</button>
+       </div>`
+    : '';
+
+  if (filtered.length === 0) {
+    list.innerHTML = banner + `<div class="empty"><div class="empty-emoji">📦</div><div class="empty-title">Sin resultados</div><div class="empty-sub">${sf!=='all'?'No hay referencias en esta categoría':'No hay SKUs que coincidan con tu búsqueda'}</div></div>`;
+    return;
+  }
+
+  list.innerHTML = banner + filtered.map(skuItem => {
+    const totalQty = skuItem.clients.reduce((sum, c) => sum + (c.qty||0), 0);
+    const statusMap = {absent:'Stock ausente', arrived:'Llegó', sent:'Enviado'};
+    const status = skuState(skuItem);
+    const free = skuFreeQty(skuItem);
+    const sentQ = skuSentQty(skuItem);
+
+    // Bloque de stock (solo si ya llegó): número grande + repartido/libre + nota + fecha
+    let stockPanel = '';
+    if (skuItem.arrived) {
+      stockPanel = `
+        <div style="background:#fbf0dd;border:1px solid #f0d9a8;border-radius:8px;padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-family:'JetBrains Mono';font-size:28px;font-weight:700;color:#e0922a;line-height:1">${skuItem.arrivedQty}</div>
+            <div style="font-size:10px;color:#9a630f;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:2px">llegó</div>
+          </div>
+          <div style="width:1px;height:36px;background:#f0d9a8"></div>
+          <div style="display:flex;gap:18px;flex:1;flex-wrap:wrap">
+            <div><div style="font-family:'JetBrains Mono';font-size:18px;font-weight:600;color:#137551">${free}</div><div style="font-size:10px;color:#928f86;text-transform:uppercase;letter-spacing:.04em;font-weight:600">libres</div></div>
+            <div><div style="font-family:'JetBrains Mono';font-size:18px;font-weight:600;color:#56544c">${sentQ}</div><div style="font-size:10px;color:#928f86;text-transform:uppercase;letter-spacing:.04em;font-weight:600">repartido</div></div>
+            <div style="flex:1;min-width:120px;text-align:right">
+              <div style="font-size:11px;color:#928f86">Llegó: ${esc(skuItem.arrivedDate||'—')}</div>
+              ${skuItem.arrivedNote?`<div style="font-size:11px;color:#56544c;font-style:italic;margin-top:2px">"${esc(skuItem.arrivedNote)}"</div>`:''}
+            </div>
+          </div>
+          <button onclick="openMarkArrival('${esc(skuItem.sku)}')" title="Editar llegada" style="padding:6px 10px;font-size:11px;background:#fff;border:1px solid #f0d9a8;border-radius:6px;cursor:pointer;color:#9a630f;font-weight:600">✎ Editar</button>
+        </div>`;
+    }
+
+    const clientsHtml = skuItem.clients.map(client => {
+      let actions = '';
+      if (client.sent) {
+        actions = `<span style="font-size:11px;color:#1f9d6b;font-weight:600">✓ Enviado</span>`;
+      } else if (skuItem.arrived) {
+        actions = `<button class="btn-action-send" onclick="openStockAllocation('${esc(skuItem.sku)}')" style="padding:6px 10px;font-size:12px;background:#3551e0;color:#fff;border:none;border-radius:6px;cursor:pointer">¿Enviar?</button>`;
+      } else {
+        actions = `<button class="btn-action-mail ${client.mailPending?'pending':''}" title="Enviar email" onclick="alert('✉️ Email: ${esc(client.name)}@company.com')" style="padding:6px 10px;font-size:12px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">✉️</button>`;
+      }
+
+      const borderCol = client.sent ? '#1f9d6b' : (skuItem.arrived ? '#e0922a' : '#dd4f3a');
+      const delClientBtn = `<button onclick="deleteStockClient('${esc(skuItem.sku)}','${esc(client.name)}')" title="Quitar cliente" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:5px;cursor:pointer;color:#bdbab1" onmouseover="this.style.color='#dd4f3a'" onmouseout="this.style.color='#bdbab1'">${icon('x',13)}</button>`;
+      return `
+        <div style="background:#f6f4ef;border-radius:6px;padding:12px;margin-top:8px;border-left:3px solid ${borderCol};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;${client.sent?'opacity:.65':''}">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;margin-bottom:3px">${esc(client.name)}</div>
+            <div style="font-size:13px;color:#56544c;margin-bottom:4px">${client.qty} unidades pedidas</div>
+            <div style="font-size:11px;color:#928f86">Reportado: ${esc(client.reportedDate||'—')} · ETA: ${esc(client.eta||'—')}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">${actions}${delClientBtn}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Botón principal según estado
+    let headerAction = '';
+    if (status === 'absent') {
+      headerAction = `<button onclick="openMarkArrival('${esc(skuItem.sku)}')" style="padding:7px 14px;font-size:12px;background:#e0922a;color:#fff;border:none;border-radius:var(--r-full);cursor:pointer;font-weight:600;white-space:nowrap">✅ Marcar llegada</button>`;
+    } else {
+      headerAction = `<span class="pill pill-${status==='arrived'?'printed':'delivered'}" style="padding:6px 12px;font-size:11px"><span class="pill-dot"></span>${statusMap[status]}</span>`;
+    }
+
+    return `
+      <div class="card" style="cursor:auto">
+        <div class="card-head">
+          <div class="card-title-block">
+            <div class="card-ref" style="font-size:16px">${esc(skuItem.sku)}</div>
+            <div class="card-client">${totalQty} unidades pedidas · ${skuItem.clients.length} cliente(s)</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${headerAction}
+            <button onclick="deleteStockSku('${esc(skuItem.sku)}')" title="Eliminar referencia" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:var(--ink-mute)" onmouseover="this.style.borderColor='var(--tomato)';this.style.color='var(--tomato)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink-mute)'">${icon('trash',14)}</button>
+          </div>
+        </div>
+        ${stockPanel}
+        ${clientsHtml}
+      </div>
+    `;
+  }).join('');
+
+  renderStockHistoric();
+}
+
+function renderStockHistoric() {
+  const el = $('stock-historic');
+  if (!stockState.historic || stockState.historic.length === 0) {
+    el.innerHTML = '<div style="color:#928f86;font-size:13px">Sin envíos registrados</div>';
+    return;
+  }
+  el.innerHTML = stockState.historic.map(item => `
+    <div class="historic-item">
+      <div class="historic-item-icon">✅</div>
+      <div class="historic-item-text">
+        <div class="historic-item-main">${esc(item.sku)} → ${esc(item.clients)}</div>
+        <div class="historic-item-sub">${item.qty} unidades · Enviado ${item.sentDate}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddStockPending() {
+  ['sa-sku','sa-client','sa-qty','sa-eta'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  openModal('m-stock-add');
+}
+
+function addStockPending() {
+  const sku = $('sa-sku').value.trim().toUpperCase();
+  const client = $('sa-client').value.trim();
+  const qty = parseInt($('sa-qty').value) || 0;
+  const eta = $('sa-eta').value;
+
+  if (!sku || !client || qty <= 0) {
+    toast('Completa todos los campos', 'error');
+    return;
+  }
+
+  let skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) {
+    skuItem = {id:uid(), sku, clients:[]};
+    stockState.pendingStocks.push(skuItem);
+  }
+
+  const existingClient = skuItem.clients.find(c => c.name === client);
+  if (existingClient) {
+    existingClient.qty = qty;
+    existingClient.eta = eta;
+  } else {
+    const today = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+    skuItem.clients.push({name:client, qty, reportedDate:today, eta, state:'absent', mailPending:true});
+  }
+
+  closeModal('m-stock-add');
+  renderStock();
+  toast('✅ Pendiente guardado: ' + sku);
+}
+
+function openMarkArrival(sku) {
+  stockState.currentSKU = sku;
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  const demand = skuItem.clients.reduce((s,c)=>s+(c.qty||0),0);
+  $('ar-sku-lbl').textContent = `${sku} · ${demand} unidades pedidas por ${skuItem.clients.length} cliente(s)`;
+  // pre-fill si ya había llegada (modo editar)
+  $('ar-qty').value  = skuItem.arrivedQty || '';
+  $('ar-date').value = isoFromLabel(skuItem.arrivedDate) || new Date().toISOString().split('T')[0];
+  $('ar-note').value = skuItem.arrivedNote || '';
+  $('ar-demand-hint').textContent = `Demanda total registrada: ${demand} unidades. Ideal que llegue al menos esa cantidad para cubrir a todos.`;
+  openModal('m-stock-arrival');
+}
+
+// convierte "18 jun" → '' (no reversible fiable); si viene ISO lo respeta
+function isoFromLabel(lbl) {
+  if (!lbl) return '';
+  // si ya es ISO (YYYY-MM-DD) lo devuelve
+  if (/^\d{4}-\d{2}-\d{2}$/.test(lbl)) return lbl;
+  return '';
+}
+
+function deleteStockSku(sku) {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  if (!confirm(`¿Eliminar la referencia ${sku} y sus ${skuItem.clients.length} cliente(s)? Esta acción no se puede deshacer.`)) return;
+  stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
+  renderStock();
+  toast(`Referencia ${sku} eliminada`, 'error');
+}
+
+function deleteStockClient(sku, clientName) {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  if (!confirm(`¿Quitar a ${clientName} de ${sku}?`)) return;
+  skuItem.clients = skuItem.clients.filter(c => c.name !== clientName);
+  // si ya no quedan clientes, elimina la referencia entera
+  if (skuItem.clients.length === 0) {
+    stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
+    toast(`${clientName} quitado · ${sku} eliminada (sin clientes)`, 'error');
+  } else {
+    toast(`${clientName} quitado de ${sku}`, 'error');
+  }
+  renderStock();
+}
+
+function saveMarkArrival() {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === stockState.currentSKU);
+  if (!skuItem) return;
+  const qty = parseInt($('ar-qty').value) || 0;
+  const dateIso = $('ar-date').value;
+  const note = $('ar-note').value.trim();
+
+  if (qty <= 0) { toast('Indica la cantidad que llegó', 'error'); return; }
+
+  skuItem.arrived = true;
+  skuItem.arrivedQty = qty;
+  skuItem.arrivedDate = dateIso
+    ? new Date(dateIso+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'})
+    : new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+  skuItem.arrivedNote = note;
+
+  closeModal('m-stock-arrival');
+  renderStock();
+  toast(`✅ Llegaron ${qty} unidades de ${skuItem.sku}`);
+}
+
+function openStockAllocation(sku) {
+  stockState.currentSKU = sku;
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+
+  stockState.allocationChecks = {};
+  const pending = skuItem.clients.filter(c => !c.sent);
+  pending.forEach(c => { stockState.allocationChecks[c.name] = true; });
+
+  const free = skuFreeQty(skuItem);
+  const list = $('allocation-list');
+  list.innerHTML = `
+    <div style="background:#fbf0dd;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:#9a630f">
+      <b>${free}</b> unidades libres de <b>${esc(sku)}</b> para repartir
+    </div>
+    ${pending.map(client => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid #e7e3d9">
+        <input type="checkbox" id="check-${client.name}" checked onchange="stockState.allocationChecks['${esc(client.name)}'] = this.checked" style="width:18px;height:18px;cursor:pointer">
+        <label for="check-${client.name}" style="flex:1;cursor:pointer">
+          <div style="font-weight:500;font-size:14px;color:#1c1b18;margin-bottom:2px">${esc(client.name)}</div>
+          <div style="font-size:12px;color:#928f86">${client.qty} unidades</div>
+        </label>
+      </div>
+    `).join('')}
+    ${pending.length===0?'<div style="color:#928f86;font-size:13px;padding:8px 0">Todos los clientes ya recibieron su envío.</div>':''}
+  `;
+
+  openModal('m-stock-allocation');
+}
+
+function confirmStockAllocation() {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === stockState.currentSKU);
+  if (!skuItem) return;
+
+  const selectedNames = Object.entries(stockState.allocationChecks)
+    .filter(([_, checked]) => checked)
+    .map(([name]) => name);
+
+  if (!selectedNames.length) { toast('Selecciona al menos un cliente', 'error'); return; }
+
+  // validar que hay stock suficiente
+  const need = skuItem.clients
+    .filter(c => !c.sent && selectedNames.includes(c.name))
+    .reduce((s,c)=>s+(c.qty||0),0);
+  const free = skuFreeQty(skuItem);
+  if (need > free) {
+    toast(`Stock insuficiente: piden ${need}, quedan ${free} libres`, 'error');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+  const totalSent = need;
+
+  // marcar clientes como enviados
+  skuItem.clients.forEach(c => { if (!c.sent && selectedNames.includes(c.name)) c.sent = true; });
+
+  stockState.historic.unshift({sku: skuItem.sku, clients: selectedNames.join(', '), qty: totalSent, sentDate: today});
+
+  closeModal('m-stock-allocation');
+  renderStock();
+  toast(`✅ Enviado a: ${selectedNames.join(', ')} (${totalSent} uds)`);
+}
+
 function init() {
   renderIdentity();
   loadFromSheets();
   loadLitiges();
+  renderStock();
   setInterval(loadFromSheets, 30000);
   setInterval(loadLitiges, 60000);
   // repaint board every 60s so aging timers advance without full reload
