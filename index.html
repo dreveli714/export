@@ -835,8 +835,10 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
         <div class="fgrid">
           <div class="fld"><label class="fld-lbl">Référence (SKU)</label><input class="inp" id="sa-sku" placeholder="SOL 102"></div>
           <div class="fld"><label class="fld-lbl">Client</label><input class="inp" id="sa-client" placeholder="Jesvy"></div>
+          <div class="fld"><label class="fld-lbl">Email client</label><input class="inp" id="sa-email" type="email" placeholder="contact@jesvy.com"></div>
           <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="sa-qty" type="number" placeholder="8"></div>
           <div class="fld"><label class="fld-lbl">ETA (date estimée)</label><input class="inp" id="sa-eta" type="date"></div>
+          <div class="fld full"><label class="fld-lbl">Notes (optionnel)</label><textarea class="inp" id="sa-notes" placeholder="Ex : urgence, contexte commercial, promesse faite au client…"></textarea></div>
         </div>
       </div>
     </div>
@@ -3037,17 +3039,25 @@ function renderStock() {
       } else if (skuItem.arrived) {
         actions = `<button class="btn-action-send" onclick="openStockAllocation('${esc(skuItem.sku)}')" style="padding:6px 10px;font-size:12px;background:#3551e0;color:#fff;border:none;border-radius:6px;cursor:pointer">Expédier ?</button>`;
       } else {
-        actions = `<button class="btn-action-mail ${client.mailPending?'pending':''}" title="Enviar email" onclick="alert('✉️ Email: ${esc(client.name)}@company.com')" style="padding:6px 10px;font-size:12px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">✉️</button>`;
+        const mailto = client.email ? `mailto:${esc(client.email)}?subject=Rupture de stock ${esc(skuItem.sku)}` : '';
+        const onclickMail = mailto
+          ? `window.location.href='${mailto}'`
+          : `alert('Aucun email enregistré pour ${esc(client.name)}')`;
+        actions = `<button class="btn-action-mail ${client.mailPending?'pending':''}" title="${client.email?esc(client.email):'Pas d\'email'}" onclick="${onclickMail}" style="padding:6px 10px;font-size:12px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">✉️</button>`;
       }
 
       const borderCol = client.sent ? '#1f9d6b' : (skuItem.arrived ? '#e0922a' : '#dd4f3a');
       const delClientBtn = `<button onclick="deleteStockClient('${esc(skuItem.sku)}','${esc(client.name)}')" title="Retirer client" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:5px;cursor:pointer;color:#bdbab1" onmouseover="this.style.color='#dd4f3a'" onmouseout="this.style.color='#bdbab1'">${icon('x',13)}</button>`;
+      const emailLine = client.email ? `<div style="font-size:11px;color:#56544c;margin-top:2px">✉ ${esc(client.email)}</div>` : '';
+      const notesLine = client.notes ? `<div style="font-size:11px;color:#56544c;font-style:italic;margin-top:4px;padding:6px 8px;background:#fff;border-radius:4px;border-left:2px solid #e7e3d9">${esc(client.notes)}</div>` : '';
       return `
         <div style="background:#f6f4ef;border-radius:6px;padding:12px;margin-top:8px;border-left:3px solid ${borderCol};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;${client.sent?'opacity:.65':''}">
           <div style="flex:1">
             <div style="font-weight:600;font-size:14px;margin-bottom:3px">${esc(client.name)}</div>
             <div style="font-size:13px;color:#56544c;margin-bottom:4px">${client.qty} unités demandées</div>
             <div style="font-size:11px;color:#928f86">Signalé: ${esc(client.reportedDate||'—')} · ETA: ${esc(client.eta||'—')}</div>
+            ${emailLine}
+            ${notesLine}
           </div>
           <div style="display:flex;align-items:center;gap:4px">${actions}${delClientBtn}</div>
         </div>
@@ -3101,15 +3111,17 @@ function renderStockHistoric() {
 }
 
 function openAddStockPending() {
-  ['sa-sku','sa-client','sa-qty','sa-eta'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  ['sa-sku','sa-client','sa-email','sa-qty','sa-eta','sa-notes'].forEach(id => { const el=$(id); if(el) el.value=''; });
   openModal('m-stock-add');
 }
 
 function addStockPending() {
   const sku = $('sa-sku').value.trim().toUpperCase();
   const client = $('sa-client').value.trim();
+  const email = $('sa-email').value.trim();
   const qty = parseInt($('sa-qty').value) || 0;
   const eta = $('sa-eta').value;
+  const notes = $('sa-notes').value.trim();
 
   if (!sku || !client || qty <= 0) {
     toast('Remplir tous les champs', 'error');
@@ -3126,9 +3138,11 @@ function addStockPending() {
   if (existingClient) {
     existingClient.qty = qty;
     existingClient.eta = eta;
+    if (email) existingClient.email = email;
+    if (notes) existingClient.notes = notes;
   } else {
     const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
-    skuItem.clients.push({name:client, qty, reportedDate:today, eta, mailPending:true});
+    skuItem.clients.push({name:client, email, qty, reportedDate:today, eta, notes, mailPending:true});
   }
 
   closeModal('m-stock-add');
