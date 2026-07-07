@@ -402,6 +402,81 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .historic-item-sub{font-size:12px;color:var(--ink-mute)}
 .btn-action-mail.pending{position:relative}
 .btn-action-mail.pending::after{content:'';position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--tomato);border-radius:50%;border:1px solid var(--paper)}
+
+/* Stock card redesigned — estado clarísimo, un solo color dominante por card */
+.stk-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:transform .15s var(--ease),box-shadow .15s var(--ease);box-shadow:var(--sh-sm);position:relative}
+.stk-card:hover{box-shadow:var(--sh-md)}
+.stk-card.st-absent  {border-top:4px solid var(--tomato)}
+.stk-card.st-arrived {border-top:4px solid var(--honey)}
+.stk-card.st-sent    {border-top:4px solid var(--moss)}
+
+.stk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;gap:12px}
+.stk-title{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.stk-sku{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.stk-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.stk-badge.b-absent  {background:var(--tomato-soft);color:#8B2C23}
+.stk-badge.b-arrived {background:var(--honey-soft);color:#9a630f}
+.stk-badge.b-sent    {background:var(--moss-soft);color:#137551}
+.stk-badge-dot{width:6px;height:6px;border-radius:50%}
+.stk-badge.b-absent .stk-badge-dot{background:var(--tomato)}
+.stk-badge.b-arrived .stk-badge-dot{background:var(--honey)}
+.stk-badge.b-sent .stk-badge-dot{background:var(--moss)}
+.stk-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.stk-btn-primary{padding:8px 14px;font-size:12px;background:var(--honey);color:#fff;border:none;border-radius:var(--r-full);cursor:pointer;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:transform .12s var(--ease),background .15s}
+.stk-btn-primary:hover{background:#c37e1e;transform:translateY(-1px)}
+.stk-btn-primary.b-send{background:var(--ocean)}
+.stk-btn-primary.b-send:hover{background:#2840c0}
+.stk-btn-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink-mute);transition:all .12s}
+.stk-btn-icon:hover{border-color:var(--tomato);color:var(--tomato);background:var(--tomato-soft)}
+
+/* stk-demand: sumario compacto */
+.stk-demand{padding:4px 18px 12px;font-size:12px;color:var(--ink-soft);display:flex;gap:14px;flex-wrap:wrap}
+.stk-demand b{color:var(--ink);font-weight:650}
+
+/* stk-arrival panel: solo si arrived — big numbers */
+.stk-arrival{margin:0 18px 14px;background:linear-gradient(135deg,var(--honey-soft) 0%,#fdf6e6 100%);border:1px solid #f0d9a8;border-radius:12px;padding:14px 16px}
+.stk-arr-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.stk-arr-metric{text-align:center}
+.stk-arr-num{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.stk-arr-num.n-arr {color:var(--honey)}
+.stk-arr-num.n-free{color:var(--moss)}
+.stk-arr-num.n-used{color:var(--ink-soft)}
+.stk-arr-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:600;margin-top:3px}
+.stk-arr-sep{width:1px;height:32px;background:#f0d9a8}
+.stk-arr-info{flex:1;min-width:120px;font-size:11.5px;color:var(--ink-soft);line-height:1.4}
+.stk-arr-info .date{color:var(--ink-mute);font-weight:600}
+.stk-arr-info .note{font-style:italic;margin-top:2px}
+.stk-arr-edit{padding:6px 10px;font-size:11px;background:var(--paper);border:1px solid #f0d9a8;border-radius:6px;cursor:pointer;color:#9a630f;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.stk-arr-edit:hover{background:var(--honey);color:#fff;border-color:var(--honey)}
+
+/* clientes */
+.stk-clients{padding:0 14px 14px;display:flex;flex-direction:column;gap:6px}
+.stk-clients-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:600;padding:0 4px 4px}
+.stk-client{background:var(--paper-2);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-left:3px solid var(--ink-fade);transition:background .12s}
+.stk-client:hover{background:var(--paper-3)}
+.stk-client.c-absent  {border-left-color:var(--tomato)}
+.stk-client.c-arrived {border-left-color:var(--honey)}
+.stk-client.c-sent    {border-left-color:var(--moss);opacity:.65}
+.stk-cli-main{flex:1;min-width:0}
+.stk-cli-name{font-weight:650;font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stk-cli-qty{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600;color:var(--ink-soft);font-family:'JetBrains Mono',monospace}
+.stk-cli-meta{font-size:11px;color:var(--ink-mute);margin-top:2px;display:flex;flex-wrap:wrap;gap:8px}
+.stk-cli-meta .cli-email{color:var(--ocean);cursor:pointer}
+.stk-cli-notes{font-size:11.5px;color:var(--ink-soft);font-style:italic;margin-top:5px;padding:5px 8px;background:var(--paper);border-radius:4px;border-left:2px solid var(--line)}
+.stk-cli-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.stk-cli-btn{padding:5px 9px;font-size:11px;border:none;border-radius:5px;cursor:pointer;font-weight:600;transition:all .12s}
+.stk-cli-btn.b-mail{background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);position:relative}
+.stk-cli-btn.b-mail:hover{border-color:var(--ocean);color:var(--ocean)}
+.stk-cli-btn.b-mail.pending::after{content:'';position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:var(--tomato);border-radius:50%;border:1.5px solid var(--paper)}
+.stk-cli-btn.b-send{background:var(--ocean);color:#fff}
+.stk-cli-btn.b-send:hover{background:#2840c0}
+.stk-cli-check{color:var(--moss);font-size:11px;font-weight:700;padding:5px 9px}
+.stk-cli-del{width:24px;height:24px;background:transparent;border:none;border-radius:4px;cursor:pointer;color:var(--ink-fade);display:inline-flex;align-items:center;justify-content:center}
+.stk-cli-del:hover{color:var(--tomato);background:var(--tomato-soft)}
+
+/* Botón reset stock */
+.stk-reset-btn{background:transparent;color:var(--ink-mute);border:1px solid var(--line);padding:8px 14px;border-radius:var(--r-full);font-size:12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.stk-reset-btn:hover{color:var(--tomato);border-color:var(--tomato);background:var(--tomato-soft)}
 </style>
 </head>
 <body>
@@ -558,7 +633,8 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
         <h1 class="page-title">Ruptures de <span class="accent">stock</span></h1>
         <div class="page-sub">Suivi des références en attente · Répartition intelligente</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="stk-reset-btn" onclick="resetStockState()" title="Effacer toutes les données de stock">🗑 Tout effacer</button>
         <button class="add-btn" onclick="openAddStockPending()" style="background:var(--tomato)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle demande</button>
         <button class="add-btn" onclick="openAddStockArrived()" style="background:var(--honey)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Ajouter stock reçu</button>
       </div>
@@ -2884,7 +2960,12 @@ async function deleteLitige() {
 // ============================================================
 // Stock llega DE GOLPE para todo el SKU (arrivedQty/arrivedDate/arrivedNote a nivel de referencia).
 // Estado del SKU: 'absent' (nada llegó) | 'arrived' (ya hay stock para repartir) | 'sent' (todo enviado).
-let stockState = {
+// ============================================================
+// STOCK PERSISTENCE — localStorage (mientras no conectemos a Sheets)
+// ============================================================
+const STOCK_STORAGE_KEY = 'export_stock_v1';
+
+const STOCK_INITIAL_DATA = {
   pendingStocks: [
     {id:'sk1', sku:'SOL 102', arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[
       {name:'Jesvy', qty:8, reportedDate:'15 juin', eta:'20 juin', mailPending:true},
@@ -2903,11 +2984,51 @@ let stockState = {
   historic: [
     {sku:'SOL 110', clients:'Jesvy', qty:2, sentDate:'17 juin'},
     {sku:'SOL 108', clients:'PrintX', qty:10, sentDate:'16 juin'}
-  ],
-  currentSKU: null,
-  allocationChecks: {},
-  statusFilter: 'all'
+  ]
 };
+
+function loadStockState() {
+  try {
+    const raw = localStorage.getItem(STOCK_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        pendingStocks: parsed.pendingStocks || [],
+        historic:      parsed.historic || [],
+        currentSKU: null, allocationChecks: {}, statusFilter: 'all'
+      };
+    }
+  } catch(e) { console.warn('Stock state corrupted, using defaults', e); }
+  // Primera visita → datos demo
+  return {
+    pendingStocks: JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.pendingStocks)),
+    historic:      JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.historic)),
+    currentSKU: null, allocationChecks: {}, statusFilter: 'all'
+  };
+}
+
+function saveStockState() {
+  try {
+    localStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify({
+      pendingStocks: stockState.pendingStocks,
+      historic:      stockState.historic
+    }));
+  } catch(e) { console.error('Failed to save stock', e); toast('Erreur sauvegarde locale', 'error'); }
+}
+
+function resetStockState() {
+  if (!confirm('Effacer toutes les données de stock ?\n\nCette action supprimera toutes les demandes, arrivées et historique. Irréversible.')) return;
+  localStorage.removeItem(STOCK_STORAGE_KEY);
+  stockState = loadStockState();
+  // Empty también los datos demo para que quede realmente vacío
+  stockState.pendingStocks = [];
+  stockState.historic = [];
+  saveStockState();
+  renderStock();
+  toast('Toutes les données stock effacées', 'error');
+}
+
+let stockState = loadStockState();
 
 // unidades ya repartidas (enviadas) de un SKU
 function skuSentQty(skuItem) {
@@ -3005,87 +3126,109 @@ function renderStock() {
 
   list.innerHTML = banner + filtered.map(skuItem => {
     const totalQty = skuItem.clients.reduce((sum, c) => sum + (c.qty||0), 0);
-    const statusMap = {absent:'Stock absent', arrived:'Arrivé', sent:'Expédié'};
+    const statusMap = {absent:'Stock absent', arrived:'Arrivé', sent:'Tout expédié'};
     const status = skuState(skuItem);
     const free = skuFreeQty(skuItem);
     const sentQ = skuSentQty(skuItem);
+    const missing = Math.max(0, totalQty - (skuItem.arrivedQty||0));
 
-    // Bloc stock (si arrivé): grand chiffre + reparti/libre + note + date
-    let stockPanel = '';
+    // Bloc grande de arrivée solo si status === 'arrived'
+    let arrivalPanel = '';
     if (skuItem.arrived) {
-      stockPanel = `
-        <div style="background:#fbf0dd;border:1px solid #f0d9a8;border-radius:8px;padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <div style="text-align:center">
-            <div style="font-family:'JetBrains Mono';font-size:28px;font-weight:700;color:#e0922a;line-height:1">${skuItem.arrivedQty}</div>
-            <div style="font-size:10px;color:#9a630f;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:2px">arrivé</div>
-          </div>
-          <div style="width:1px;height:36px;background:#f0d9a8"></div>
-          <div style="display:flex;gap:18px;flex:1;flex-wrap:wrap">
-            <div><div style="font-family:'JetBrains Mono';font-size:18px;font-weight:600;color:#137551">${free}</div><div style="font-size:10px;color:#928f86;text-transform:uppercase;letter-spacing:.04em;font-weight:600">libres</div></div>
-            <div><div style="font-family:'JetBrains Mono';font-size:18px;font-weight:600;color:#56544c">${sentQ}</div><div style="font-size:10px;color:#928f86;text-transform:uppercase;letter-spacing:.04em;font-weight:600">réparti</div></div>
-            <div style="flex:1;min-width:120px;text-align:right">
-              <div style="font-size:11px;color:#928f86">Arrivé: ${esc(skuItem.arrivedDate||'—')}</div>
-              ${skuItem.arrivedNote?`<div style="font-size:11px;color:#56544c;font-style:italic;margin-top:2px">"${esc(skuItem.arrivedNote)}"</div>`:''}
+      arrivalPanel = `
+        <div class="stk-arrival">
+          <div class="stk-arr-row">
+            <div class="stk-arr-metric"><div class="stk-arr-num n-arr">${skuItem.arrivedQty}</div><div class="stk-arr-lbl">arrivé</div></div>
+            <div class="stk-arr-sep"></div>
+            <div class="stk-arr-metric"><div class="stk-arr-num n-free">${free}</div><div class="stk-arr-lbl">libres</div></div>
+            <div class="stk-arr-metric"><div class="stk-arr-num n-used">${sentQ}</div><div class="stk-arr-lbl">réparti</div></div>
+            <div class="stk-arr-info">
+              <div class="date">${esc(skuItem.arrivedDate||'—')}</div>
+              ${skuItem.arrivedNote?`<div class="note">"${esc(skuItem.arrivedNote)}"</div>`:''}
             </div>
+            <button class="stk-arr-edit" onclick="openMarkArrival('${esc(skuItem.sku)}')" title="Modifier arrivée">✎ Modifier</button>
           </div>
-          <button onclick="openMarkArrival('${esc(skuItem.sku)}')" title="Modifier arrivée" style="padding:6px 10px;font-size:11px;background:#fff;border:1px solid #f0d9a8;border-radius:6px;cursor:pointer;color:#9a630f;font-weight:600">✎ Modifier</button>
         </div>`;
     }
 
+    // Clientes
     const clientsHtml = skuItem.clients.map(client => {
-      let actions = '';
+      let cliState = 'absent';
+      if (client.sent) cliState = 'sent';
+      else if (skuItem.arrived) cliState = 'arrived';
+
+      let actionBtn = '';
       if (client.sent) {
-        actions = `<span style="font-size:11px;color:#1f9d6b;font-weight:600">✓ Expédié</span>`;
+        actionBtn = `<span class="stk-cli-check">✓ Expédié</span>`;
       } else if (skuItem.arrived) {
-        actions = `<button class="btn-action-send" onclick="openStockAllocation('${esc(skuItem.sku)}')" style="padding:6px 10px;font-size:12px;background:#3551e0;color:#fff;border:none;border-radius:6px;cursor:pointer">Expédier ?</button>`;
+        actionBtn = `<button class="stk-cli-btn b-send" onclick="openStockAllocation('${esc(skuItem.sku)}')">Expédier ?</button>`;
       } else {
         const mailto = client.email ? `mailto:${esc(client.email)}?subject=Rupture de stock ${esc(skuItem.sku)}` : '';
-        const onclickMail = mailto
-          ? `window.location.href='${mailto}'`
-          : `alert('Aucun email enregistré pour ${esc(client.name)}')`;
-        actions = `<button class="btn-action-mail ${client.mailPending?'pending':''}" title="${client.email?esc(client.email):'Pas d\'email'}" onclick="${onclickMail}" style="padding:6px 10px;font-size:12px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">✉️</button>`;
+        const onclickMail = mailto ? `window.location.href='${mailto}'` : `alert('Aucun email enregistré pour ${esc(client.name)}')`;
+        actionBtn = `<button class="stk-cli-btn b-mail ${client.mailPending?'pending':''}" title="${client.email?esc(client.email):'Pas d\'email'}" onclick="${onclickMail}">✉ Mail</button>`;
       }
 
-      const borderCol = client.sent ? '#1f9d6b' : (skuItem.arrived ? '#e0922a' : '#dd4f3a');
-      const delClientBtn = `<button onclick="deleteStockClient('${esc(skuItem.sku)}','${esc(client.name)}')" title="Retirer client" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:5px;cursor:pointer;color:#bdbab1" onmouseover="this.style.color='#dd4f3a'" onmouseout="this.style.color='#bdbab1'">${icon('x',13)}</button>`;
-      const emailLine = client.email ? `<div style="font-size:11px;color:#56544c;margin-top:2px">✉ ${esc(client.email)}</div>` : '';
-      const notesLine = client.notes ? `<div style="font-size:11px;color:#56544c;font-style:italic;margin-top:4px;padding:6px 8px;background:#fff;border-radius:4px;border-left:2px solid #e7e3d9">${esc(client.notes)}</div>` : '';
+      const emailBit = client.email ? `<span class="cli-email" onclick="window.location.href='mailto:${esc(client.email)}'">✉ ${esc(client.email)}</span>` : '';
+      const notesBit = client.notes ? `<div class="stk-cli-notes">${esc(client.notes)}</div>` : '';
+
       return `
-        <div style="background:#f6f4ef;border-radius:6px;padding:12px;margin-top:8px;border-left:3px solid ${borderCol};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;${client.sent?'opacity:.65':''}">
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:14px;margin-bottom:3px">${esc(client.name)}</div>
-            <div style="font-size:13px;color:#56544c;margin-bottom:4px">${client.qty} unités demandées</div>
-            <div style="font-size:11px;color:#928f86">Signalé: ${esc(client.reportedDate||'—')} · ETA: ${esc(client.eta||'—')}</div>
-            ${emailLine}
-            ${notesLine}
+        <div class="stk-client c-${cliState}">
+          <div class="stk-cli-main">
+            <div class="stk-cli-name">${esc(client.name)} <span class="stk-cli-qty">${client.qty} u.</span></div>
+            <div class="stk-cli-meta">
+              <span>Signalé ${esc(client.reportedDate||'—')}</span>
+              ${client.eta?`<span>· ETA ${esc(client.eta)}</span>`:''}
+              ${emailBit}
+            </div>
+            ${notesBit}
           </div>
-          <div style="display:flex;align-items:center;gap:4px">${actions}${delClientBtn}</div>
+          <div class="stk-cli-actions">
+            ${actionBtn}
+            <button class="stk-cli-del" onclick="deleteStockClient('${esc(skuItem.sku)}','${esc(client.name)}')" title="Retirer client">${icon('x',13)}</button>
+          </div>
         </div>
       `;
     }).join('');
 
-    // Botón principal según estado
-    let headerAction = '';
+    // Botón principal + badge en cabecera
+    const badge = `<span class="stk-badge b-${status}"><span class="stk-badge-dot"></span>${statusMap[status]}</span>`;
+    let primaryBtn = '';
     if (status === 'absent') {
-      headerAction = `<button onclick="openMarkArrival('${esc(skuItem.sku)}')" style="padding:7px 14px;font-size:12px;background:#e0922a;color:#fff;border:none;border-radius:var(--r-full);cursor:pointer;font-weight:600;white-space:nowrap">✅ Marquer arrivée</button>`;
-    } else {
-      headerAction = `<span class="pill pill-${status==='arrived'?'printed':'delivered'}" style="padding:6px 12px;font-size:11px"><span class="pill-dot"></span>${statusMap[status]}</span>`;
+      primaryBtn = `<button class="stk-btn-primary" onclick="openMarkArrival('${esc(skuItem.sku)}')">✅ Marquer arrivée</button>`;
+    } else if (status === 'arrived' && free > 0) {
+      primaryBtn = `<button class="stk-btn-primary b-send" onclick="openStockAllocation('${esc(skuItem.sku)}')">Expédier →</button>`;
     }
 
+    const demandLine = `
+      <div class="stk-demand">
+        <span><b>${totalQty}</b> unités demandées</span>
+        <span>· <b>${skuItem.clients.length}</b> client(s)</span>
+        ${missing>0&&!skuItem.arrived?`<span style="color:var(--tomato)">· <b>${missing}</b> à recevoir</span>`:''}
+        ${skuItem.arrived&&free>=totalQty-sentQ?`<span style="color:var(--moss)">· stock suffisant ✓</span>`:''}
+        ${skuItem.arrived&&missing>0?`<span style="color:var(--tomato)">· manque ${missing} u.</span>`:''}
+      </div>`;
+
+    const clientsBlock = skuItem.clients.length ? `
+      <div class="stk-clients">
+        <div class="stk-clients-lbl">Clients (${skuItem.clients.length})</div>
+        ${clientsHtml}
+      </div>` : `<div class="stk-clients"><div class="stk-clients-lbl" style="color:var(--ink-fade);text-align:center;padding:14px 0">Aucun client en attente</div></div>`;
+
     return `
-      <div class="card" style="cursor:auto">
-        <div class="card-head">
-          <div class="card-title-block">
-            <div class="card-ref" style="font-size:16px">${esc(skuItem.sku)}</div>
-            <div class="card-client">${totalQty} unités demandées · ${skuItem.clients.length} client(s)</div>
+      <div class="stk-card st-${status}">
+        <div class="stk-head">
+          <div class="stk-title">
+            <div class="stk-sku">${esc(skuItem.sku)}</div>
+            ${badge}
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            ${headerAction}
-            <button onclick="deleteStockSku('${esc(skuItem.sku)}')" title="Supprimer référence" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:var(--ink-mute)" onmouseover="this.style.borderColor='var(--tomato)';this.style.color='var(--tomato)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink-mute)'">${icon('trash',14)}</button>
+          <div class="stk-actions">
+            ${primaryBtn}
+            <button class="stk-btn-icon" onclick="deleteStockSku('${esc(skuItem.sku)}')" title="Supprimer référence">${icon('trash',14)}</button>
           </div>
         </div>
-        ${stockPanel}
-        ${clientsHtml}
+        ${demandLine}
+        ${arrivalPanel}
+        ${clientsBlock}
       </div>
     `;
   }).join('');
@@ -3145,6 +3288,7 @@ function addStockPending() {
     skuItem.clients.push({name:client, email, qty, reportedDate:today, eta, notes, mailPending:true});
   }
 
+  saveStockState();
   closeModal('m-stock-add');
   renderStock();
   toast('✅ Demande enregistrée: ' + sku);
@@ -3199,6 +3343,7 @@ function saveAddStockArrived() {
     : new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
   skuItem.arrivedNote = note;
 
+  saveStockState();
   closeModal('m-stock-arrived-add');
   renderStock();
   toast(`✅ ${qty} unités de ${sku} enregistrées`);
@@ -3231,6 +3376,7 @@ function deleteStockSku(sku) {
   if (!skuItem) return;
   if (!confirm(`Supprimer la référence ${sku} et ses ${skuItem.clients.length} client(s) ? Action irréversible.`)) return;
   stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
+  saveStockState();
   renderStock();
   toast(`Référence ${sku} supprimée`, 'error');
 }
@@ -3247,6 +3393,7 @@ function deleteStockClient(sku, clientName) {
   } else {
     toast(`${clientName} retiré de ${sku}`, 'error');
   }
+  saveStockState();
   renderStock();
 }
 
@@ -3266,6 +3413,7 @@ function saveMarkArrival() {
     : new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
   skuItem.arrivedNote = note;
 
+  saveStockState();
   closeModal('m-stock-arrival');
   renderStock();
   toast(`✅ ${qty} unités de ${skuItem.sku} arrivées`);
@@ -3329,6 +3477,7 @@ function confirmStockAllocation() {
 
   stockState.historic.unshift({sku: skuItem.sku, clients: selectedNames.join(', '), qty: totalSent, sentDate: today});
 
+  saveStockState();
   closeModal('m-stock-allocation');
   renderStock();
   toast(`✅ Expédié à: ${selectedNames.join(', ')} (${totalSent} unités)`);
