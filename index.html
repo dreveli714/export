@@ -226,6 +226,9 @@ body::before{display:none}
 .av-MA{background:#1f9d6b}
 .av-CA{background:#7c5ce0}
 .av-OT{background:#d97742}
+.av-CL{background:#dd4f3a}
+.av-NJ{background:#0e8a7a}
+.av-JT{background:#b3862e}
 .empty{text-align:center;padding:48px 24px;background:var(--paper);border:1px dashed var(--line);border-radius:var(--r-lg);grid-column:1/-1}
 .empty-emoji{font-size:48px;margin-bottom:14px;display:inline-block;opacity:.4}
 .empty-title{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--navy)}
@@ -272,7 +275,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .spo[data-s="delivered"].sel{border-color:var(--moss);color:var(--moss);background:var(--moss-soft)}
 .spo-emoji{display:flex;justify-content:center;align-items:center;height:24px;margin-bottom:6px}
 .spo-lbl{font-size:11px;font-weight:600;color:var(--ink)}
-.ap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ap{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px}
 .apo{background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);padding:12px 6px;cursor:pointer;text-align:center;transition:all .15s var(--ease)}
 .apo:hover{background:var(--paper);border-color:var(--line)}
 .apo.sel{background:var(--navy-soft);box-shadow:var(--sh-sm);border-color:var(--navy)}
@@ -1045,7 +1048,8 @@ const MAX_PDFS = 10;
 
 const USERS = [
   {id:'DI',name:'Diana'},{id:'DA',name:'Daniel'},{id:'MA',name:'Martina'},
-  {id:'CA',name:'Carla'},{id:'OT',name:'Hayet'}
+  {id:'CA',name:'Carla'},{id:'OT',name:'Hayet'},
+  {id:'CL',name:'Carlos'},{id:'NJ',name:'N Jacopo'},{id:'JT',name:'Jacopo T'}
 ];
 const STATUSES = [
   {id:'pending',label:'En attente',icon:'pending'},
@@ -1864,7 +1868,7 @@ function renderAssigneeChart(orders) {
   const counts = USERS.map(u => orders.filter(o => o.user === u.id).length);
   state.charts.assignee = new Chart(ctx, {
     type: 'bar',
-    data: {labels:USERS.map(u=>u.name), datasets:[{data:counts, backgroundColor:['#2d6987','#d99c20','#4d7a3a','#7c4d8f','#e85a3c'], borderRadius:8}]},
+    data: {labels:USERS.map(u=>u.name), datasets:[{data:counts, backgroundColor:['#2d6987','#d99c20','#4d7a3a','#7c4d8f','#e85a3c','#dd4f3a','#0e8a7a','#b3862e'], borderRadius:8}]},
     options: {responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
   });
 }
@@ -3152,7 +3156,7 @@ function renderStock() {
     }
 
     // Clientes
-    const clientsHtml = skuItem.clients.map(client => {
+    const clientsHtml = skuItem.clients.map((client, idx) => {
       let cliState = 'absent';
       if (client.sent) cliState = 'sent';
       else if (skuItem.arrived) cliState = 'arrived';
@@ -3184,7 +3188,7 @@ function renderStock() {
           </div>
           <div class="stk-cli-actions">
             ${actionBtn}
-            <button class="stk-cli-del" onclick="deleteStockClient('${esc(skuItem.sku)}','${esc(client.name)}')" title="Retirer client">${icon('x',13)}</button>
+            <button class="stk-cli-del" onclick="deleteStockClient('${esc(skuItem.sku)}',${idx})" title="Retirer client">${icon('x',13)}</button>
           </div>
         </div>
       `;
@@ -3277,16 +3281,10 @@ function addStockPending() {
     stockState.pendingStocks.push(skuItem);
   }
 
-  const existingClient = skuItem.clients.find(c => c.name === client);
-  if (existingClient) {
-    existingClient.qty = qty;
-    existingClient.eta = eta;
-    if (email) existingClient.email = email;
-    if (notes) existingClient.notes = notes;
-  } else {
-    const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
-    skuItem.clients.push({name:client, email, qty, reportedDate:today, eta, notes, mailPending:true});
-  }
+  // Cada demanda es un pedido independiente — siempre creamos línea nueva,
+  // incluso si el mismo cliente ya tiene una demanda pendiente del mismo SKU.
+  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  skuItem.clients.push({name:client, email, qty, reportedDate:today, eta, notes, mailPending:true});
 
   saveStockState();
   closeModal('m-stock-add');
@@ -3381,17 +3379,18 @@ function deleteStockSku(sku) {
   toast(`Référence ${sku} supprimée`, 'error');
 }
 
-function deleteStockClient(sku, clientName) {
+function deleteStockClient(sku, idx) {
   const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
   if (!skuItem) return;
-  if (!confirm(`Retirer ${clientName} de ${sku} ?`)) return;
-  skuItem.clients = skuItem.clients.filter(c => c.name !== clientName);
-  // si ya no quedan clientes, elimina la referencia entera
+  const client = skuItem.clients[idx];
+  if (!client) return;
+  if (!confirm(`Retirer cette demande de ${client.name} (${client.qty} u.) de ${sku} ?`)) return;
+  skuItem.clients.splice(idx, 1);
   if (skuItem.clients.length === 0) {
     stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
-    toast(`${clientName} retiré · ${sku} supprimée (sans clients)`, 'error');
+    toast(`${client.name} retiré · ${sku} supprimée (sans clients)`, 'error');
   } else {
-    toast(`${clientName} retiré de ${sku}`, 'error');
+    toast(`${client.name} retiré de ${sku}`, 'error');
   }
   saveStockState();
   renderStock();
@@ -3424,26 +3423,27 @@ function openStockAllocation(sku) {
   const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
   if (!skuItem) return;
 
+  // allocationChecks ahora usa el índice absoluto del array clients como key
   stockState.allocationChecks = {};
-  const pending = skuItem.clients.filter(c => !c.sent);
-  pending.forEach(c => { stockState.allocationChecks[c.name] = true; });
+  skuItem.clients.forEach((c, i) => { if (!c.sent) stockState.allocationChecks[i] = true; });
 
   const free = skuFreeQty(skuItem);
   const list = $('allocation-list');
+  const pendingIndices = skuItem.clients.map((c,i)=>({c,i})).filter(x => !x.c.sent);
   list.innerHTML = `
     <div style="background:#fbf0dd;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:#9a630f">
       <b>${free}</b> unités libres de <b>${esc(sku)}</b> à répartir
     </div>
-    ${pending.map(client => `
+    ${pendingIndices.map(({c, i}) => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid #e7e3d9">
-        <input type="checkbox" id="check-${client.name}" checked onchange="stockState.allocationChecks['${esc(client.name)}'] = this.checked" style="width:18px;height:18px;cursor:pointer">
-        <label for="check-${client.name}" style="flex:1;cursor:pointer">
-          <div style="font-weight:500;font-size:14px;color:#1c1b18;margin-bottom:2px">${esc(client.name)}</div>
-          <div style="font-size:12px;color:#928f86">${client.qty} unidades</div>
+        <input type="checkbox" id="check-${i}" checked onchange="stockState.allocationChecks[${i}] = this.checked" style="width:18px;height:18px;cursor:pointer">
+        <label for="check-${i}" style="flex:1;cursor:pointer">
+          <div style="font-weight:500;font-size:14px;color:#1c1b18;margin-bottom:2px">${esc(c.name)} <span style="font-family:'JetBrains Mono';font-size:11px;background:#f0f0f0;padding:1px 6px;border-radius:4px;color:#56544c;margin-left:4px">${c.qty} u.</span></div>
+          <div style="font-size:11px;color:#928f86">Signalé ${esc(c.reportedDate||'—')}${c.eta?` · ETA ${esc(c.eta)}`:''}</div>
         </label>
       </div>
     `).join('')}
-    ${pending.length===0?'<div style="color:#928f86;font-size:13px;padding:8px 0">Tous les clients ont déjà reçu leur envoi.</div>':''}
+    ${pendingIndices.length===0?'<div style="color:#928f86;font-size:13px;padding:8px 0">Tous les clients ont déjà reçu leur envoi.</div>':''}
   `;
 
   openModal('m-stock-allocation');
@@ -3453,16 +3453,13 @@ function confirmStockAllocation() {
   const skuItem = stockState.pendingStocks.find(s => s.sku === stockState.currentSKU);
   if (!skuItem) return;
 
-  const selectedNames = Object.entries(stockState.allocationChecks)
+  const selectedIdx = Object.entries(stockState.allocationChecks)
     .filter(([_, checked]) => checked)
-    .map(([name]) => name);
+    .map(([i]) => parseInt(i));
 
-  if (!selectedNames.length) { toast('Sélectionner au moins un client', 'error'); return; }
+  if (!selectedIdx.length) { toast('Sélectionner au moins un client', 'error'); return; }
 
-  // validar que hay stock suficiente
-  const need = skuItem.clients
-    .filter(c => !c.sent && selectedNames.includes(c.name))
-    .reduce((s,c)=>s+(c.qty||0),0);
+  const need = selectedIdx.reduce((s, i) => s + (skuItem.clients[i]?.qty || 0), 0);
   const free = skuFreeQty(skuItem);
   if (need > free) {
     toast(`Stock insuffisant: ${need} demandés, ${free} libres`, 'error');
@@ -3470,17 +3467,15 @@ function confirmStockAllocation() {
   }
 
   const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
-  const totalSent = need;
+  selectedIdx.forEach(i => { if (skuItem.clients[i]) skuItem.clients[i].sent = true; });
 
-  // marcar clientes como enviados
-  skuItem.clients.forEach(c => { if (!c.sent && selectedNames.includes(c.name)) c.sent = true; });
-
-  stockState.historic.unshift({sku: skuItem.sku, clients: selectedNames.join(', '), qty: totalSent, sentDate: today});
+  const selectedNames = selectedIdx.map(i => skuItem.clients[i].name);
+  stockState.historic.unshift({sku: skuItem.sku, clients: selectedNames.join(', '), qty: need, sentDate: today});
 
   saveStockState();
   closeModal('m-stock-allocation');
   renderStock();
-  toast(`✅ Expédié à: ${selectedNames.join(', ')} (${totalSent} unités)`);
+  toast(`✅ Expédié à: ${selectedNames.join(', ')} (${need} unités)`);
 }
 
 function init() {
