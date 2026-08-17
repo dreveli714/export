@@ -463,7 +463,7 @@ const FRASES=[
 "Hoy puedes ser la Reina de la Semana.",
 "Los resultados no mienten. Y los tuyos van bien.",
 "El mejor ejercicio es el que haces. El peor es el que dejas para mañana.",
-"Tu familia te está viendo transformarte.",
+"Tu familia te está viendo transformarse.",
 "No importa si hoy fue difícil. Importa que no te rendiste.",
 "La meta no es llegar flaca. Es llegar fuerte.",
 "¿Quién será la Reina esta semana? Depende de ti.",
@@ -493,7 +493,7 @@ const TROFEOS=[
 {id:'transformacion',i:'🦋',n:'Transformación',d:'Mayor cambio'}
 ];
 
-const DUELOS=[[1,2,3,4],[1,3,2,4],[1,4,2,3]]; // pares: [a,b,c,d] → a vs b, c vs d
+const DUELOS=[[1,2,3,4],[1,3,2,4],[1,4,2,3]];
 const nombreCol={1:'carmen',2:'rosa',3:'laly',4:'dany'};
 
 let S=null,G=null,vista='midia',yoId=null,trofSel=1,statSel=0,charts=[];
@@ -509,7 +509,6 @@ const bool=v=>{
 if(v===true||v===1||v==='1')return true;
 if(typeof v==='string'){const s=v.trim().toUpperCase();return s==='TRUE'||s==='VERDADERO'||s==='SÍ'||s==='SI'||s==='YES'||s==='X'||s==='✓'||s==='✔'||s==='✔️'}
 return false};
-// Conversión kg <-> lb (internamente guardamos en kg, mostramos en lb)
 const kgToLb=v=>{const x=Number(v);return isNaN(x)?null:+(x*2.20462).toFixed(1)};
 const lbToKg=v=>{const x=Number(v);return isNaN(x)?null:+(x/2.20462).toFixed(2)};
 const showLb=v=>{const l=kgToLb(v);return l===null?'—':l+' lb'};
@@ -527,7 +526,6 @@ function toggleTheme(){const h=document.documentElement;const nw=h.dataset.theme
 h.dataset.theme=nw;document.getElementById('tBtn').textContent=nw?'🌙':'☀️';sav('t70t',nw);render()}
 function toggleHelp(){document.getElementById('helpOv').classList.toggle('show')}
 
-// Modal de confirmación reutilizable (doble validación)
 let modalCb=null;
 function confirmar(titulo,mensaje,btnTexto,cb){
 document.getElementById('modalTitle').textContent=titulo;
@@ -543,7 +541,6 @@ function closeModal(){document.getElementById('modal').classList.remove('show');
 async function load(){try{
 const r=await fetch(API);const j=await r.json();if(!j.ok)throw new Error();
 S=j;
-// Safety: ensure new v2 fields exist even if backend hasn't been updated
 S.retosDiarios=S.retosDiarios||[];
 S.validaciones=S.validaciones||[];
 S.predicciones=S.predicciones||[];
@@ -588,45 +585,35 @@ const pct=(pesoIni&&kg)?+(kg/pesoIni*100).toFixed(2):0;
 const cm=(cintIni!==null&&cintAct!==null)?+(cintIni-cintAct).toFixed(1):0;
 const cmPct=(cintIni&&cm)?+(cm/cintIni*100).toFixed(2):0;
 
-// Racha de retos diarios completados
 let racha=0;{const d=new Date(hoyD);
 if(!rdMap[hoyF(d)]||!bool(rdMap[hoyF(d)].completado))d.setDate(d.getDate()-1);
 while(rdMap[hoyF(d)]&&bool(rdMap[hoyF(d)].completado)){racha++;d.setDate(d.getDate()-1)}}
-// Mejor racha histórica
 let bestRacha=0,tempR=0;
 for(let d=1;d<=dia;d++){const r=rdMap[fechaDia(d)];
 if(r&&bool(r.completado)){tempR++;bestRacha=Math.max(bestRacha,tempR)}else tempR=0}
 
-// Puntos de retos diarios (con fallback si no tienen puntos guardados)
 let ptsRetos=rd.filter(r=>bool(r.completado)).reduce((s,r)=>{
 const px=Number(r.puntos);
 return s+((!isNaN(px)&&px>0)?px:4)},0);
-// Bonos de racha
 if(bestRacha>=7)ptsRetos+=5;if(bestRacha>=21)ptsRetos+=15;if(bestRacha>=50)ptsRetos+=30;
 
 const retosOK=(S.retos||[]).filter(r=>bool(r[nombreCol[id]])).length;
-// Penalidades
 let penalidad=0;
-// -5 por lunes sin pesaje (solo semanas YA COMPLETADAS)
 for(let w=1;w<semana;w++){
 const d1=(w-1)*7+1,d2=w*7;
-if(d2>dia)continue; // semana no terminada, no penalizar
+if(d2>dia)continue;
 const tienePeso=pes.some(x=>{const f=String(x.fecha).slice(0,10);return f>=fechaDia(d1)&&f<=fechaDia(d2)});
 if(!tienePeso&&empezo)penalidad+=5}
-// -3 por romper racha de 7+ (solo si ya tuvo una racha larga y la perdió)
 if(bestRacha>=7&&racha===0&&dia>14)penalidad+=3;
-// -2 por cada reto semanal no cumplido en semanas COMPLETADAS
 for(let w=1;w<semana;w++){
-if(w*7>dia)continue; // semana no terminada
+if(w*7>dia)continue;
 const reto=(S.retos||[]).find(r=>Number(r.semana)===w);
 if(reto&&!bool(reto[nombreCol[id]]))penalidad+=2}
-// -3 si subió de peso 2 semanas seguidas
 let subidasSeguidas=0;
 for(let i=1;i<pes.length;i++){
 if(n(pes[i].peso)>n(pes[i-1].peso)){subidasSeguidas++;if(subidasSeguidas>=2){penalidad+=3;subidasSeguidas=0}}
 else subidasSeguidas=0}
 
-// Predicciones acertadas
 const preds=(S.predicciones||[]).filter(x=>Number(x.participante_id)===id);
 let ptsPred=0;
 preds.forEach(pr=>{
@@ -638,10 +625,8 @@ const curr=n(pesF[pesF.length-1].peso),prev=n(pesAnt[pesAnt.length-1].peso);
 const real=curr<prev?'bajo':curr>prev?'subio':'igual';
 if(pr.prediccion===real)ptsPred+=3}});
 
-// Contar actividad: retos diarios + check-ins antiguos + pesajes
 const chk=(S.checkins||[]).filter(x=>Number(x.participante_id)===id);
 const chkMap={};chk.forEach(c=>chkMap[String(c.fecha).slice(0,10)]=c);
-// Días activos = cualquier día que hizo reto diario, check-in o pesaje
 const diasActivos=new Set();
 rd.filter(r=>bool(r.completado)).forEach(r=>diasActivos.add(String(r.fecha).slice(0,10)));
 chk.forEach(c=>diasActivos.add(String(c.fecha).slice(0,10)));
@@ -655,32 +640,25 @@ pesoMin:pes.length?Math.min(...pes.map(x=>n(x.peso))):null,
 pesoMax:pes.length?Math.max(...pes.map(x=>n(x.peso))):null,
 diasReg:diasActivos.size,objetivo:n(p.objetivo_kg),objetivoLb:kgToLb(n(p.objetivo_kg))}});
 
-// Duelos semanales — puntos DE LA SEMANA para cada participante
 const semanas=[];
 for(let w=1;w<=semana;w++){
 const par=DUELOS[(w-1)%3];
 const d1=(w-1)*7+1,d2=Math.min(w*7,total);
-// La semana solo se considera CERRADA después del lunes de la semana siguiente
-// (para que el pesaje del lunes cuente en la semana anterior)
 const terminada=dia>d2+1;
 const ptsW={};
-const detalleW={}; // desglose para mostrar
+const detalleW={};
 P.forEach(p=>{
 let pts=0;
 let ptsRetosDia=0,ptsRetoSem=0,ptsPeso=0,ptsCheckin=0;
-// 1) Puntos de retos diarios completados en esta semana
 for(let d=d1;d<=Math.min(d2,dia);d++){
 const rd=p.rdMap[fechaDia(d)];
 if(rd&&bool(rd.completado)){
 const puntosRd=Number(rd.puntos);
 ptsRetosDia+=(!isNaN(puntosRd)&&puntosRd>0)?puntosRd:4}}
-// 2) Check-ins de la semana (si los hay del sistema antiguo)
 for(let d=d1;d<=Math.min(d2,dia);d++){
 if(p.chkMap[fechaDia(d)])ptsCheckin+=2}
-// 3) Reto semanal cumplido
 const reto=(S.retos||[]).find(r=>Number(r.semana)===w);
 if(reto&&bool(reto[nombreCol[p.id]]))ptsRetoSem=25;
-// 4) Pesaje de esa semana (% de peso perdido) — incluye el lunes siguiente (d2+1)
 const finPesaje=Math.min(d2+1,dia);
 const pesW=p.pes.filter(x=>{const f=String(x.fecha).slice(0,10);return f>=fechaDia(d1)&&f<=fechaDia(finPesaje)});
 const pesAnt=p.pes.filter(x=>String(x.fecha).slice(0,10)<fechaDia(d1));
@@ -701,37 +679,26 @@ semanas.push({w,d1,d2,terminada,ptsW,detalleW,filas,duelo1,duelo2,
 res1:duelRes(duelo1),res2:duelRes(duelo2),
 reina:terminada&&filas[0].pts>0?filas[0].id:null})}
 
-// Puntos de duelos
 const ptsDuelo={};P.forEach(p=>ptsDuelo[p.id]=0);
 semanas.forEach(s=>{[s.res1,s.res2].forEach(r=>{if(!r)return;
 if(r.draw){ptsDuelo[r.a]+=1;ptsDuelo[r.b]+=1}
 else{ptsDuelo[r.w]+=3}})});
 
-// Coronas y robo
 P.forEach(p=>{p.coronas=semanas.filter(s=>s.reina===p.id).length;
 let seg=0,mx=0;semanas.forEach(s=>{if(s.reina===p.id){seg++;mx=Math.max(mx,seg)}else if(s.terminada)seg=0});
 p.coronasSeg=mx});
 
-// Ranking general — puntos acumulados reales
-// BALANCE: la constancia pesa más que la báscula
 P.forEach(p=>{
-// Puntos por peso perdido: 3 pts por cada 1% perdido (moderado)
 const ptsPeso=Math.round(Math.max(p.pct,0)*3);
-// Puntos por cintura: 2 pts por cada cm perdido
 const ptsCint=Math.round(Math.max(p.cm,0)*2);
-// Puntos por constancia: 2 pts por cada día con reto diario completado (IMPORTANTE)
 const ptsConst=p.diasReg*2;
-// Puntos por coronas: 8 pts cada una
 const ptsCoronas=p.coronas*8;
-// Puntos por retos semanales: 5 pts cada uno
 const ptsRetosS=p.retosOK*5;
-// Total = todo sumado - penalidades
 p.puntos=Math.max(0, ptsPeso + ptsCint + ptsConst + p.ptsRetos + (ptsDuelo[p.id]||0) + p.ptsPred + ptsCoronas + ptsRetosS - p.penalidad);
 p.desglose={ptsPeso,ptsCint,ptsConst,ptsCoronas,ptsRetosS,ptsDuelo:ptsDuelo[p.id]||0,ptsRetos:p.ptsRetos,ptsPred:p.ptsPred,penalidad:p.penalidad}});
 
 const ranking=[...P].sort((a,b)=>b.puntos-a.puntos||b.pct-a.pct);
 
-// Tips personalizados
 P.forEach(p=>{
 const tips=[];
 const pos=ranking.findIndex(x=>x.id===p.id);
@@ -748,11 +715,9 @@ tips.push({ico:'🏆',t:'Estás a '+diff+' pts de '+ranking[0].nombre+'. '+
 if(tips.length===0)tips.push({ico:'👑',t:'¡Vas en primer lugar! Sigue así, no te confíes.'});
 p.tips=tips});
 
-// Wall messages
 const walls=[];
 const topRacha=[...P].sort((a,b)=>b.racha-a.racha)[0];
 if(topRacha.racha>=3)walls.push({t:'fire',m:`🔥 ${topRacha.nombre} lleva ${topRacha.racha} días sin fallar`});
-// Vergüenza: solo si alguien no ha hecho NADA en 3+ días (ni reto diario, ni check-in, ni pesaje)
 P.forEach(p=>{
 let ultimaAct=null;
 for(let d=dia;d>=1;d--){const f=fechaDia(d);
@@ -764,11 +729,9 @@ if(ultimaReina){const rn=P.find(p=>p.id===ultimaReina.reina);
 walls.push({t:'crown',m:`👑 ${rn.nombre} es la Reina de la semana ${ultimaReina.w}`})}
 if(esLunes)walls.push({t:'info',m:'⚖️ Hoy es lunes — ¡día de pesaje!'});
 
-// Duelo actual
 const duelActual=semanas[semanas.length-1];
 const retoActual=(S.retos||[]).find(r=>Number(r.semana)===semana);
 
-// Validaciones pendientes
 const valPend=[];
 if(yoId){
 const misVotos=new Set((S.validaciones||[]).filter(v=>Number(v.votante_id)===yoId&&String(v.fecha).slice(0,10)===hoy()).map(v=>Number(v.solicitante_id)));
@@ -783,7 +746,6 @@ lbGrupo:+P.reduce((s,p)=>s+Math.max(p.lb,0),0).toFixed(1),
 cmGrupo:+P.reduce((s,p)=>s+Math.max(p.cm,0),0).toFixed(1),
 retoDia:RETOS_DIA.find(r=>r.d===dia)||RETOS_DIA[0]}}
 
-/* --- Trofeos check --- */
 function trofeosDe(p){
 const fin=G.dia>=G.total;const mejor=G.ranking[0];
 return TROFEOS.map(t=>{
@@ -809,7 +771,6 @@ for(const nv of nuevos){try{await send('trofeo',{participante_id:nv.p.id,trofeo:
 S.trofeos.push({participante_id:nv.p.id,trofeo:nv.t.id,fecha:hoy()})}catch(e){}}
 if(nuevos.length){confeti();toast('🏆 ¡'+nuevos[0].p.nombre+' desbloqueó "'+nuevos[0].t.n+'"!')}}
 
-/* --- Navigation --- */
 function go(v){vista=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
 render();window.scrollTo({top:0})}
 function render(){charts.forEach(c=>c.destroy());charts=[];const el=document.getElementById('main');
@@ -821,13 +782,10 @@ if(vista==='stats'){el.innerHTML=vStats();setTimeout(pintarCharts,60)}
 setTimeout(()=>document.querySelectorAll('[data-w]').forEach(b=>{b.style.width=b.dataset.w}),80);
 setTimeout(()=>document.querySelectorAll('[data-l]').forEach(b=>{b.style.left=b.dataset.l}),80)}
 
-/* === VIEW: INICIO === */
 function vInicio(){
 const medals=['🥇','🥈','🥉','4°'];
 let h='';
-// Walls
 G.walls.forEach(w=>{h+=`<div class="wall ${w.t}">${w.m}</div>`});
-// Day hero
 h+=`<div class="c hero"><div class="dia-n">DÍA ${G.dia}</div>
 <div class="dia-sub">de ${G.total} · Semana ${G.semana}</div>
 <div class="barra-bg"><div class="barra-fg" data-w="${(G.dia/G.total*100).toFixed(1)}%" style="width:0"></div></div>
@@ -836,9 +794,7 @@ h+=`<div class="c hero"><div class="dia-n">DÍA ${G.dia}</div>
 <div class="mini-item"><b>${G.lbGrupo}</b><span>lb perdidas</span></div>
 <div class="mini-item"><b>${G.cmGrupo}</b><span>cm cintura</span></div>
 </div></div>`;
-// Frase
 h+=`<div class="c"><div class="frase"><b>"</b>${G.frase}<b>"</b></div></div>`;
-// Duelo actual
 if(G.duelActual){const d=G.duelActual;
 const d1=G.P.find(p=>p.id===d.duelo1.a),d2=G.P.find(p=>p.id===d.duelo1.b);
 const d3=G.P.find(p=>p.id===d.duelo2.a),d4=G.P.find(p=>p.id===d.duelo2.b);
@@ -846,7 +802,6 @@ h+=`<div class="c"><h2>⚔️ Duelos de la semana ${G.semana}</h2>`;
 h+=duelHTML(d1,d2,d.duelo1.ptsA,d.duelo1.ptsB,d.detalleW[d1.id],d.detalleW[d2.id]);
 h+=duelHTML(d3,d4,d.duelo2.ptsA,d.duelo2.ptsB,d.detalleW[d3.id],d.detalleW[d4.id]);
 h+=`<div style="text-align:center;margin-top:10px"><span class="tag${d.terminada?' verde':' naranja'}">${d.terminada?'✅ SEMANA CERRADA':'🔴 EN DIRECTO'}</span></div></div>`}
-// Ranking
 h+=`<div class="c"><h2>🏆 Ranking <span class="tag">${G.ranking[0].puntos} pts</span></h2>`;
 G.ranking.forEach((p,i)=>{
 h+=`<div class="rank-row"><div class="medal">${medals[i]}</div>${avHTML(p)}
@@ -854,7 +809,6 @@ h+=`<div class="rank-row"><div class="medal">${medals[i]}</div>${avHTML(p)}
 <div class="rank-det">−${p.lb} lb · 🔥${p.racha} ${p.penalidad>0?'· <span style="color:var(--rojo)">−'+p.penalidad+'</span>':''} · ${p.diasReg}d registrados</div></div>
 <div class="rank-pts">${p.puntos}<small>puntos</small></div></div>`});
 h+='</div>';
-// Reto semanal
 if(G.retoActual)h+=`<div class="c"><h2>🎯 Reto semanal ${G.semana}</h2>
 <p style="font-weight:800;font-size:1rem">${G.retoActual.descripcion}</p></div>`;
 return h}
@@ -868,9 +822,7 @@ return`<div class="duel">
 <div class="duel-vs">VS</div>
 <div class="duel-player">${avHTML(p2)}<b>${p2.nombre}</b><div class="pts">${pts2}</div>${desg(det2)}</div></div>`}
 
-/* === VIEW: MI DÍA === */
 function vMiDia(){
-// User bar always on top
 let h='<div class="users-bar">';
 G.P.forEach(p=>{h+=`<div class="user-pick ${yoId===p.id?'on':''}" onclick="pickUser(${p.id})">
 ${avHTML(p)}<b>${p.nombre}</b></div>`});
@@ -879,7 +831,6 @@ if(!yoId)return h+'<div class="c" style="text-align:center;padding:40px 20px"><d
 
 const p=G.P.find(x=>x.id===yoId);
 
-// Tips personalizados
 if(p.tips&&p.tips.length){
 const tip=p.tips[Math.floor((Date.now()/3600000))%p.tips.length];
 h+=`<div class="c" style="border-left:5px solid var(--lime)">
@@ -895,7 +846,6 @@ const retoPend=rdHoy&&!bool(rdHoy.completado)&&rdHoy.metodo==='pendiente';
 const pesajeHoy=p.pes.find(x=>String(x.fecha).slice(0,10)===hoyS);
 const perfilOK=p.edad&&p.estatura&&p.objetivo;
 
-// Validaciones pendientes para mí (otras que me piden ayuda)
 if(G.valPend.length){
 G.valPend.forEach(sid=>{const sp=G.P.find(x=>x.id===sid);
 h+=`<div class="c" style="border:3px solid var(--naranja);background:rgba(255,159,67,.08);text-align:center">
@@ -909,7 +859,6 @@ ${avHTML(sp)}
 <button class="btn danger iconbtn" style="flex:1;margin:0" onclick="votar(${sid},false)"><span class="bico">👎</span>No</button>
 </div></div>`})}
 
-// SECCIÓN: RETO DEL DÍA
 h+=`<div class="c midia">
 <h2>🎯 Tu reto de hoy</h2>
 <div style="text-align:center;padding:16px 0">
@@ -951,7 +900,6 @@ h+=`<p style="text-align:center;font-weight:800;font-size:.95rem;color:var(--txt
 <p style="text-align:center;font-size:.75rem;color:var(--txt2);font-weight:700;margin-top:8px">Las otras 3 votarán si te creen (necesitas 2 sí)</p>`}
 h+='</div>';
 
-// SECCIÓN: PESAJE (solo lunes)
 if(G.esLunes){
 h+=`<div class="c pesaje${!pesajeHoy?' pesaje-warn':''}">
 <h2>⚖️ Pesaje del lunes ${!pesajeHoy?'<span class="tag rojo">−5 PTS SI NO PESAS</span>':'<span class="tag verde">✅ HECHO</span>'}</h2>`;
@@ -982,7 +930,6 @@ h+=`<div class="c"><h2>⚖️ Pesaje</h2>
 </div></div>`;
 }
 
-// SECCIÓN: RETO SEMANAL
 if(G.retoActual){
 const retoOK=bool(G.retoActual[nombreCol[yoId]]);
 const esDomingo=new Date().getDay()===0;
@@ -997,12 +944,11 @@ else h+=`<div style="text-align:center;padding:14px;background:var(--card2);bord
 h+='</div>';
 }
 
-// SECCIÓN: MIS REGISTROS (histórico editable)
 if(p.pes.length){
 h+=`<div class="c"><h2>📋 Mis pesajes anteriores</h2>`;
 [...p.pes].reverse().slice(0,5).forEach(pe=>{
 const f=String(pe.fecha).slice(0,10);
-if(f===hoyS)return; // ya se muestra arriba
+if(f===hoyS)return;
 h+=`<div class="registro-row">
 <div style="font-size:1.3rem">⚖️</div>
 <div class="registro-info">
@@ -1015,7 +961,6 @@ h+=`<div class="registro-row">
 h+='</div>';
 }
 
-// SECCIÓN: MIS FOTOS DE RETOS (galería de fotos completadas)
 const misFotos=Object.values(p.rdMap).filter(r=>bool(r.completado)&&r.foto_url).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
 if(misFotos.length){
 h+=`<div class="c"><h2>📸 Mis fotos de retos (${misFotos.length})</h2>
@@ -1031,7 +976,6 @@ ${formatearFecha(fecha)} · +${r.puntos||4}pts
 </div></div>`}});
 h+='</div></div>';}
 
-// SECCIÓN: PERFIL
 h+=`<div class="c perfil"><h2>👤 Mi perfil ${perfilOK?'<span class="tag verde">✅ Completo</span>':'<span class="tag rojo">⚠️ Falta</span>'}</h2>
 <button class="btn morado iconbtn" style="background:var(--morado);color:#fff;box-shadow:0 4px 16px rgba(185,131,255,.25)" onclick="formPerfil()"><span class="bico">✏️</span>Editar mi perfil</button>
 <div id="perfilZona"></div></div>`;
@@ -1058,11 +1002,6 @@ card.innerHTML=`<h2>✏️ Editar pesaje</h2>
 <button class="btn sec" style="margin-top:6px" onclick="go('midia')">❌ Cancelar</button>`;
 }
 
-// ============================================================
-// CALORÍAS — contador manual + recomendación por persona
-// ============================================================
-
-// Base de datos de alimentos (calorías por porción común)
 const COMIDAS={
 '🥞 Desayuno':[
 {n:'Huevo frito (1)',c:90},{n:'Huevos revueltos (2)',c:180},
@@ -1106,10 +1045,9 @@ const COMIDAS={
 {n:'Vino (1 copa)',c:125}
 ]};
 
-let comidasDelDia=[]; // {nombre, cal, hora}
+let comidasDelDia=[];
 
 function vCalorias(){
-// User selector
 let h='<div class="users-bar">';
 G.P.forEach(p=>{h+=`<div class="user-pick ${yoId===p.id?'on':''}" onclick="pickUser(${p.id})">
 ${avHTML(p)}<b>${p.nombre}</b></div>`});
@@ -1118,7 +1056,6 @@ if(!yoId)return h+'<div class="c" style="text-align:center;padding:40px 20px"><d
 
 const p=G.P.find(x=>x.id===yoId);
 
-// Calcular recomendación (Harris-Benedict + déficit)
 if(!p.edad||!p.estatura||!p.pesoAct){
 h+=`<div class="c" style="text-align:center;padding:30px 20px">
 <div style="font-size:3rem;margin-bottom:12px">📝</div>
@@ -1128,14 +1065,12 @@ h+=`<div class="c" style="text-align:center;padding:30px 20px">
 </div>`;
 return h}
 
-// Fórmula Mifflin-St Jeor (más precisa para adultos mayores)
 const pesoKg=p.pesoAct;
-const bmr=Math.round(10*pesoKg + 6.25*p.estatura - 5*p.edad - 161); // mujer
-const mantener=Math.round(bmr*1.375); // actividad ligera
-const perder=mantener-500; // déficit para perder ~1lb/semana
-const perderRapido=mantener-750; // más agresivo
+const bmr=Math.round(10*pesoKg + 6.25*p.estatura - 5*p.edad - 161);
+const mantener=Math.round(bmr*1.375);
+const perder=mantener-500;
+const perderRapido=mantener-750;
 
-// Cargar comidas de hoy del localStorage
 const hoyStr=hoy();
 const keyDia='t70_cal_'+yoId+'_'+hoyStr;
 try{comidasDelDia=JSON.parse(ld(keyDia)||'[]')}catch(e){comidasDelDia=[]}
@@ -1144,7 +1079,6 @@ const pctMeta=Math.round(totalHoy/perder*100);
 const estado=totalHoy<=perder?'verde':totalHoy<=mantener?'naranja':'rojo';
 const emojiEstado=totalHoy<=perder?'✅':totalHoy<=mantener?'⚠️':'❌';
 
-// TARJETA 1: Tu meta personal
 h+=`<div class="c" style="border-top:5px solid var(--rosa)">
 <h2>🎯 Tu meta de calorías</h2>
 <p style="font-weight:700;font-size:.85rem;color:var(--txt2);margin-bottom:14px;line-height:1.5">Basado en tu edad (${p.edad}), estatura (${p.estatura} cm) y peso actual (${p.pesoActLb} lb):</p>
@@ -1155,7 +1089,6 @@ h+=`<div class="c" style="border-top:5px solid var(--rosa)">
 <p style="font-size:.78rem;color:var(--txt2);font-weight:700;margin-top:10px;line-height:1.4">💡 <b>Recomendación:</b> comer <b style="color:var(--verde)">${perder} calorías al día</b> te haría bajar aproximadamente 1 libra por semana.</p>
 </div>`;
 
-// TARJETA 2: Contador de hoy
 h+=`<div class="c" style="border-top:5px solid var(--${estado})">
 <h2>${emojiEstado} Comidas de hoy</h2>
 <div style="text-align:center;padding:16px 0">
@@ -1181,7 +1114,6 @@ h+='</div>';}
 else{h+='<p style="text-align:center;color:var(--txt2);font-weight:700;padding:12px">Aún no has agregado comidas hoy</p>'}
 h+='</div>';
 
-// TARJETA 3: Agregar comida
 h+=`<div class="c" style="border-top:5px solid var(--azul)">
 <h2>➕ Agregar comida</h2>
 <p style="font-size:.85rem;color:var(--txt2);font-weight:700;margin-bottom:12px">Elige una categoría y toca lo que comiste:</p>`;
@@ -1198,7 +1130,6 @@ h+=`<button class="btn sec" style="margin:0;padding:12px 8px;font-size:.82rem;te
 h+='</div></div>';});
 h+='</div>';
 
-// TARJETA 4: Historial últimos días
 const dias7=[];const dT=new Date();
 for(let i=6;i>=0;i--){const d=new Date(dT);d.setDate(d.getDate()-i);
 const s=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1256,18 +1187,16 @@ const preview=document.getElementById('fotoPreview');
 const status=document.getElementById('fotoStatus');
 status.innerHTML='<p style="text-align:center;font-weight:800;color:var(--azul);margin-top:10px">⏳ Procesando foto…</p>';
 
-// Comprimir agresivamente (Apps Script tiene límite de payload)
 const canvas=document.createElement('canvas');
 const img=new Image();
 img.onload=async()=>{
 try{
-const max=600; // reducido de 800 a 600
+const max=600;
 let w=img.width,h=img.height;
 if(w>max){h=h*(max/w);w=max}
 if(h>max){w=w*(max/h);h=max}
 canvas.width=w;canvas.height=h;
 canvas.getContext('2d').drawImage(img,0,0,w,h);
-// Calidad reducida a 0.55 (era 0.7)
 const dataUrl=canvas.toDataURL('image/jpeg',.55);
 const base64=dataUrl.split(',')[1];
 const sizeKB=Math.round(base64.length*.75/1024);
@@ -1275,7 +1204,6 @@ const sizeKB=Math.round(base64.length*.75/1024);
 preview.src=dataUrl;preview.style.display='block';
 status.innerHTML=`<p style="text-align:center;font-weight:800;color:var(--azul);margin-top:10px">📤 Subiendo foto (${sizeKB} KB)…</p>`;
 
-// Timeout de 30 segundos por si el servidor tarda mucho
 const controller=new AbortController();
 const timeoutId=setTimeout(()=>controller.abort(),30000);
 
@@ -1316,11 +1244,20 @@ toast(voto?'👍 Votaste que sí':'👎 Votaste que no');await load();go('midia'
 }catch(e){toast('😕 Error')}}
 
 async function guardarPesaje(){
-const pesoLb=n(document.getElementById('inPeso').value);
+const inPesoVal=document.getElementById('inPeso').value.trim();
+const pesoLb=n(inPesoVal);
 const peso=lbToKg(pesoLb);
 const cint=n(document.getElementById('inCint').value);
-if(!pesoLb||pesoLb<66||pesoLb<66||pesoLb>550)return toast('Escribe un peso válido');
-if(!cint||cint<40||cint>200)return toast('Escribe una cintura válida');
+
+console.log('Peso raw input:', inPesoVal, 'Parsed lb:', pesoLb, 'kg:', peso);
+
+// ✅ VALIDACIÓN ARREGLADA: 80-350 lb (36-159 kg)
+if(pesoLb===null||pesoLb===undefined||isNaN(pesoLb)||pesoLb<80||pesoLb>350){
+  console.error('Peso inválido:', pesoLb);
+  return toast('Peso debe estar entre 80 y 350 lb. Ejemplo: 155.2');
+}
+if(!cint||cint<40||cint>200)return toast('Escribe una cintura válida (40-200 cm)');
+
 const b=document.getElementById('btnPes');b.disabled=true;b.textContent='Guardando…';
 try{await send('pesaje',{fecha:hoy(),participante_id:yoId,peso,cintura:cint});
 const p=G.P.find(x=>x.id===yoId);
@@ -1338,8 +1275,6 @@ try{await send('reto',{semana:G.semana,participante_id:yoId});
 confeti();toast('🎯 ¡Reto cumplido!');await load();go('midia');
 }catch(e){toast('😕 Error')}}
 
-
-
 function formPerfil(){
 const p=G.P.find(x=>x.id===yoId);
 document.getElementById('perfilZona').innerHTML=`
@@ -1352,7 +1287,6 @@ try{await send('perfil',{id:yoId,edad:n(document.getElementById('inEdad').value)
 estatura:n(document.getElementById('inEst').value)||'',objetivo_kg:n(document.getElementById('inObj').value)?lbToKg(document.getElementById('inObj').value):''});
 toast('👤 Perfil guardado');await load();go('midia')}catch(e){toast('😕 Error')}}
 
-/* === VIEW: TROFEOS === */
 function vTrofeos(){
 let h='<div class="chips">';
 G.P.forEach(p=>{h+=`<button class="chip ${trofSel===p.id?'on':''}" onclick="trofSel=${p.id};render()">${p.nombre}</button>`});
@@ -1367,7 +1301,6 @@ ts.forEach(t=>{h+=`<div class="trofeo ${t.ok?'':'lock'}">
 <span class="ico">${t.ok?t.i:'🔒'}</span><b>${t.n}</b><span>${t.d}</span></div>`});
 return h+'</div>'}
 
-/* === VIEW: STATS === */
 function vStats(){
 let h='<div class="chips">';
 h+=`<button class="chip ${statSel===0?'on':''}" onclick="statSel=0;render()">👯 Grupo</button>`;
@@ -1383,7 +1316,6 @@ let h=`<div class="c"><h2>👯 El grupo</h2><div class="nums">
 <div class="num"><b>${mc.nombre}</b><span>❤️ más constante</span></div>
 </div></div>`;
 
-// ⭐ 3 RANKINGS SEPARADOS
 const medals=['🥇','🥈','🥉','4°'];
 const rankKg=[...G.P].sort((a,b)=>b.kg-a.kg);
 const rankCm=[...G.P].sort((a,b)=>b.cm-a.cm);
@@ -1414,7 +1346,6 @@ h+=`<div class="rank-row"><div class="medal">${medals[i]}</div>${avHTML(p)}
 <div class="rank-pts" style="color:var(--naranja)">${p.diasReg}<small>de ${G.dia} días (${pct}%)</small></div></div>`});
 h+='</div>';
 
-// ⭐ 2 CARRERAS SEPARADAS
 h+='<div class="c"><h2>🏁 Carrera por libras perdidas</h2>';
 h+='<p style="font-size:.78rem;color:var(--txt2);font-weight:700;margin-bottom:10px">Quien más libras ha perdido va adelante</p>';
 const maxLb=Math.max(...G.P.map(p=>Math.max(p.lb,0)),1);
@@ -1433,22 +1364,18 @@ h+=`<div class="lane"><div class="finish">🏆</div>
 ${avHTML(p)}<small>${p.puntos} pts</small></div></div>`});
 h+='</div>';
 
-// ⭐ GRÁFICAS: PESO POR SEMANA (BARRAS)
 h+='<div class="c"><h2>📊 Libras perdidas por semana</h2>';
 h+='<p style="font-size:.78rem;color:var(--txt2);font-weight:700;margin-bottom:10px">Cuánto bajó cada una en cada semana del reto</p>';
 h+='<canvas id="chBarrasSem" height="240"></canvas></div>';
 
-// ⭐ GRÁFICAS: LÍNEAS DE PESO
 h+='<div class="c"><h2>📉 Evolución del peso</h2>';
 h+='<p style="font-size:.78rem;color:var(--txt2);font-weight:700;margin-bottom:10px">Cómo ha ido cambiando el peso de cada una</p>';
 h+='<canvas id="chLineasPeso" height="240"></canvas></div>';
 
-// ⭐ GRÁFICAS: LÍNEAS DE CINTURA
 h+='<div class="c"><h2>📏 Evolución de la cintura</h2>';
 h+='<p style="font-size:.78rem;color:var(--txt2);font-weight:700;margin-bottom:10px">Cómo ha ido cambiando la cintura de cada una</p>';
 h+='<canvas id="chLineasCint" height="240"></canvas></div>';
 
-// ⭐ CÓMO SE ELIGE LA REINA
 h+=`<div class="c" style="border-left:5px solid var(--naranja)">
 <h2>👑 ¿Cómo se elige la Reina de la Semana?</h2>
 <p style="font-size:.92rem;font-weight:700;line-height:1.5;margin-bottom:14px">Al terminar cada semana (domingo por la noche), quien tenga MÁS PUNTOS en esa semana se convierte en la Reina 👑.</p>
@@ -1462,7 +1389,6 @@ h+=`<div class="c" style="border-left:5px solid var(--naranja)">
 <p style="font-size:.85rem;font-weight:700;color:var(--txt2);line-height:1.5;margin-top:8px">🛡️ <b>Robo de corona:</b> si la Reina pierde su duelo la semana siguiente, otra participante le puede robar la corona.</p>
 </div>`;
 
-// ⭐ TABLA COMPLETA DE PUNTOS
 h+=`<div class="c"><h2>📖 Cómo se ganan (y pierden) los puntos</h2>
 <p style="font-size:.85rem;color:var(--txt2);font-weight:700;margin-bottom:12px">Todas las formas de sumar puntos en el reto:</p>
 <table style="width:100%;border-collapse:collapse;font-size:.88rem">
@@ -1487,7 +1413,6 @@ h+=`<div class="c"><h2>📖 Cómo se ganan (y pierden) los puntos</h2>
 <p style="font-size:.8rem;color:var(--txt2);font-weight:700;margin-top:12px;line-height:1.5">💡 <b>Lo más importante:</b> la constancia. Alguien que cumple su reto todos los días puede llegar a 200+ puntos solo por eso. Solo perder peso da 15-20 puntos como máximo.</p>
 </div>`;
 
-// WhatsApp
 h+=`<div class="c"><h2>📲 Resumen WhatsApp</h2>
 <button class="btn sec" onclick="copiarWA()">📋 Copiar resumen</button></div>`;
 
@@ -1526,7 +1451,6 @@ if(av)h+=`<div style="margin-top:10px"><div style="font-size:.75rem;font-weight:
 h+='</div>';
 h+='<div class="c"><h2>📉 Peso</h2><canvas id="chPeso" height="200"></canvas></div>';
 h+='<div class="c"><h2>📏 Cintura</h2><canvas id="chCint" height="190"></canvas></div>';
-// Mood calendar
 h+='<div class="c"><h2>🗓️ Retos completados</h2><div class="cal">';
 for(let d=1;d<=G.total;d++){const r=p.rdMap[G.fechaDia(d)];
 if(d>G.dia)h+=`<div class="cal-d empty">${d}</div>`;
@@ -1541,7 +1465,6 @@ Chart.defaults.font.size=13;
 const opts={responsive:true,plugins:{legend:{labels:{font:{weight:800,size:12},padding:12,usePointStyle:true,pointStyle:'circle'}}},
 scales:{x:{grid:{color:ln},ticks:{font:{weight:700}}},y:{grid:{color:ln},ticks:{font:{weight:700}}}}};
 
-// ⭐ BARRAS: lb perdidas por semana
 const barras=document.getElementById('chBarrasSem');
 if(barras){
 const labels=[];for(let w=1;w<=G.semana;w++)labels.push('S'+w);
@@ -1559,7 +1482,6 @@ return{label:p.nombre,data,backgroundColor:p.color,borderRadius:6,borderSkipped:
 charts.push(new Chart(barras,{type:'bar',data:{labels,datasets:ds},
 options:{...opts,scales:{x:opts.scales.x,y:{...opts.scales.y,title:{display:true,text:'lb perdidas',font:{weight:800}}}}}}))}
 
-// ⭐ LÍNEAS: peso en el tiempo
 const lp=document.getElementById('chLineasPeso');
 if(lp){
 const todasFechas=new Set();
@@ -1573,7 +1495,6 @@ charts.push(new Chart(lp,{type:'line',
 data:{labels:labels.map(f=>{const d=new Date(f+'T00:00:00');return d.getDate()+'/'+(d.getMonth()+1)}),datasets:ds},
 options:{...opts,scales:{x:opts.scales.x,y:{...opts.scales.y,title:{display:true,text:'lb',font:{weight:800}}}}}}))}
 
-// ⭐ LÍNEAS: cintura en el tiempo
 const lc=document.getElementById('chLineasCint');
 if(lc){
 const todasFechas=new Set();
@@ -1587,7 +1508,6 @@ if(labels.length)charts.push(new Chart(lc,{type:'line',
 data:{labels:labels.map(f=>{const d=new Date(f+'T00:00:00');return d.getDate()+'/'+(d.getMonth()+1)}),datasets:ds},
 options:{...opts,scales:{x:opts.scales.x,y:{...opts.scales.y,title:{display:true,text:'cm',font:{weight:800}}}}}}))}
 
-// Individual charts
 const p=G.P.find(x=>x.id===statSel);
 const cp=document.getElementById('chPeso');
 if(cp&&p&&p.pes.length){charts.push(new Chart(cp,{type:'line',
@@ -1613,7 +1533,6 @@ if(G.retoActual)t+=`🎯 Reto: ${G.retoActual.descripcion}\n`;
 t+=`🔗 ${location.href}`;
 navigator.clipboard.writeText(t).then(()=>toast('📋 ¡Copiado!')).catch(()=>prompt('Copia:',t))}
 
-/* --- Init --- */
 (function(){const t=ld('t70t');if(t){document.documentElement.dataset.theme=t;
 document.getElementById('tBtn').textContent=t?'🌙':'☀️'}
 const y=ld('t70y');if(y)yoId=Number(y);load()})();
