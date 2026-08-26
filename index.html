@@ -1,1 +1,3500 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export · Expéditions</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  /* Surfaces — warm paper, grounded in the shipping/atelier world */
+  --paper:#ffffff;--paper-2:#f6f4ef;--paper-3:#ece8df;
+  --warm-tint:#faf8f3;
+  /* Text — warm near-black ink */
+  --ink:#1c1b18;--ink-soft:#56544c;--ink-mute:#928f86;--ink-fade:#bdbab1;
+  /* Borders — warm hairline */
+  --line:#e7e3d9;--line-soft:#f1eee7;
+  /* Semantic status — each colour MEANS its stage */
+  --honey:#e0922a;--honey-soft:#fbf0dd;              /* PENDING — waiting, attention */
+  --ocean:#3551e0;--ocean-soft:#e8ecfc;              /* PRINTED — in motion */
+  --moss:#1f9d6b;--moss-soft:#e4f4ec;                /* DELIVERED — done */
+  --tomato:#dd4f3a;--tomato-soft:#fcebe7;            /* ISSUE — problem */
+  --plum:#7c5ce0;--plum-soft:#efeafc;                /* SAMPLE — special */
+  /* Brand — deep warm ink for nav/headers/buttons */
+  --navy:#23211c;--navy-2:#33302a;--navy-soft:#f1eee7;
+  --r-md:11px;--r-lg:16px;--r-xl:22px;--r-full:999px;
+  --sh-sm:0 1px 2px rgba(40,34,20,.04);
+  --sh-md:0 1px 3px rgba(40,34,20,.05),0 5px 16px rgba(40,34,20,.06);
+  --sh-lg:0 2px 8px rgba(40,34,20,.05),0 14px 36px rgba(40,34,20,.10);
+  --font-display:'Bricolage Grotesque','Inter',sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --bounce:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper-2);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;letter-spacing:-.006em}
+body::before{display:none}
+.lock-screen{position:fixed;inset:0;background:var(--paper);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column}
+.lock-screen.hidden{display:none}
+.lock-box{text-align:center;max-width:380px;width:100%}
+.lock-logo{font-family:var(--font-display);font-size:36px;font-weight:800;margin-bottom:8px;letter-spacing:-.04em;color:var(--navy);display:inline-flex;align-items:center;gap:10px}
+.lock-logo::after{content:'';width:8px;height:8px;background:var(--moss);border-radius:50%;animation:pulse 3s ease-in-out infinite}
+.lock-title{font-size:15px;font-weight:500;color:var(--ink-soft);margin-bottom:4px}
+.lock-sub{font-size:10px;color:var(--ink-mute);letter-spacing:.08em;margin-bottom:36px;text-transform:uppercase;font-weight:600}
+.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.pin-dot{width:44px;height:54px;border:1.5px solid var(--line);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;font-family:'JetBrains Mono',monospace;background:var(--paper-2);transition:all .15s var(--ease);color:var(--navy)}
+.pin-dot.filled{border-color:var(--navy);background:var(--paper)}
+.pin-dot.error{border-color:var(--tomato);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:10px;justify-content:center;margin-bottom:20px}
+.pin-btn{width:72px;height:72px;border:1px solid var(--line);border-radius:var(--r-full);font-family:inherit;font-size:22px;font-weight:500;color:var(--navy);background:var(--paper);cursor:pointer;transition:all .12s var(--ease);display:flex;align-items:center;justify-content:center}
+.pin-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy);transform:scale(1.04)}
+.pin-btn:active{transform:scale(.95)}
+.pin-btn.delete{background:var(--paper-2)}
+.pin-error-msg{font-size:12px;color:var(--tomato);margin-top:14px;height:18px;font-weight:500}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh;position:relative;z-index:1}
+.sidebar{background:var(--paper);border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand-mark{font-family:var(--font-display);font-size:23px;font-weight:800;letter-spacing:-.035em;color:var(--navy)}
+.brand-dot{width:8px;height:8px;background:var(--moss);border-radius:50%;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+.brand-sub{font-size:10px;color:var(--ink-mute);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.id-card{background:var(--navy-soft);border:1px solid var(--line);border-radius:var(--r-md);padding:12px}
+.id-label{font-size:9px;color:var(--ink-mute);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.id-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.id-btn{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:7px 9px;font-family:inherit;font-size:11px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .15s var(--ease)}
+.id-btn:hover{border-color:var(--navy);color:var(--navy)}
+.id-btn.active{background:var(--ocean);color:#fff;border-color:var(--ocean)}
+.av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.id-btn:not(.active) .av{background:var(--paper-3);color:var(--ink-soft)}
+.id-btn.active .av{background:rgba(255,255,255,.15);color:#fff}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px;padding:0 8px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r-md);cursor:pointer;font-size:13px;font-weight:500;color:var(--ink-soft);transition:all .15s var(--ease);position:relative;user-select:none}
+.nav-item:hover{background:var(--ocean-soft);color:var(--ocean)}
+.nav-item.active{background:var(--ocean);color:#fff}
+.nav-item.active::before{display:none}
+.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-icon svg{display:block}
+.nav-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 7px;border-radius:var(--r-full);background:var(--paper-2);color:var(--ink-soft);min-width:22px;text-align:center}
+.nav-item.active .nav-count{background:rgba(255,255,255,.18);color:#fff}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.live-badge{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--moss-soft);border-radius:var(--r-md);font-size:11px;color:#0F6E56;font-weight:600}
+.live-badge.offline{background:var(--tomato-soft);color:#A32D2D}
+.live-dot{width:6px;height:6px;background:currentColor;border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+.logout-btn{width:100%;margin-top:8px;padding:8px;background:transparent;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--r-md);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s var(--ease);font-family:inherit}
+.logout-btn:hover{border-color:var(--tomato);color:var(--tomato)}
+.main{padding:30px 36px;overflow-y:auto;max-height:100vh}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;gap:24px;flex-wrap:wrap}
+.greeting{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;font-weight:600}
+.page-title{font-family:var(--font-display);font-size:clamp(25px,3.5vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.04;color:var(--navy)}
+.accent{color:var(--honey);font-style:normal}
+.page-sub{font-size:13px;color:var(--ink-soft);margin-top:6px}
+.add-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ocean);color:#fff;padding:11px 20px;border:none;border-radius:var(--r-full);font-family:inherit;font-weight:500;font-size:13px;cursor:pointer;transition:all .2s var(--ease);box-shadow:0 2px 8px rgba(0,113,227,.25)}
+.add-btn:hover{background:var(--navy-2);transform:translateY(-1px);box-shadow:var(--sh-md)}
+.add-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .2s var(--ease)}
+.add-btn:hover .add-icon{transform:rotate(90deg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;position:relative;overflow:hidden;transition:all .2s var(--ease);cursor:pointer}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--navy)}
+.stat::after{display:none}
+.stat-total::after{background:var(--ocean)}
+.stat-icon{margin-bottom:10px;color:var(--navy);display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--navy-soft);border-radius:8px}
+.stat-pending .stat-icon{color:var(--honey);background:var(--honey-soft)}
+.stat-delivered .stat-icon{color:var(--moss);background:var(--moss-soft)}
+.stat-issue .stat-icon{color:var(--tomato);background:var(--tomato-soft)}
+.stat-label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;font-weight:600}
+.stat-value{font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums;color:var(--navy)}
+.stat-trend{font-size:11px;color:var(--moss);margin-top:6px;font-weight:500}
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:28px}
+.chart-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.chart-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
+.chart-box{position:relative;height:220px}
+.chart-card-wide{grid-column:1/-1}
+.peak-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.peak-card{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px}
+.peak-icon{width:42px;height:42px;border-radius:11px;background:var(--ocean-soft);color:var(--ocean);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.peak-big{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.025em}
+.peak-lbl{font-size:11.5px;color:var(--ink-mute);margin-top:2px}
+.peak-empty{grid-column:1/-1;text-align:center;color:var(--ink-fade);padding:20px;font-size:13px}
+.date-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.date-btn{padding:7px 14px;border-radius:var(--r-full);font-size:12px;font-weight:600;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);transition:all .2s var(--ease);font-family:inherit}
+.date-btn:hover{border-color:var(--ink-fade)}
+.date-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.toolbar{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.search{flex:1;min-width:240px;max-width:380px;position:relative}
+.search-input{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-full);padding:11px 16px 11px 40px;font-family:inherit;font-size:14px;color:var(--ink);outline:none;transition:all .2s var(--ease)}
+.search-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(55,138,221,.05)}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--ink-mute);font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--r-full);font-size:12px;font-weight:500;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);transition:all .15s var(--ease);font-family:inherit}
+.chip:hover{border-color:var(--navy);color:var(--navy)}
+.chip-count{font-family:'JetBrains Mono',monospace;font-size:10px;padding:1px 6px;border-radius:var(--r-full);background:var(--paper-2);color:var(--ink-mute)}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip.active .chip-count{background:rgba(255,255,255,.18);color:#fff}
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+/* ===== Kanban board ===== */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.col{background:var(--warm-tint);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-height:200px;position:relative}
+.col::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.col-pending::before{background:var(--honey)}
+.col-printed::before{background:var(--ocean)}
+.col-delivered::before{background:var(--moss)}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.col-head-left{display:flex;align-items:center;gap:11px}
+.col-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.col-icon-pending{background:var(--honey-soft);color:var(--honey)}
+.col-icon-printed{background:var(--ocean-soft);color:var(--ocean)}
+.col-icon-delivered{background:var(--moss-soft);color:var(--moss)}
+.col-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.col-sub{font-size:11px;color:var(--ink-mute);margin-top:1px}
+.col-count{font-size:13px;font-weight:650;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:var(--r-full);min-width:26px;height:24px;display:flex;align-items:center;justify-content:center;padding:0 8px}
+.col-body{padding:12px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 320px);overflow-y:auto}
+.col-empty{text-align:center;color:var(--ink-fade);font-size:13px;padding:28px 12px}
+/* board card — clean Apple-like */
+.bcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 15px;cursor:pointer;transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s var(--ease);box-shadow:var(--sh-sm)}
+.bcard:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:var(--ink-fade)}
+.bcard.has-issue{border-left:3px solid var(--honey)}
+.bcard.is-sample{border-left:3px solid var(--plum)}
+.bcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.bcard-ref{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
+.bcard-client{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard-flags{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.bcard-flags .dt{font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--r-full);background:var(--paper-3);color:var(--ink-fade);letter-spacing:.02em}
+.bcard-flags .dt.on{background:var(--moss-soft);color:var(--moss)}
+.bcard-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid var(--line-soft)}
+.bcard-via{font-size:11px;color:var(--ink-mute);font-weight:550}
+.bcard-created{font-size:11px;color:var(--ink-mute)}
+/* aging timer bar */
+.aging{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.aging-track{flex:1;height:5px;background:var(--paper-3);border-radius:var(--r-full);overflow:hidden}
+.aging-fill{height:100%;border-radius:var(--r-full);transition:width .4s var(--ease),background .4s}
+.aging-txt{font-size:11px;font-weight:650;white-space:nowrap;letter-spacing:-.01em}
+.aging.age-g .aging-fill{background:#34a853}.aging.age-g .aging-txt{color:#1e7e34}
+.aging.age-a .aging-fill{background:#f5b400}.aging.age-a .aging-txt{color:#b8860b}
+.aging.age-o .aging-fill{background:#ff8c00}.aging.age-o .aging-txt{color:#d2691e}
+.aging.age-r .aging-fill{background:#e0352b}.aging.age-r .aging-txt{color:#c0271d}
+.aging.age-r{animation:agingPulse 2s ease-in-out infinite}
+@keyframes agingPulse{0%,100%{opacity:1}50%{opacity:.6}}
+@media(max-width:900px){.board{grid-template-columns:1fr;gap:14px}.col-body{max-height:none}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh-sm)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--navy)}
+.card::before{content:'';position:absolute;top:14px;bottom:14px;left:0;width:3px;background:var(--ink-fade);border-radius:0 3px 3px 0;transition:width .2s var(--ease)}
+.card.s-pending::before{background:var(--tomato)}
+.card.s-delivered::before{background:var(--moss)}
+.card.has-issue::before{background:var(--honey)}
+.card:hover::before{width:5px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.card-title-block{flex:1;min-width:0}
+.card-ref{font-size:15px;font-weight:600;color:var(--navy);letter-spacing:-.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.card-client{font-size:13px;font-weight:500;color:var(--ink-soft);letter-spacing:-.005em;line-height:1.3}
+.pdf-count{display:inline-flex;align-items:center;gap:3px;background:var(--navy);color:#fff;font-size:10px;padding:2px 7px;border-radius:var(--r-full);font-weight:600}
+.pdf-count svg{flex-shrink:0}
+.card-docs{display:flex;gap:6px;flex-wrap:wrap}
+.doc-tick{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;padding:4px 9px;border-radius:6px;transition:background .15s}
+.doc-tick svg{flex-shrink:0}
+.doc-tick.on{background:var(--moss-soft);color:var(--moss)}
+.doc-tick.off{background:var(--paper-2);color:var(--ink-mute)}
+.card-meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap}
+.card-ago{margin-left:auto;font-size:11px;color:var(--ink-mute)}
+.meta-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-mute);font-weight:500;margin-right:3px}
+.tracking-pill{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--navy);background:var(--paper-2);padding:2px 7px;border-radius:5px;font-weight:500}
+.card-comment{background:var(--paper-2);border-radius:var(--r-md);padding:8px 12px;font-size:12px;color:var(--ink-soft);font-style:italic;display:flex;align-items:center;line-height:1.4}
+.card-comment span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-foot{display:flex;justify-content:flex-start;align-items:center;padding-top:10px;border-top:1px solid var(--line-soft)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:var(--r-full);font-size:11px;font-weight:600;letter-spacing:.01em}
+.pill-dot{width:6px;height:6px;border-radius:50%}
+.pill-pending{background:var(--honey-soft);color:#9a630f}
+.pill-pending .pill-dot{background:var(--honey)}
+.pill-delivered{background:var(--moss-soft);color:#137551}
+.pill-delivered .pill-dot{background:var(--moss)}
+.pill-printed{background:var(--ocean-soft);color:#2740b8}
+.pill-printed .pill-dot{background:var(--ocean)}
+.s-printed{border-left:3px solid var(--ocean)}
+/* advanced filters bar */
+.adv-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 14px;padding:10px 12px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px}
+.flt-group{display:flex;align-items:center;gap:6px}
+.flt-lbl{font-size:11px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.flt-sel,.flt-inp{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font-size:13px;font-family:inherit;min-width:120px}
+.flt-sel:focus,.flt-inp:focus{outline:none;border-color:var(--ocean)}
+.flt-clear{margin-left:auto;padding:6px 12px;border:1px solid var(--line);background:transparent;border-radius:6px;color:var(--ink-mute);font-size:12px;cursor:pointer}
+.flt-clear:hover{background:var(--tomato-soft);color:#A32D2D;border-color:var(--tomato)}
+.all-count{margin-left:auto;font-size:12px;color:var(--ink-mute);font-weight:600}
+.assn-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#fff;flex-shrink:0;letter-spacing:.02em}
+.av-DI{background:#23211c}
+.av-DA{background:#3551e0}
+.av-MA{background:#1f9d6b}
+.av-CA{background:#7c5ce0}
+.av-OT{background:#d97742}
+.av-CL{background:#dd4f3a}
+.av-NJ{background:#0e8a7a}
+.av-JT{background:#b3862e}
+.empty{text-align:center;padding:48px 24px;background:var(--paper);border:1px dashed var(--line);border-radius:var(--r-lg);grid-column:1/-1}
+.empty-emoji{font-size:48px;margin-bottom:14px;display:inline-block;opacity:.4}
+.empty-title{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--navy)}
+.empty-sub{font-size:13px;color:var(--ink-mute);margin-bottom:20px}
+.modal-bg{position:fixed;inset:0;background:rgba(10,37,64,.5);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--paper);border-radius:var(--r-xl);width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:modalIn .25s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-head{padding:24px 28px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;border-bottom:1px solid var(--line-soft)}
+.modal-title{font-size:20px;font-weight:600;letter-spacing:-.025em;line-height:1.2;color:var(--navy)}
+.modal-sub{font-size:11px;color:var(--ink-mute);margin-top:4px;font-weight:500}
+.modal-x{background:var(--paper-2);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--ink-soft);transition:all .15s var(--ease);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-x:hover{background:var(--tomato);color:#fff}
+.modal-body{padding:18px 28px 24px}
+.sect{margin-bottom:18px}
+.sect-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:10px;font-weight:600}
+.sect-lbl::before{display:none}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fgrid .full{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld-lbl{font-size:12px;color:var(--ink-soft);font-weight:500}
+.inp{background:var(--paper-2);border:1px solid transparent;border-radius:var(--r-md);padding:10px 13px;font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:all .15s var(--ease)}
+.inp:focus{background:var(--paper);border-color:var(--navy);box-shadow:0 0 0 3px rgba(55,138,221,.08)}
+.inp::placeholder{color:var(--ink-fade)}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237d8ba0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
+.docs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.doc-pick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .2s var(--ease);color:var(--ink-mute)}
+.doc-pick:hover{transform:translateY(-2px);background:var(--paper);border-color:var(--line)}
+.doc-pick.checked{border-color:var(--moss);background:var(--moss-soft);color:var(--moss)}
+.doc-pick.doc-issue:hover{color:var(--honey)}
+.doc-pick.doc-issue.checked{border-color:var(--honey);background:var(--honey-soft);color:var(--honey)}
+.doc-pick-emoji{display:flex;align-items:center;justify-content:center;height:24px}
+.doc-pick-lbl{font-size:11px;font-weight:600;color:var(--ink)}
+.doc-pick-state{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.04em}
+.doc-pick.checked .doc-pick-state{color:var(--moss)}
+.doc-pick.doc-issue.checked .doc-pick-state{color:var(--honey)}
+.sp{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.spo{background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);padding:14px;cursor:pointer;text-align:center;transition:all .15s var(--ease);color:var(--ink-mute)}
+.spo:hover{background:var(--paper);border-color:var(--line)}
+.spo.sel{background:var(--paper);box-shadow:var(--sh-sm)}
+.spo[data-s="pending"]{}
+.spo[data-s="pending"].sel{border-color:var(--tomato);color:var(--tomato);background:var(--tomato-soft)}
+.spo[data-s="delivered"].sel{border-color:var(--moss);color:var(--moss);background:var(--moss-soft)}
+.spo-emoji{display:flex;justify-content:center;align-items:center;height:24px;margin-bottom:6px}
+.spo-lbl{font-size:11px;font-weight:600;color:var(--ink)}
+.ap{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px}
+.apo{background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);padding:12px 6px;cursor:pointer;text-align:center;transition:all .15s var(--ease)}
+.apo:hover{background:var(--paper);border-color:var(--line)}
+.apo.sel{background:var(--navy-soft);box-shadow:var(--sh-sm);border-color:var(--navy)}
+.apo .assn-av{width:34px;height:34px;font-size:12px;margin:0 auto 6px}
+.apo-name{font-size:11px;font-weight:600;color:var(--ink)}
+.modal-foot{padding:14px 28px 24px;display:flex;gap:8px;justify-content:flex-end}
+.btn{padding:10px 20px;border-radius:var(--r-md);font-family:inherit;font-weight:500;font-size:13px;cursor:pointer;border:none;transition:all .15s var(--ease);display:inline-flex;align-items:center;gap:6px;letter-spacing:-.005em}
+.btn-pri{background:var(--navy);color:#fff}
+.btn-pri:hover{background:var(--navy-2)}
+.btn-pri:disabled{opacity:.5;cursor:not-allowed}
+.btn-gh{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+.btn-gh:hover{background:var(--paper-2);border-color:var(--ink-mute);color:var(--navy)}
+.btn-dng{background:transparent;color:var(--tomato);border:1px solid var(--line)}
+.btn-dng:hover{background:var(--tomato-soft);border-color:var(--tomato)}
+.uz{border:1.5px dashed var(--line);border-radius:var(--r-lg);padding:20px;text-align:center;cursor:pointer;transition:all .2s var(--ease);position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--paper-2)}
+.uz:hover,.uz.drag{border-color:var(--navy);background:var(--navy-soft)}
+.uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.uz-emoji{display:flex;align-items:center;justify-content:center}
+.uz-title{font-size:13px;font-weight:600;color:var(--navy)}
+.uz-sub{font-size:11px;color:var(--ink-mute);font-weight:500}
+.pdf-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.pdf-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
+.pdf-item.uploaded{background:var(--moss-soft);color:#0F6E56}
+.pdf-item.uploading{background:var(--honey-soft);color:var(--honey)}
+.pdf-item.error{background:var(--tomato-soft);color:var(--tomato)}
+.pdf-item-icon{font-size:16px;flex-shrink:0}
+.pdf-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.pdf-item-size{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7}
+.pdf-item-x{background:none;border:none;cursor:pointer;color:inherit;opacity:.5;font-size:14px;padding:2px 6px}
+.pdf-item-x:hover{opacity:1}
+.drive-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--ocean-soft);color:var(--ocean);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s var(--ease);margin-right:6px;margin-bottom:6px}
+.drive-link:hover{background:var(--ocean);color:var(--paper);transform:translateY(-1px)}
+
+/* Modern PDF drop zone (modal de detalles) */
+.pdf-drop{border:2px dashed var(--line);border-radius:var(--r-lg);padding:18px;text-align:center;cursor:pointer;transition:all .25s var(--ease);background:linear-gradient(135deg,var(--paper-2) 0%,var(--paper) 100%);display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;overflow:hidden}
+.pdf-drop::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(232,90,60,.08),transparent);transform:translateX(-100%);transition:transform .6s var(--ease)}
+.pdf-drop:hover{border-color:var(--tomato);background:var(--tomato-soft)}
+.pdf-drop:hover::before{transform:translateX(100%)}
+.pdf-drop.drag{border-color:var(--tomato);background:var(--tomato-soft);transform:scale(1.01)}
+.pdf-drop.uploading{border-color:var(--honey);background:var(--honey-soft);pointer-events:none;opacity:.7}
+.pdf-drop-icon{font-size:24px}
+.pdf-drop-text{font-size:13px;font-weight:600}
+.pdf-drop-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute)}
+
+/* History toggle */
+.history-toggle{width:100%;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s var(--ease)}
+.history-toggle:hover{background:var(--paper);border-color:var(--ink-mute);color:var(--ink)}
+.ht-icon{font-size:14px;opacity:.7}
+.ht-label{flex:1;text-align:left}
+.ht-chev{font-size:10px;opacity:.6;transition:transform .2s var(--ease)}
+
+/* Timeline — compact line-style */
+.timeline{display:flex;flex-direction:column;margin-top:10px;padding-left:6px;border-left:1px dashed var(--line)}
+.tl-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0 6px 14px;position:relative;font-size:11px;line-height:1.5}
+.tl-item::before{content:'';position:absolute;left:-4px;top:11px;width:7px;height:7px;background:var(--ink-mute);border-radius:50%;border:2px solid var(--paper)}
+.tl-item.tl-done::before{background:var(--moss)}
+.tl-item.tl-issue::before{background:var(--honey)}
+.tl-item.tl-issue{color:var(--honey)}
+.tl-item.tl-done{color:var(--moss)}
+.tl-item.tl-printed::before{background:#3b82f6}
+.tl-item.tl-printed{color:#1e40af}
+.tl-when{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7;margin-right:4px}
+.tl-body{flex:1;min-width:0;word-break:break-word}
+.tl-body b{font-weight:600}
+
+/* Issue badge on cards */
+.issue-badge{display:inline-block;background:var(--honey);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--r-full);letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;margin-left:4px}
+.card.has-issue{box-shadow:inset 3px 0 0 var(--honey)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--paper);padding:14px 20px;border-radius:var(--r-lg);font-size:13px;font-weight:500;z-index:9999;box-shadow:var(--sh-lg);transform:translateY(120px);opacity:0;transition:all .3s var(--bounce);max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--moss)}
+.toast.error{background:var(--tomato)}
+.view{display:none}
+.view.active{display:block}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--paper);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== v4 — sample flag, preview, litiges ===== */
+.sample-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--plum);color:#fff;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:5px;letter-spacing:.02em;vertical-align:middle}
+.card.is-sample::before{background:var(--plum)}
+.sample-toggle{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--paper-2);border:1.5px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:all .15s var(--ease)}
+.sample-toggle:hover{background:var(--paper);border-color:var(--line)}
+.sample-toggle.on{background:var(--plum-soft);border-color:var(--plum);color:var(--plum)}
+.sample-toggle .st-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--ink-fade);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:11px;color:transparent}
+.sample-toggle.on .st-box{background:var(--plum);border-color:var(--plum);color:#fff}
+.sample-toggle .st-txt{font-size:12px;font-weight:600;color:var(--ink)}
+.sample-toggle .st-sub{font-size:11px;color:var(--ink-mute)}
+/* file preview */
+.prev-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.prev-card{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--paper-2);border-radius:var(--r-md);font-size:12px}
+.prev-thumb{width:46px;height:46px;border-radius:6px;background:var(--paper-3);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--line)}
+.prev-thumb img{width:100%;height:100%;object-fit:cover}
+.prev-thumb svg{color:var(--ink-mute)}
+.prev-thumb.no-thumb::after{content:'IMG';font-size:9px;font-weight:700;color:var(--ink-mute)}
+.prev-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+.prev-size{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute)}
+.prev-eye{background:var(--ocean-soft);color:var(--ocean);border:none;border-radius:6px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.prev-eye:hover{background:var(--ocean);color:#fff}
+.prev-x{background:none;border:none;cursor:pointer;color:var(--ink-mute);padding:2px 6px}
+.prev-x:hover{color:var(--tomato)}
+/* preview lightbox */
+.preview-bg{position:fixed;inset:0;background:rgba(10,37,64,.82);backdrop-filter:blur(6px);z-index:2000;display:none;align-items:center;justify-content:center;padding:30px}
+.preview-bg.open{display:flex}
+.preview-frame{background:#fff;border-radius:12px;width:min(900px,92vw);height:min(86vh,900px);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+.preview-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;color:var(--navy)}
+.preview-body{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;background:var(--paper-2)}
+.preview-body iframe{width:100%;height:100%;border:0}
+.preview-body img{max-width:100%;max-height:100%;object-fit:contain}
+/* litige time bar */
+.tbar{height:5px;border-radius:3px;background:var(--paper-3);overflow:hidden;margin-top:4px}
+.tbar > span{display:block;height:100%;border-radius:3px}
+.tbar-g > span{background:var(--moss)}
+.tbar-a > span{background:var(--honey)}
+.tbar-r > span{background:var(--tomato)}
+.lit-age{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.lit-age.g{color:var(--moss)} .lit-age.a{color:var(--honey)} .lit-age.r{color:var(--tomato)}
+.restype{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:var(--ocean-soft);color:var(--ocean);letter-spacing:.02em}
+.litige-folder-link{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--plum-soft);color:var(--plum);border-radius:var(--r-md);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s}
+.litige-folder-link:hover{background:var(--plum);color:#fff}
+@media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:20px}.charts-grid{grid-template-columns:1fr}}
+/* ===== Stock module ===== */
+.historic-title{font-size:11px;font-weight:600;color:var(--ink-mute);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.historic-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--paper-2);border-radius:var(--r-md);border:1px solid var(--line);margin-bottom:8px;font-size:13px}
+.historic-item-icon{font-size:18px;flex-shrink:0}
+.historic-item-text{flex:1;min-width:0}
+.historic-item-main{font-weight:500;color:var(--ink);margin-bottom:2px}
+.historic-item-sub{font-size:12px;color:var(--ink-mute)}
+.btn-action-mail.pending{position:relative}
+.btn-action-mail.pending::after{content:'';position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--tomato);border-radius:50%;border:1px solid var(--paper)}
+
+/* Stock card redesigned — estado clarísimo, un solo color dominante por card */
+.stk-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:transform .15s var(--ease),box-shadow .15s var(--ease);box-shadow:var(--sh-sm);position:relative}
+.stk-card:hover{box-shadow:var(--sh-md)}
+.stk-card.st-absent  {border-top:4px solid var(--tomato)}
+.stk-card.st-arrived {border-top:4px solid var(--honey)}
+.stk-card.st-sent    {border-top:4px solid var(--moss)}
+
+.stk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;gap:12px}
+.stk-title{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.stk-sku{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.stk-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.stk-badge.b-absent  {background:var(--tomato-soft);color:#8B2C23}
+.stk-badge.b-arrived {background:var(--honey-soft);color:#9a630f}
+.stk-badge.b-sent    {background:var(--moss-soft);color:#137551}
+.stk-badge-dot{width:6px;height:6px;border-radius:50%}
+.stk-badge.b-absent .stk-badge-dot{background:var(--tomato)}
+.stk-badge.b-arrived .stk-badge-dot{background:var(--honey)}
+.stk-badge.b-sent .stk-badge-dot{background:var(--moss)}
+.stk-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.stk-btn-primary{padding:8px 14px;font-size:12px;background:var(--honey);color:#fff;border:none;border-radius:var(--r-full);cursor:pointer;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:transform .12s var(--ease),background .15s}
+.stk-btn-primary:hover{background:#c37e1e;transform:translateY(-1px)}
+.stk-btn-primary.b-send{background:var(--ocean)}
+.stk-btn-primary.b-send:hover{background:#2840c0}
+.stk-btn-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink-mute);transition:all .12s}
+.stk-btn-icon:hover{border-color:var(--tomato);color:var(--tomato);background:var(--tomato-soft)}
+
+/* stk-demand: sumario compacto */
+.stk-demand{padding:4px 18px 12px;font-size:12px;color:var(--ink-soft);display:flex;gap:14px;flex-wrap:wrap}
+.stk-demand b{color:var(--ink);font-weight:650}
+
+/* stk-arrival panel: solo si arrived — big numbers */
+.stk-arrival{margin:0 18px 14px;background:linear-gradient(135deg,var(--honey-soft) 0%,#fdf6e6 100%);border:1px solid #f0d9a8;border-radius:12px;padding:14px 16px}
+.stk-arr-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.stk-arr-metric{text-align:center}
+.stk-arr-num{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.stk-arr-num.n-arr {color:var(--honey)}
+.stk-arr-num.n-free{color:var(--moss)}
+.stk-arr-num.n-used{color:var(--ink-soft)}
+.stk-arr-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:600;margin-top:3px}
+.stk-arr-sep{width:1px;height:32px;background:#f0d9a8}
+.stk-arr-info{flex:1;min-width:120px;font-size:11.5px;color:var(--ink-soft);line-height:1.4}
+.stk-arr-info .date{color:var(--ink-mute);font-weight:600}
+.stk-arr-info .note{font-style:italic;margin-top:2px}
+.stk-arr-edit{padding:6px 10px;font-size:11px;background:var(--paper);border:1px solid #f0d9a8;border-radius:6px;cursor:pointer;color:#9a630f;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.stk-arr-edit:hover{background:var(--honey);color:#fff;border-color:var(--honey)}
+
+/* clientes */
+.stk-clients{padding:0 14px 14px;display:flex;flex-direction:column;gap:6px}
+.stk-clients-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:600;padding:0 4px 4px}
+.stk-client{background:var(--paper-2);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-left:3px solid var(--ink-fade);transition:background .12s}
+.stk-client:hover{background:var(--paper-3)}
+.stk-client.c-absent  {border-left-color:var(--tomato)}
+.stk-client.c-arrived {border-left-color:var(--honey)}
+.stk-client.c-sent    {border-left-color:var(--moss);opacity:.65}
+.stk-cli-main{flex:1;min-width:0}
+.stk-cli-name{font-weight:650;font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stk-cli-qty{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600;color:var(--ink-soft);font-family:'JetBrains Mono',monospace}
+.stk-cli-meta{font-size:11px;color:var(--ink-mute);margin-top:2px;display:flex;flex-wrap:wrap;gap:8px}
+.stk-cli-meta .cli-email{color:var(--ocean);cursor:pointer}
+.stk-cli-notes{font-size:11.5px;color:var(--ink-soft);font-style:italic;margin-top:5px;padding:5px 8px;background:var(--paper);border-radius:4px;border-left:2px solid var(--line)}
+.stk-cli-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.stk-cli-btn{padding:5px 9px;font-size:11px;border:none;border-radius:5px;cursor:pointer;font-weight:600;transition:all .12s}
+.stk-cli-btn.b-mail{background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);position:relative}
+.stk-cli-btn.b-mail:hover{border-color:var(--ocean);color:var(--ocean)}
+.stk-cli-btn.b-mail.pending::after{content:'';position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:var(--tomato);border-radius:50%;border:1.5px solid var(--paper)}
+.stk-cli-btn.b-send{background:var(--ocean);color:#fff}
+.stk-cli-btn.b-send:hover{background:#2840c0}
+.stk-cli-check{color:var(--moss);font-size:11px;font-weight:700;padding:5px 9px}
+.stk-cli-del{width:24px;height:24px;background:transparent;border:none;border-radius:4px;cursor:pointer;color:var(--ink-fade);display:inline-flex;align-items:center;justify-content:center}
+.stk-cli-del:hover{color:var(--tomato);background:var(--tomato-soft)}
+
+/* Botón reset stock */
+.stk-reset-btn{background:transparent;color:var(--ink-mute);border:1px solid var(--line);padding:8px 14px;border-radius:var(--r-full);font-size:12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.stk-reset-btn:hover{color:var(--tomato);border-color:var(--tomato);background:var(--tomato-soft)}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">Export<span style="color:var(--tomato)">.</span></div>
+    <div class="lock-title">Tableau de bord Export</div>
+    <div class="lock-sub">Enter 6-digit access code</div>
+    <div class="pin-row" id="pin-row">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinDigit(1)">1</button>
+      <button class="pin-btn" onclick="pinDigit(2)">2</button>
+      <button class="pin-btn" onclick="pinDigit(3)">3</button>
+      <button class="pin-btn" onclick="pinDigit(4)">4</button>
+      <button class="pin-btn" onclick="pinDigit(5)">5</button>
+      <button class="pin-btn" onclick="pinDigit(6)">6</button>
+      <button class="pin-btn" onclick="pinDigit(7)">7</button>
+      <button class="pin-btn" onclick="pinDigit(8)">8</button>
+      <button class="pin-btn" onclick="pinDigit(9)">9</button>
+      <button class="pin-btn delete" onclick="pinClear()">CLR</button>
+      <button class="pin-btn" onclick="pinDigit(0)">0</button>
+      <button class="pin-btn delete" onclick="pinDelete()" aria-label="Delete"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+  </div>
+</div>
+
+<div class="app" id="app-shell" style="display:none">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">Export<span style="color:var(--tomato)">.</span></div>
+    <div class="brand-dot"></div>
+  </div>
+  <div class="brand-sub">Tableau de bord Export</div>
+  <div class="id-card">
+    <div class="id-label">Who am I?</div>
+    <div class="id-opts" id="id-opts"></div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Operations</div>
+    <div class="nav-item active" onclick="switchView('today',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span>Active</span><span class="nav-count" id="nav-today">0</span></div>
+    <div class="nav-item" onclick="switchView('all',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Toutes les commandes</span><span class="nav-count" id="nav-all">0</span></div>
+    <div class="nav-item" onclick="switchView('analytics',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Statistiques</span></div>
+    <div class="nav-item" onclick="switchView('litiges',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></span><span>Litiges</span><span class="nav-count" id="nav-litiges">0</span></div>
+    <div class="nav-item" onclick="switchView('stock',this)"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Stock</span></div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Actions</div>
+    <div class="nav-item" onclick="openAdd()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span>Nouvelle commande</span></div>
+    <div class="nav-item" onclick="syncNow()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>Sync now</span></div>
+    <div class="nav-item" onclick="openDriveFolder()"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span><span>PDF folder</span></div>
+  </div>
+  <div class="sidebar-foot">
+    <div class="live-badge" id="live-badge">
+      <div class="live-dot"></div>
+      <span id="sync-text">Connecting…</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Lock dashboard</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div id="view-today" class="view active">
+    <div class="page-head">
+      <div>
+        <div class="greeting" id="greeting">Bonjour</div>
+        <h1 class="page-title" id="user-greet">Bonjour <span class="accent">Diana</span></h1>
+        <div class="page-sub" id="page-date">—</div>
+      </div>
+      <button class="add-btn" onclick="openAdd()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle commande</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search" placeholder="Chercher réf, client, tracking…" oninput="renderBoard()">
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="board" id="board"></div>
+  </div>
+
+  <div id="view-all" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Archive</div>
+        <h1 class="page-title">Toutes les <span class="accent">commandes</span></h1>
+        <div class="page-sub">Historique complet des commandes</div>
+      </div>
+    </div>
+    <div class="date-filter" id="date-filter-all"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-all" placeholder="Chercher réf, tracking, note…" oninput="renderAll()">
+      </div>
+      <div class="all-count" id="all-count"></div>
+    </div>
+    <div class="adv-filters" id="adv-filters"></div>
+    <div class="orders" id="orders-all"></div>
+  </div>
+
+  <div id="view-analytics" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Insights</div>
+        <h1 class="page-title">Statistiques <span class="accent">expéditions</span></h1>
+        <div class="page-sub">Aperçu des performances</div>
+      </div>
+    </div>
+    <div class="date-filter" id="date-filter-analytics"></div>
+    <div class="stats" id="stats-analytics"></div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Commandes dans le temps</div><div class="chart-box"><canvas id="chart-timeline"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Répartition par statut</div><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Par transporteur</div><div class="chart-box"><canvas id="chart-carrier"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Par personne</div><div class="chart-box"><canvas id="chart-assignee"></canvas></div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card chart-card-wide"><div class="chart-title">Heures de dépôt — quand arrivent les commandes</div><div class="chart-box"><canvas id="chart-hours"></canvas></div></div>
+    </div>
+    <div class="peak-summary" id="peak-summary"></div>
+  </div>
+  <div id="view-litiges" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Traçabilité</div>
+        <h1 class="page-title">Litiges <span class="accent">&amp; réclamations</span></h1>
+        <div class="page-sub">Réclamations clients — suivi et résolution</div>
+      </div>
+      <button class="add-btn" onclick="openAddLitige()"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouveau litige</button>
+    </div>
+    <div class="stats" id="stats-litiges"></div>
+    <div class="toolbar">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-litiges" placeholder="Rechercher client, produit, ID…" oninput="renderLitiges()">
+      </div>
+      <div class="chips" id="chips-litiges"></div>
+    </div>
+    <div class="orders" id="litiges-list"></div>
+  </div>
+
+  <div id="view-stock" class="view">
+    <div class="page-head">
+      <div>
+        <div class="greeting">Inventaire</div>
+        <h1 class="page-title">Ruptures de <span class="accent">stock</span></h1>
+        <div class="page-sub">Suivi des références en attente · Répartition intelligente</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="stk-reset-btn" onclick="resetStockState()" title="Effacer toutes les données de stock">🗑 Tout effacer</button>
+        <button class="add-btn" onclick="openAddStockPending()" style="background:var(--tomato)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle demande</button>
+        <button class="add-btn" onclick="openAddStockArrived()" style="background:var(--honey)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Ajouter stock reçu</button>
+      </div>
+    </div>
+    <div class="stats" id="stock-summary"></div>
+    <div class="toolbar" style="margin-bottom:18px">
+      <div class="search">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-stock" placeholder="Chercher référence (SOL 102, INT 129...)…" oninput="renderStock()">
+      </div>
+    </div>
+    <div id="stock-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="historic" style="margin-top:28px;padding-top:20px;border-top:1px solid var(--line)">
+      <div class="historic-title">Historique · Expédiés</div>
+      <div id="stock-historic"></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div class="modal-bg" id="m-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Nouvelle commande</div><div class="modal-sub">Tous les champs optionnels · Max 10 PDFs</div></div>
+      <button class="modal-x" onclick="closeModal('m-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">PDF files (up to 4)</div>
+        <div class="uz" id="uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <input type="file" accept=".pdf,image/*" multiple onchange="handleFiles(this)">
+          <div class="uz-emoji" style="color:var(--ocean)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="uz-title">Drop files or click</div>
+          <div class="uz-sub">Maximum 4 files</div>
+        </div>
+        <div class="pdf-list" id="pdf-list"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Détails de la commande</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Reference</label><input class="inp" id="a-ref" placeholder="RF2026/005124"></div>
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="a-client" placeholder="MAEGIS BV"></div>
+          <div class="fld"><label class="fld-lbl">Transporteur</label>
+            <select class="inp" id="a-carrier"><option>UPS</option><option>Dascher</option><option>Lyseo</option><option>Hecny</option><option>Other</option></select>
+          </div>
+          <div class="fld"><label class="fld-lbl">Tracking</label><input class="inp" id="a-tracking" placeholder="1Z…"></div>
+        </div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Documents ready</div>
+        <div class="docs-row">
+          <div class="doc-pick dp-invoice" id="dp-pdf" onclick="toggleDoc('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="dp-pdf-st">pending</div></div>
+          <div class="doc-pick dp-bl" id="dp-bl" onclick="toggleDoc('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="dp-bl-st">pending</div></div>
+          <div class="doc-pick dp-label" id="dp-label" onclick="toggleDoc('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="dp-label-st">pending</div></div>
+          <div class="doc-pick doc-issue" id="dp-issue" onclick="toggleDoc('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="dp-issue-st">no issue</div></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="a-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Assign to</div><div class="ap" id="a-assn-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="a-note" placeholder="Notes, instructions…"></textarea></div>
+      <div class="sect">
+        <div class="sect-lbl">Type d'envoi</div>
+        <div class="sample-toggle" id="a-sample-toggle" onclick="toggleSampleAdd()">
+          <div class="st-box" id="a-sample-box">M</div>
+          <div><div class="st-txt">Échantillons</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-add')">Annuler</button>
+      <button class="btn btn-pri" id="add-save-btn" onclick="addOrder()">Enregistrer →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-det">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title" id="d-client">—</div><div class="modal-sub" id="d-ref">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-det')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect" id="d-pdf-sect" style="display:none">
+        <div class="sect-lbl">PDFs attachés</div>
+        <div id="d-pdf-links"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Ajouter / corriger des PDFs</div>
+        <div class="pdf-drop" id="d-pdf-drop"
+             ondrop="handleDetailPdfDrop(event)"
+             ondragover="handleDetailPdfDragOver(event)"
+             ondragleave="handleDetailPdfDragLeave(event)"
+             onclick="document.getElementById('d-pdf-input').click()">
+          <div class="pdf-drop-icon" style="color:var(--ocean)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+          <div class="pdf-drop-text">Glisser un PDF ou cliquer</div>
+          <div class="pdf-drop-hint">Max 10 PDFs par commande</div>
+        </div>
+        <input type="file" id="d-pdf-input" accept="application/pdf,image/*" multiple style="display:none" onchange="handleDetailPdfPick(event)">
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Documents & indicateurs</div>
+        <div class="docs-row">
+          <div class="doc-pick dp-invoice" id="ddp-pdf" onclick="toggleDocDet('pdf')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="doc-pick-lbl">Facture</div><div class="doc-pick-state" id="ddp-pdf-st">en attente</div></div>
+          <div class="doc-pick dp-bl" id="ddp-bl" onclick="toggleDocDet('bl')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div><div class="doc-pick-lbl">BL</div><div class="doc-pick-state" id="ddp-bl-st">en attente</div></div>
+          <div class="doc-pick dp-label" id="ddp-label" onclick="toggleDocDet('label')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Étiquette</div><div class="doc-pick-state" id="ddp-label-st">en attente</div></div>
+          <div class="doc-pick doc-issue" id="ddp-issue" onclick="toggleDocDet('issue')"><div class="doc-pick-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></div><div class="doc-pick-lbl">Problème</div><div class="doc-pick-state" id="ddp-issue-st">aucun</div></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="d-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Assigned</div><div class="ap" id="d-assn-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Tracking</div><input class="inp" id="d-tracking" placeholder="Numéro de suivi"></div>
+      <div class="sect"><div class="sect-lbl">Notes</div><textarea class="inp" id="d-note" placeholder="Update notes…"></textarea></div>
+      <div class="sect">
+        <div class="sect-lbl">Type d'envoi</div>
+        <div class="sample-toggle" id="d-sample-toggle" onclick="toggleSampleDet()">
+          <div class="st-box" id="d-sample-box">M</div>
+          <div><div class="st-txt">Échantillons</div><div class="st-sub">Cocher si cet envoi contient des échantillons</div></div>
+        </div>
+      </div>
+      <div class="sect">
+        <button type="button" class="history-toggle" onclick="toggleHistory()">
+          <span class="ht-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r=".8" fill="currentColor"/></svg></span>
+          <span class="ht-label">Show history</span>
+          <span class="ht-chev" id="ht-chev"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+        </button>
+        <div id="d-timeline" class="timeline" style="display:none"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-dng" onclick="deleteOrder()">Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-gh" onclick="closeModal('m-det')">Annuler</button>
+      <button class="btn btn-pri" id="det-save-btn" onclick="saveOrder()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LITIGE: ADD MODAL ===== -->
+<div class="modal-bg" id="m-litige-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Nouveau litige</div><div class="modal-sub">Réclamation client · un dossier Drive sera créé</div></div>
+      <button class="modal-x" onclick="closeModal('m-litige-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Photos &amp; documents</div>
+        <div class="pdf-drop" id="la-drop"
+             ondrop="handleLitigeAddDrop(event)" ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             onclick="document.getElementById('la-file-input').click()">
+          <div class="pdf-drop-icon" style="color:var(--plum)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="pdf-drop-text">Déposer photos ou documents</div>
+          <div class="pdf-drop-hint">Seront enregistrés à la création du litige</div>
+        </div>
+        <input type="file" id="la-file-input" accept="image/*,.pdf,.heic,.heif" multiple style="display:none" onchange="handleLitigeAddPick(event)">
+        <div class="prev-list" id="la-files"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Client &amp; produit</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="l-client" placeholder="EUROSCREEN"></div>
+          <div class="fld"><label class="fld-lbl">Email contact</label><input class="inp" id="l-email" placeholder="acquisti@…"></div>
+          <div class="fld"><label class="fld-lbl">Produit</label><input class="inp" id="l-product" placeholder="SOL 102"></div>
+          <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="l-qty" placeholder="3"></div>
+          <div class="fld"><label class="fld-lbl">Commande liée (réf, optionnel)</label><input class="inp" id="l-order" placeholder="RF2026/…"></div>
+        </div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Problème</div>
+        <textarea class="inp" id="l-problem" placeholder="Description du problème signalé par le client…"></textarea>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Type de résolution</div>
+        <select class="inp" id="l-restype"></select>
+      </div>
+      <div class="sect">
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Valeur économique (€)</label><input class="inp" id="l-value" type="number" placeholder="392.60"></div>
+          <div class="fld"><label class="fld-lbl">Date limite</label><input class="inp" id="l-deadline" type="date"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="l-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Géré par</div><div class="ap" id="l-handler-pick"></div></div>
+      <div class="sect">
+        <div class="sect-lbl">Solution / note de progrès</div>
+        <textarea class="inp" id="l-solution" placeholder="Solution proposée, actions effectuées…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-litige-add')">Annuler</button>
+      <button class="btn btn-pri" id="litige-add-btn" onclick="addLitige()">Créer le litige →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LITIGE: DETAIL MODAL ===== -->
+<div class="modal-bg" id="m-litige-det">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title" id="ld-title">—</div><div class="modal-sub" id="ld-sub">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-litige-det')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect" id="ld-folder-sect"></div>
+      <div class="sect">
+        <div class="sect-lbl">Fichiers du dossier</div>
+        <div class="pdf-drop" id="ld-drop"
+             ondrop="handleLitigeDrop(event)" ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             onclick="document.getElementById('ld-file-input').click()">
+          <div class="pdf-drop-icon" style="color:var(--plum)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="pdf-drop-text">Déposer photo ou document du litige</div>
+          <div class="pdf-drop-hint">PDF / image — tout type</div>
+        </div>
+        <input type="file" id="ld-file-input" accept="image/*,.pdf,.heic,.heif" multiple style="display:none" onchange="handleLitigePick(event)">
+        <div class="prev-list" id="ld-files"></div>
+      </div>
+      <div class="sect">
+        <div class="sect-lbl">Client &amp; produit</div>
+        <div class="fgrid">
+          <div class="fld full"><label class="fld-lbl">Client</label><input class="inp" id="ld-client"></div>
+          <div class="fld"><label class="fld-lbl">Email contact</label><input class="inp" id="ld-email"></div>
+          <div class="fld"><label class="fld-lbl">Produit</label><input class="inp" id="ld-product"></div>
+          <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="ld-qty"></div>
+          <div class="fld"><label class="fld-lbl">Commande liée</label><input class="inp" id="ld-order"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Problème</div><textarea class="inp" id="ld-problem"></textarea></div>
+      <div class="sect"><div class="sect-lbl">Type de résolution</div><select class="inp" id="ld-restype"></select></div>
+      <div class="sect">
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Valeur économique (€)</label><input class="inp" id="ld-value" type="number"></div>
+          <div class="fld"><label class="fld-lbl">Date limite</label><input class="inp" id="ld-deadline" type="date"></div>
+        </div>
+      </div>
+      <div class="sect"><div class="sect-lbl">Statut</div><div class="sp" id="ld-status-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Géré par</div><div class="ap" id="ld-handler-pick"></div></div>
+      <div class="sect"><div class="sect-lbl">Solution / progrès</div><textarea class="inp" id="ld-solution"></textarea></div>
+      <div class="sect"><div class="sect-lbl">Remarques</div><textarea class="inp" id="ld-remarks"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-dng" onclick="deleteLitige()">Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-gh" onclick="closeModal('m-litige-det')">Annuler</button>
+      <button class="btn btn-pri" id="litige-det-btn" onclick="saveLitige()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREVIEW LIGHTBOX ===== -->
+<div class="preview-bg" id="preview-bg" onclick="if(event.target===this)closePreview()">
+  <div class="preview-frame">
+    <div class="preview-top">
+      <span id="preview-name">—</span>
+      <button class="modal-x" onclick="closePreview()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+  </div>
+</div>
+
+
+<!-- ===== STOCK: ADD & ALLOCATION MODALS ===== -->
+<div class="modal-bg" id="m-stock-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Nouvelle demande en attente</div><div class="modal-sub">Signaler une référence manquante</div></div>
+      <button class="modal-x" onclick="closeModal('m-stock-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Référence &amp; client</div>
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Référence (SKU)</label><input class="inp" id="sa-sku" placeholder="SOL 102"></div>
+          <div class="fld"><label class="fld-lbl">Client</label><input class="inp" id="sa-client" placeholder="Jesvy"></div>
+          <div class="fld"><label class="fld-lbl">Email client</label><input class="inp" id="sa-email" type="email" placeholder="contact@jesvy.com"></div>
+          <div class="fld"><label class="fld-lbl">Quantité</label><input class="inp" id="sa-qty" type="number" placeholder="8"></div>
+          <div class="fld"><label class="fld-lbl">ETA (date estimée)</label><input class="inp" id="sa-eta" type="date"></div>
+          <div class="fld full"><label class="fld-lbl">Notes (optionnel)</label><textarea class="inp" id="sa-notes" placeholder="Ex : urgence, contexte commercial, promesse faite au client…"></textarea></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-add')">Annuler</button>
+      <button class="btn btn-pri" onclick="addStockPending()">Enregistrer demande</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: À qui j'envoie? -->
+<div class="modal-bg" id="m-stock-allocation">
+  <div class="modal">
+    <div class="modal-title" style="padding:24px 28px 14px">À qui l'envoyer ?</div>
+    <div class="modal-body">
+      <div id="allocation-list"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-allocation')">Annuler</button>
+      <button class="btn btn-pri" onclick="confirmStockAllocation()">Confirmer expédition</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Marquer arrivée de stock -->
+<div class="modal-bg" id="m-stock-arrival">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Marquer arrivée</div><div class="modal-sub" id="ar-sku-lbl">—</div></div>
+      <button class="modal-x" onclick="closeModal('m-stock-arrival')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Réapprovisionnement reçu</div>
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Quantité arrivée</label><input class="inp" id="ar-qty" type="number" placeholder="100"></div>
+          <div class="fld"><label class="fld-lbl">Date d'arrivée</label><input class="inp" id="ar-date" type="date"></div>
+          <div class="fld full"><label class="fld-lbl">Note (optionnel)</label><textarea class="inp" id="ar-note" placeholder="Ex : Lot partiel, le reste arrive la semaine prochaine…"></textarea></div>
+        </div>
+        <div id="ar-demand-hint" style="font-size:12px;color:#928f86;margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-arrival')">Annuler</button>
+      <button class="btn btn-pri" onclick="saveMarkArrival()">Enregistrer arrivée</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ajouter stock reçu (nueva ref + arrival en un paso) -->
+<div class="modal-bg" id="m-stock-arrived-add">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Ajouter stock reçu</div><div class="modal-sub">Enregistrer directement des rouleaux arrivés</div></div>
+      <button class="modal-x" onclick="closeModal('m-stock-arrived-add')" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sect">
+        <div class="sect-lbl">Référence &amp; arrivée</div>
+        <div class="fgrid">
+          <div class="fld"><label class="fld-lbl">Référence (SKU)</label><input class="inp" id="aa-sku" placeholder="SOL 102"></div>
+          <div class="fld"><label class="fld-lbl">Quantité arrivée</label><input class="inp" id="aa-qty" type="number" placeholder="100"></div>
+          <div class="fld full"><label class="fld-lbl">Date d'arrivée</label><input class="inp" id="aa-date" type="date"></div>
+          <div class="fld full"><label class="fld-lbl">Note (optionnel)</label><textarea class="inp" id="aa-note" placeholder="Ex : Lot complet reçu de l'usine…"></textarea></div>
+        </div>
+        <div id="aa-existing-hint" style="font-size:12px;color:#928f86;margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" onclick="closeModal('m-stock-arrived-add')">Annuler</button>
+      <button class="btn btn-pri" onclick="saveAddStockArrived()">Enregistrer stock</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ICONS — outline SVGs with semantic color via currentColor
+// Use icon('name', size) to render. Color is controlled by parent CSS color.
+// ============================================================
+const ICONS = {
+  // documents & flags
+  invoice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+  bl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>',
+  label: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>',
+  warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>',
+  // status
+  pending: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  checkCircle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  circle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg>',
+  // ui
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  paperclip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r=".8" fill="currentColor"/></svg>',
+  chevronDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+  chevronUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
+  backspace: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+  spinner: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 1-9 9"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></path></svg>'
+};
+
+function icon(name, size = 16) {
+  const svg = ICONS[name] || '';
+  return svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+}
+
+// ⚠️ REPLACE THIS WITH YOUR NEW SCRIPT URL AFTER REDEPLOYING APPS SCRIPT V2
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdxCbHEOGNypczxUUanrQ9KNRf27LItWh6re944FQOY-xtB2NFfXM9xZaSl26f0RRPjg/exec';
+
+const FOLDER_ID = '1FO_oW2dDCt3PmALIg2RBvX6OhPqPQyHQ';
+const LITIGE_FOLDER_ID = '1czcttybVzfHAOmCBXdRyUJhd5m3uZk1K';
+const DRIVE_URL = `https://drive.google.com/drive/folders/${FOLDER_ID}`;
+const ACCESS_PIN = '220202';
+const PIN_VALID_HOURS = 8;
+const MAX_PDFS = 10;
+
+const USERS = [
+  {id:'DI',name:'Diana'},{id:'DA',name:'Daniel'},{id:'MA',name:'Martina'},
+  {id:'CA',name:'Carla'},{id:'OT',name:'Hayet'},
+  {id:'CL',name:'Carlos'},{id:'NJ',name:'N Jacopo'},{id:'JT',name:'Jacopo T'}
+];
+const STATUSES = [
+  {id:'pending',label:'En attente',icon:'pending'},
+  {id:'printed',label:'Imprimé',icon:'invoice'},
+  {id:'delivered',label:'Livré',icon:'checkCircle'}
+];
+const DATE_RANGES = [
+  {id:'today',label:'Aujourd\'hui'},{id:'yesterday',label:'Hier'},{id:'week',label:'Cette semaine'},
+  {id:'month',label:'30 jours'},{id:'quarter',label:'90 jours'},{id:'all',label:'Tout'},
+  {id:'custom',label:'Période perso'}
+];
+
+let state = {
+  orders:[], currentUser:localStorage.getItem('export_user')||'DI',
+  filter:'all', dateRange:'all', analyticsDateRange:'month',
+  filterUser:'all', filterCarrier:'all', filterClient:'', customFrom:'', customTo:'',
+  currentId:null, addStatus:'pending', addAssn:'DI',
+  detStatus:'pending', detAssn:'DI',
+  addDocs:{pdf:false,bl:false,label:false,issue:false},
+  detDocs:{pdf:false,bl:false,label:false,issue:false},
+  pdfFiles:[], pinInput:'', charts:{},
+  addSample:false, detSample:false,
+  litiges:[], litigeFilter:'open', currentLitigeId:null,
+  litStatus:'open', litHandler:'DI', detLitStatus:'open', detLitHandler:'DI',
+  litFiles:[]
+};
+
+const $ = id => document.getElementById(id);
+const userName = id => USERS.find(u=>u.id===id)?.name || id;
+const getStatus = id => STATUSES.find(s=>s.id===id);
+const fmtAgo = ts => {
+  const d = Date.now() - ts;
+  const m = Math.floor(d/60000), h = Math.floor(d/3600000), days = Math.floor(d/86400000);
+  if (m < 1) return 'now';
+  if (m < 60) return `${m}min ago`;
+  if (h < 24) return `${h}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString('en-US',{day:'2-digit',month:'short'});
+};
+const esc = s => !s?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).substring(2,7);
+
+function toast(msg, type='success') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+function openDriveFolder() { window.open(DRIVE_URL, '_blank'); }
+
+// AUTH
+function checkAuth() {
+  const a = localStorage.getItem('export_auth');
+  if (!a) return false;
+  if (Date.now() > parseInt(a)) { localStorage.removeItem('export_auth'); return false; }
+  return true;
+}
+function unlock() {
+  localStorage.setItem('export_auth', (Date.now() + PIN_VALID_HOURS*3600000).toString());
+  $('lock-screen').classList.add('hidden');
+  $('app-shell').style.display = 'grid';
+  init();
+}
+function logout() {
+  if (!confirm('Lock the dashboard?')) return;
+  localStorage.removeItem('export_auth');
+  location.reload();
+}
+function updatePinDots() {
+  document.querySelectorAll('#pin-row .pin-dot').forEach((dot, i) => {
+    if (i < state.pinInput.length) { dot.classList.add('filled'); dot.textContent = '•'; }
+    else { dot.classList.remove('filled'); dot.textContent = ''; }
+  });
+}
+function pinDigit(n) {
+  if (state.pinInput.length >= 6) return;
+  state.pinInput += n;
+  updatePinDots();
+  $('pin-error').textContent = '';
+  if (state.pinInput.length === 6) {
+    if (state.pinInput === ACCESS_PIN) setTimeout(unlock, 200);
+    else {
+      document.querySelectorAll('#pin-row .pin-dot').forEach(d => d.classList.add('error'));
+      $('pin-error').textContent = 'Invalid access code';
+      setTimeout(() => {
+        state.pinInput = '';
+        updatePinDots();
+        document.querySelectorAll('#pin-row .pin-dot').forEach(d => d.classList.remove('error'));
+      }, 600);
+    }
+  }
+}
+function pinDelete() { state.pinInput = state.pinInput.slice(0,-1); updatePinDots(); }
+function pinClear() { state.pinInput = ''; updatePinDots(); $('pin-error').textContent = ''; }
+
+document.addEventListener('keydown', e => {
+  if ($('lock-screen').classList.contains('hidden')) return;
+  if (e.key >= '0' && e.key <= '9') pinDigit(parseInt(e.key));
+  else if (e.key === 'Backspace') pinDelete();
+  else if (e.key === 'Escape') pinClear();
+});
+
+// ═══ API — text/plain to avoid CORS preflight ═══
+async function callScript(payload) {
+  const resp = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const result = await resp.json();
+  if (result.error) throw new Error(result.error);
+  return result;
+}
+
+async function loadFromSheets() {
+  try {
+    $('sync-text').textContent = 'Chargement…';
+    $('live-badge').classList.remove('offline');
+    
+    const resp = await fetch(SCRIPT_URL + '?action=list', {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    
+    const rows = data.data || [];
+    // Skip header (row 0), filter empty rows
+    // Column order (v3): ID, Ref, Client, Carrier, Tracking, Status, Notes, Assigned,
+    //   CreatedAt, UpdatedAt, DeliveredAt, DeliveredBy, Invoice, BL, Label, PDF_URLs, IssueHistory
+    state.orders = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map(row => {
+      const rawStatus = row[5] || 'pending';
+      // Legacy migration: old "issue" status → new "issue" check + status reverts to pending
+      const isLegacyIssue = rawStatus === 'issue';
+      return {
+        id: row[0] || uid(),
+        ref: row[1]||'',
+        client: row[2]||'',
+        carrier: row[3]||'UPS',
+        tracking: row[4]!=null ? String(row[4]) : '',
+        status: isLegacyIssue ? 'pending' : rawStatus,
+        note: row[6]||'',
+        user: row[7]||'DI',
+        createdAt: row[8] ? new Date(row[8]).getTime() : Date.now(),
+        updatedAt: row[9] ? new Date(row[9]).getTime() : null,
+        deliveredAt: row[10] ? new Date(row[10]).getTime() : null,
+        deliveredBy: row[11]||'',
+        pdf: row[12]==='TRUE'||row[12]===true,
+        bl: row[13]==='TRUE'||row[13]===true,
+        label: row[14]==='TRUE'||row[14]===true,
+        pdfUrls: row[15] ? parsePdfUrls(String(row[15])) : [],
+        issueHistory: row[16]||'',
+        issue: (row[17]==='TRUE'||row[17]===true) || isLegacyIssue,
+        isSample: row[18]==='TRUE'||row[18]===true,
+        litigeId: row[19]||'',
+        printedAt: row[20]||'',
+        printedBy: row[21]||''
+      };
+    });
+    
+    render();
+    $('sync-text').textContent = `Live · ${state.orders.length} commandes`;
+  } catch(e) {
+    console.error('Erreur de chargement :', e);
+    $('sync-text').textContent = 'Offline';
+    $('live-badge').classList.add('offline');
+    toast('Erreur de connexion : ' + e.message, 'error');
+  }
+}
+
+async function saveAllToSheets() {
+  const orders = state.orders.map(o => ({
+    id: o.id,
+    ref: o.ref || '',
+    client: o.client || '',
+    carrier: o.carrier || '',
+    tracking: o.tracking || '',
+    status: o.status || 'pending',
+    note: o.note || '',
+    user: o.user || 'DI',
+    createdAt: new Date(o.createdAt).toISOString(),
+    updatedAt: o.updatedAt ? new Date(o.updatedAt).toISOString() : '',
+    deliveredAt: o.deliveredAt ? new Date(o.deliveredAt).toISOString() : '',
+    deliveredBy: o.deliveredBy || '',
+    pdf: o.pdf?'TRUE':'FALSE',
+    bl: o.bl?'TRUE':'FALSE',
+    label: o.label?'TRUE':'FALSE',
+    pdfUrls: (o.pdfUrls||[]).join('§§§'),
+    issueHistory: o.issueHistory || '',
+    issue: o.issue?'TRUE':'FALSE',
+    isSample: o.isSample?'TRUE':'FALSE',
+    litigeId: o.litigeId||'',
+    printedAt: o.printedAt||'',
+    printedBy: o.printedBy||''
+  }));
+
+  await callScript({action: 'save', orders});
+}
+
+async function uploadPDF(file, refName) {
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+
+  // v4 — keep ORIGINAL filename; only prefix ref so files group in Drive
+  const safeRef = (refName||'').replace(/[\\/:*?\"<>|]/g,'-').trim();
+  const filename = safeRef ? `${safeRef} - ${file.name}` : file.name;
+
+  const result = await callScript({
+    action: 'upload',
+    fileData: base64,
+    mime: file.type || 'application/pdf',
+    filename: filename
+  });
+
+  // return name|||url so the dashboard can show the real name later
+  return file.name + '|||' + result.url;
+}
+
+// pdfUrls entries are stored as "name|||url" — backward compatible with plain url
+function pdfUrlOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?x:x.slice(i+3); }
+function pdfNameOf(entry){ const x=String(entry||''); const i=x.indexOf('|||'); return i<0?'':x.slice(0,i); }
+function pdfIdOf(entry){ const p=String(entry||'').split('|||'); return p.length>2?p[2]:''; }
+function isImageName(n){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(String(n||'')); }
+// parse PDF URLs from sheet — handles ALL formats:
+// new: entry§§§entry  (v4 clean)
+// mid: name|||url|||id  joined by §§§ or |
+// old: name|url|name|url  (v3 broken)
+// oldest: url|url  (plain URLs)
+function parsePdfUrls(raw) {
+  if (!raw) return [];
+  // v4 clean format
+  if (raw.includes('§§§')) return raw.split('§§§').filter(Boolean);
+  
+  // extract every Drive/Google URL from the raw string
+  const urlRe = /https:\/\/drive\.google\.com\/[^|§\s]*/g;
+  const urls = [];
+  let m;
+  while ((m = urlRe.exec(raw)) !== null) urls.push({url: m[0], start: m.index});
+  
+  if (urls.length === 0) {
+    // no drive URLs — maybe plain http URLs
+    return raw.split('|').filter(u => /^https?:/.test(u));
+  }
+  
+  // for each URL, grab the filename that appears before it
+  const entries = [];
+  for (let i = 0; i < urls.length; i++) {
+    const u = urls[i];
+    // find where the name starts: after the previous URL ended, or from the beginning
+    let nameStart = 0;
+    if (i > 0) {
+      nameStart = urls[i-1].start + urls[i-1].url.length;
+    }
+    // extract text between nameStart and this URL start, strip separators
+    let namePart = raw.substring(nameStart, u.start).replace(/^[|§]+/, '').replace(/[|§]+$/, '');
+    if (namePart) {
+      entries.push(namePart + '|||' + u.url);
+    } else {
+      entries.push(u.url);
+    }
+  }
+  return entries;
+}
+
+
+async function deletePdfFromDrive(fileUrl) {
+  try {
+    await callScript({action: 'deleteFile', fileUrl});
+    return true;
+  } catch(e) {
+    console.warn('Could not delete from Drive:', e.message);
+    return false;
+  }
+}
+
+function fmtDateTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+
+function syncNow() {
+  loadFromSheets().then(() => toast('Synced'));
+}
+
+// FILTERING
+function inDateRange(ts, range) {
+  const now = Date.now(), day = 86400000;
+  const tsN = +ts; // safety: convert
+  switch(range) {
+    case 'today': {
+      const s = new Date(); s.setHours(0,0,0,0);
+      return tsN >= s.getTime();
+    }
+    case 'yesterday': {
+      const e = new Date(); e.setHours(0,0,0,0); // today 00:00
+      const st = e.getTime() - day; // yesterday 00:00
+      return tsN >= st && tsN < e.getTime();
+    }
+    case 'week': {
+      // monday-sunday this week
+      const d = new Date(); d.setHours(0,0,0,0);
+      const dow = d.getDay() || 7; // 1=Mon..7=Sun
+      d.setDate(d.getDate() - (dow-1)); // back to monday
+      return tsN >= d.getTime();
+    }
+    case 'month': return now - tsN < 30*day;
+    case 'quarter': return now - tsN < 90*day;
+    case 'custom': {
+      const from = state.customFrom ? new Date(state.customFrom+'T00:00:00').getTime() : 0;
+      const to = state.customTo ? new Date(state.customTo+'T23:59:59').getTime() : Infinity;
+      return tsN >= from && tsN <= to;
+    }
+    default: return true;
+  }
+}
+function filterByDate(orders, range) { return orders.filter(o => inDateRange(o.createdAt, range)); }
+
+// RENDER
+function renderIdentity() {
+  $('id-opts').innerHTML = USERS.map(u => `
+    <button class="id-btn ${state.currentUser===u.id?'active':''}" onclick="setUser('${u.id}')">
+      <span class="av av-${u.id}">${u.id}</span><span>${u.name}</span>
+    </button>
+  `).join('');
+  $('user-greet').innerHTML = `Bonjour <span class="accent">${userName(state.currentUser)}</span>`;
+  const h = new Date().getHours();
+  $('greeting').textContent = h < 12 ? 'Bonjour' : h < 19 ? 'Bon après-midi' : 'Bonsoir';
+  $('page-date').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function setUser(id) { state.currentUser=id; localStorage.setItem('export_user',id); renderIdentity(); toast(`Hello ${userName(id)}`); }
+
+function renderStats() {
+  const active = state.orders.filter(o => o.status !== 'delivered');
+  $('nav-today').textContent = active.length;
+  $('nav-all').textContent = state.orders.length;
+  
+  const todayDel = state.orders.filter(o => o.status==='delivered' && inDateRange(o.createdAt,'today')).length;
+  const weekDel = state.orders.filter(o => o.status==='delivered' && inDateRange(o.createdAt,'week')).length;
+  
+  const stats = [
+    {id:'pending',label:'En attente',iconKey:'pending',count:state.orders.filter(o=>o.status==='pending').length},
+    {id:'delivered',label:'Livré',iconKey:'checkCircle',count:state.orders.filter(o=>o.status==='delivered').length,trend:`+${todayDel} aujourd'hui`},
+    {id:'issue',label:'Problèmes',iconKey:'warning',count:state.orders.filter(o=>!!o.issue).length},
+    {id:'total',label:'Total',iconKey:'box',count:state.orders.length,trend:`${weekDel} cette semaine`}
+  ];
+
+  $('stats').innerHTML = stats.map(s => `
+    <div class="stat stat-${s.id}" onclick="filterBy('${s.id}')">
+      <div class="stat-icon">${icon(s.iconKey, 22)}</div>
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.count}</div>
+      ${s.trend?`<div class="stat-trend">${s.trend}</div>`:''}
+    </div>
+  `).join('');
+}
+
+function renderChips() {
+  const c = {
+    all: state.orders.filter(o=>o.status!=='delivered').length,
+    mine: state.orders.filter(o=>o.user===state.currentUser && o.status!=='delivered').length,
+    pending: state.orders.filter(o=>o.status==='pending').length,
+    printed: state.orders.filter(o=>o.status==='printed').length,
+    issue: state.orders.filter(o=>!!o.issue && o.status!=='delivered').length,
+    sample: state.orders.filter(o=>o.isSample && o.status!=='delivered').length
+  };
+  $('chips').innerHTML = `
+    <button class="chip ${state.filter==='all'?'active':''}" onclick="setFilter('all')">Tous<span class="chip-count">${c.all}</span></button>
+    <button class="chip ${state.filter==='mine'?'active':''}" onclick="setFilter('mine')">Mes commandes<span class="chip-count">${c.mine}</span></button>
+    <button class="chip ${state.filter==='pending'?'active':''}" onclick="setFilter('pending')">En attente<span class="chip-count">${c.pending}</span></button>
+    <button class="chip ${state.filter==='printed'?'active':''}" onclick="setFilter('printed')">Imprimé<span class="chip-count">${c.printed}</span></button>
+    <button class="chip ${state.filter==='issue'?'active':''}" onclick="setFilter('issue')">Problèmes<span class="chip-count">${c.issue}</span></button>
+    <button class="chip ${state.filter==='sample'?'active':''}" onclick="setFilter('sample')">Échantillons<span class="chip-count">${c.sample}</span></button>
+  `;
+}
+
+function renderOrders() {
+  const q = ($('search').value||'').toLowerCase();
+  let list = state.orders.filter(o => o.status !== 'delivered');
+  if (state.filter === 'mine') list = list.filter(o => o.user === state.currentUser);
+  else if (state.filter === 'issue') list = list.filter(o => !!o.issue);
+  else if (state.filter === 'sample') list = list.filter(o => !!o.isSample);
+  else if (state.filter !== 'all') list = list.filter(o => o.status === state.filter);
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+o.note).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+
+  const el = $('orders');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">Tout est à jour !</div><div class="empty-sub">Aucune commande dans cette catégorie</div><button class="btn btn-pri" onclick="openAdd()">+ Créer commande</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(orderCard).join('');
+}
+
+function renderDateFilter(targetId, currentValue, callback) {
+  $(targetId).innerHTML = DATE_RANGES.map(r => `
+    <button class="date-btn ${currentValue===r.id?'active':''}" onclick="${callback}('${r.id}')">${r.label}</button>
+  `).join('');
+}
+
+function renderAll() {
+  renderDateFilter('date-filter-all', state.dateRange, 'setDateRange');
+  renderAdvancedFilters();
+  const q = ($('search-all').value||'').toLowerCase();
+  const qClient = (state.filterClient||'').toLowerCase();
+  let list = filterByDate(state.orders, state.dateRange);
+  if (state.filterUser !== 'all') list = list.filter(o => o.user === state.filterUser);
+  if (state.filterCarrier !== 'all') list = list.filter(o => (o.carrier||'') === state.filterCarrier);
+  if (state.filterStatus && state.filterStatus !== 'all') list = list.filter(o => o.status === state.filterStatus);
+  if (qClient) list = list.filter(o => (o.client||'').toLowerCase().includes(qClient));
+  if (q) list = list.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+(o.note||'')).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+  
+  // counter summary
+  const countEl = $('all-count');
+  if (countEl) countEl.textContent = list.length + ' commande' + (list.length===1?'':'s');
+  
+  const el = $('orders-all');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div><div class="empty-title">Aucun résultat</div><div class="empty-sub">Ajustez les filtres ou changez la période</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(orderCard).join('');
+}
+
+function renderAdvancedFilters() {
+  const bar = $('adv-filters');
+  if (!bar) return;
+  // unique carriers from data
+  const carriers = [...new Set(state.orders.map(o=>o.carrier).filter(Boolean))].sort();
+  bar.innerHTML = `
+    <div class="flt-group">
+      <span class="flt-lbl">Personne</span>
+      <select class="flt-sel" onchange="setFilterUser(this.value)">
+        <option value="all" ${state.filterUser==='all'?'selected':''}>All</option>
+        ${USERS.map(u=>`<option value="${u.id}" ${state.filterUser===u.id?'selected':''}>${u.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Transporteur</span>
+      <select class="flt-sel" onchange="setFilterCarrier(this.value)">
+        <option value="all" ${state.filterCarrier==='all'?'selected':''}>All</option>
+        ${carriers.map(c=>`<option value="${esc(c)}" ${state.filterCarrier===c?'selected':''}>${esc(c)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Statut</span>
+      <select class="flt-sel" onchange="setFilterStatus(this.value)">
+        <option value="all" ${(!state.filterStatus||state.filterStatus==='all')?'selected':''}>All</option>
+        ${STATUSES.map(st=>`<option value="${st.id}" ${state.filterStatus===st.id?'selected':''}>${st.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flt-group">
+      <span class="flt-lbl">Client</span>
+      <input class="flt-inp" placeholder="contient…" value="${esc(state.filterClient||'')}" oninput="setFilterClient(this.value)">
+    </div>
+    ${state.dateRange==='custom' ? `
+      <div class="flt-group">
+        <span class="flt-lbl">Du</span>
+        <input class="flt-inp" type="date" value="${state.customFrom||''}" onchange="setCustomFrom(this.value)">
+      </div>
+      <div class="flt-group">
+        <span class="flt-lbl">Au</span>
+        <input class="flt-inp" type="date" value="${state.customTo||''}" onchange="setCustomTo(this.value)">
+      </div>
+    ` : ''}
+    <button class="flt-clear" onclick="clearAdvancedFilters()">Effacer filtres</button>
+  `;
+}
+function setFilterUser(v){ state.filterUser=v; renderAll(); }
+function setFilterCarrier(v){ state.filterCarrier=v; renderAll(); }
+function setFilterStatus(v){ state.filterStatus=v; renderAll(); }
+function setFilterClient(v){ state.filterClient=v; renderAll(); }
+function setCustomFrom(v){ state.customFrom=v; renderAll(); }
+function setCustomTo(v){ state.customTo=v; renderAll(); }
+function clearAdvancedFilters(){
+  state.filterUser='all'; state.filterCarrier='all'; state.filterStatus='all';
+  state.filterClient=''; state.customFrom=''; state.customTo=''; state.dateRange='all';
+  renderAll();
+}
+
+function setDateRange(r) { state.dateRange = r; renderAll(); }
+function setStatistiquesDateRange(r) { state.analyticsDateRange = r; renderStatistiques(); }
+
+function orderCard(o) {
+  const s = getStatus(o.status) || {label: o.status, icon: 'circle'};
+  const cmt = o.note
+    ? `<div class="card-comment"><span>${esc(o.note)}</span></div>`
+    : '';
+  const pdfBadge = o.pdfUrls && o.pdfUrls.length
+    ? `<span class="pdf-count">${icon('paperclip',10)} ${o.pdfUrls.length}</span>` : '';
+  const displayRef = o.ref || `(no ref)`;
+  const displayClient = o.client || `(no client)`;
+  const issueClass = o.issue ? 'has-issue' : '';
+  const issueBadge = o.issue
+    ? `<span class="issue-badge">${icon('warning',9)} Issue</span>` : '';
+
+  const sampleBadge = o.isSample ? `<span class="sample-badge" title="Échantillons">M</span>` : '';
+  const sampleClass = o.isSample ? 'is-sample' : '';
+  return `
+    <div class="card s-${o.status} ${issueClass} ${sampleClass}" onclick="openDetail('${esc(o.id)}')">
+      <div class="card-head">
+        <div class="card-title-block">
+          <div class="card-ref">${esc(displayRef)} ${sampleBadge} ${pdfBadge} ${issueBadge}</div>
+          <div class="card-client">${esc(displayClient)}</div>
+        </div>
+        <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
+      </div>
+      <div class="card-docs">
+        <div class="doc-tick ${o.pdf?'on':'off'}">${o.pdf?icon('check',11):icon('circle',11)}<span>Fact</span></div>
+        <div class="doc-tick ${o.bl?'on':'off'}">${o.bl?icon('check',11):icon('circle',11)}<span>BL</span></div>
+        <div class="doc-tick ${o.label?'on':'off'}">${o.label?icon('check',11):icon('circle',11)}<span>Étiquette</span></div>
+      </div>
+      <div class="card-meta">
+        <div><span class="meta-lbl">Via</span> ${esc(o.carrier)}</div>
+        ${o.tracking?`<div><span class="meta-lbl">Suivi</span> <span class="tracking-pill">${esc(String(o.tracking).substring(0,12))}</span></div>`:''}
+        <div class="card-ago">${fmtAgo(o.createdAt)}</div>
+      </div>
+      ${cmt}
+      <div class="card-foot">
+        <div class="pill pill-${o.status}"><span class="pill-dot"></span>${s.label}</div>
+      </div>
+    </div>
+  `;
+}
+
+
+// ===== KANBAN BOARD (3 columns) =====
+function renderBoard() {
+  const el = $('board');
+  if (!el) return;
+  const q = ($('search')?.value||'').toLowerCase();
+
+  // base list: respect chip filter (mine / issue / sample), but NOT status (board shows all 3)
+  let base = state.orders.slice();
+  if (state.filter === 'mine') base = base.filter(o => o.user === state.currentUser);
+  else if (state.filter === 'issue') base = base.filter(o => !!o.issue);
+  else if (state.filter === 'sample') base = base.filter(o => !!o.isSample);
+  if (q) base = base.filter(o => (o.ref+' '+o.client+' '+o.tracking+' '+(o.note||'')).toLowerCase().includes(q));
+
+  const cols = [
+    {id:'pending',   label:'En attente',   sub:'À imprimer',  icon:'pending'},
+    {id:'printed',   label:'Imprimé',   sub:'Prêt à expédier',   icon:'invoice'},
+    {id:'delivered', label:'Livré', sub:'Expédié',         icon:'checkCircle'}
+  ];
+
+  el.innerHTML = cols.map(col => {
+    let items = base.filter(o => o.status === col.id);
+    items.sort((a,b) => b.createdAt - a.createdAt);
+    const cards = items.length
+      ? items.map(boardCard).join('')
+      : `<div class="col-empty">Aucune commande</div>`;
+    return `
+      <div class="col col-${col.id}">
+        <div class="col-head">
+          <div class="col-head-left">
+            <span class="col-icon col-icon-${col.id}">${icon(col.icon,15)}</span>
+            <div>
+              <div class="col-title">${col.label}</div>
+              <div class="col-sub">${col.sub}</div>
+            </div>
+          </div>
+          <span class="col-count">${items.length}</span>
+        </div>
+        <div class="col-body">${cards}</div>
+      </div>`;
+  }).join('');
+}
+
+// compact card for the board columns
+// ===== Aging timer for pending cards (4h target) =====
+function hoursSince(ts) {
+  return (Date.now() - (+ts)) / 3600000;
+}
+function ageColor(h) {
+  // 0-2h green, 2-3h amber, 3-4h orange, 4h+ red
+  if (h < 2) return {cls:'age-g', pct: Math.min(h/4*100,100)};
+  if (h < 3) return {cls:'age-a', pct: Math.min(h/4*100,100)};
+  if (h < 4) return {cls:'age-o', pct: Math.min(h/4*100,100)};
+  return {cls:'age-r', pct: 100};
+}
+function fmtElapsed(h) {
+  if (h < 1) { const m = Math.round(h*60); return m + ' min'; }
+  if (h < 24) { const hh = Math.floor(h); const m = Math.round((h-hh)*60); return hh + 'h' + (m>0?(' '+m+'m'):''); }
+  const d = Math.floor(h/24); return d + 'j';
+}
+function agingBar(o) {
+  // only show for pending orders
+  if (o.status !== 'pending') return '';
+  const h = hoursSince(o.createdAt);
+  const a = ageColor(h);
+  const overdue = h >= 4;
+  return `
+    <div class="aging ${a.cls}">
+      <div class="aging-track"><div class="aging-fill" style="width:${a.pct}%"></div></div>
+      <span class="aging-txt">${overdue ? '⚠ ' : ''}${fmtElapsed(h)}${overdue ? ' · retard' : ''}</span>
+    </div>`;
+}
+
+function boardCard(o) {
+  const displayRef = o.ref || '(no ref)';
+  const displayClient = o.client || '(no client)';
+  const pdfBadge = o.pdfUrls && o.pdfUrls.length
+    ? `<span class="pdf-count">${icon('paperclip',10)} ${o.pdfUrls.length}</span>` : '';
+  const issueBadge = o.issue ? `<span class="issue-badge">${icon('warning',9)} Issue</span>` : '';
+  const sampleBadge = o.isSample ? `<span class="sample-badge" title="Échantillons">M</span>` : '';
+  const sampleClass = o.isSample ? 'is-sample' : '';
+  const issueClass = o.issue ? 'has-issue' : '';
+  // reference data: created date + creator
+  const created = new Date(o.createdAt);
+  const createdStr = created.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  return `
+    <div class="bcard ${issueClass} ${sampleClass}" onclick="openDetail('${esc(o.id)}')">
+      <div class="bcard-top">
+        <div class="bcard-ref">${esc(displayRef)} ${sampleBadge}</div>
+        <div class="assn-av av-${o.user}" title="${userName(o.user)}">${o.user}</div>
+      </div>
+      <div class="bcard-client">${esc(displayClient)}</div>
+      <div class="bcard-flags">
+        <span class="dt ${o.pdf?'on':''}">Fact</span>
+        <span class="dt ${o.bl?'on':''}">BL</span>
+        <span class="dt ${o.label?'on':''}">Étiquette</span>
+        ${pdfBadge} ${issueBadge}
+      </div>
+      ${agingBar(o)}
+      <div class="bcard-foot">
+        <span class="bcard-via">${esc(o.carrier||'—')}</span>
+        <span class="bcard-created">${createdStr} · ${o.user}</span>
+      </div>
+    </div>`;
+}
+
+function setFilter(f) { state.filter = f; render(); }
+function filterBy(s) { state.filter = s; render(); }
+
+function switchView(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  $('view-'+v).classList.add('active');
+  if (el) el.classList.add('active');
+  if (v === 'all') renderAll();
+  if (v === 'analytics') renderStatistiques();
+  if (v === 'litiges') renderLitiges();
+  if (v === 'stock') renderStock();
+}
+
+function render() { renderStats(); renderChips(); renderBoard(); }
+
+// ANALYTICS
+function renderStatistiques() {
+  renderDateFilter('date-filter-analytics', state.analyticsDateRange, 'setStatistiquesDateRange');
+  const filtered = filterByDate(state.orders, state.analyticsDateRange);
+  
+  const pending = filtered.filter(o => o.status==='pending').length;
+  const delivered = filtered.filter(o => o.status==='delivered').length;
+  const issue = filtered.filter(o => !!o.issue).length;
+  const total = filtered.length;
+  const rate = total ? Math.round(delivered/total*100) : 0;
+  
+  $('stats-analytics').innerHTML = `
+    <div class="stat stat-total"><div class="stat-icon">${icon('box',22)}</div><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
+    <div class="stat stat-delivered"><div class="stat-icon">${icon('checkCircle',22)}</div><div class="stat-label">Livré</div><div class="stat-value">${delivered}</div><div class="stat-trend">${rate}% taux</div></div>
+    <div class="stat stat-pending"><div class="stat-icon">${icon('pending',22)}</div><div class="stat-label">En attente</div><div class="stat-value">${pending}</div></div>
+    <div class="stat stat-issue"><div class="stat-icon">${icon('warning',22)}</div><div class="stat-label">Problèmes</div><div class="stat-value">${issue}</div></div>
+  `;
+  
+  setTimeout(() => {
+    renderTimelineChart(filtered);
+    renderStatusChart(filtered);
+    renderCarrierChart(filtered);
+    renderAssigneeChart(filtered);
+    renderHoursChart(filtered);
+  }, 50);
+}
+
+// ===== Peak hours: when do orders get uploaded =====
+function renderHoursChart(orders) {
+  const ctx = $('chart-hours');
+  if (!ctx) return;
+  destroyChart('hours');
+  // bucket by hour 0-23 using createdAt
+  const buckets = new Array(24).fill(0);
+  orders.forEach(o => {
+    const d = new Date(o.createdAt);
+    buckets[d.getHours()]++;
+  });
+  // working hours focus 6-20 but show all
+  const labels = buckets.map((_,h)=> String(h).padStart(2,'0')+'h');
+  // split morning (until 13h) vs afternoon (13h+) — work hours 9-12:30 & 14-18:20
+  let totalN = 0;
+  let amH = -1, amV = 0, pmH = -1, pmV = 0;
+  buckets.forEach((v,h)=>{
+    totalN += v;
+    if (h < 13) { if (v > amV) { amV = v; amH = h; } }
+    else        { if (v > pmV) { pmV = v; pmH = h; } }
+  });
+  const amTotal = buckets.slice(0,13).reduce((a,b)=>a+b,0);
+  const pmTotal = buckets.slice(13).reduce((a,b)=>a+b,0);
+
+  // colour bars by work period: morning amber, afternoon blue, off-hours faded
+  const bg = buckets.map((v,h)=>{
+    const working = (h>=9 && h<13) || (h>=14 && h<19);
+    if (!working) return '#e8e6e0';            // off-hours, muted
+    return h < 13 ? '#e8a33d' : '#3551e0';     // morning amber / afternoon blue
+  });
+
+  state.charts['hours'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: buckets, backgroundColor: bg, borderRadius: 5, barPercentage: .9, categoryPercentage: .92 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>`${c.parsed.y} commande(s)`}} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:12, color:'#86868b' } },
+        y:{ beginAtZero:true, ticks:{ precision:0, font:{size:10}, color:'#86868b' }, grid:{color:'#f0f0f2'} }
+      }
+    }
+  });
+
+  // summary text
+  const sum = $('peak-summary');
+  if (sum) {
+    if (totalN === 0) {
+      sum.innerHTML = '<div class="peak-empty">Pas encore de données pour cette période</div>';
+    } else {
+      const amLabel = amH>=0 ? `${String(amH).padStart(2,'0')}h–${String(amH+1).padStart(2,'0')}h` : '—';
+      const pmLabel = pmH>=0 ? `${String(pmH).padStart(2,'0')}h–${String(pmH+1).padStart(2,'0')}h` : '—';
+      sum.innerHTML = `
+        <div class="peak-card peak-am">
+          <div class="peak-icon">☀️</div>
+          <div><div class="peak-big">${amLabel}</div>
+          <div class="peak-lbl">Pic du matin · ${amTotal} commande(s)</div></div>
+        </div>
+        <div class="peak-card peak-pm">
+          <div class="peak-icon">🌤️</div>
+          <div><div class="peak-big">${pmLabel}</div>
+          <div class="peak-lbl">Pic de l'après-midi · ${pmTotal} commande(s)</div></div>
+        </div>
+        <div class="peak-card">
+          <div class="peak-icon">${icon('box',20)}</div>
+          <div><div class="peak-big">${totalN}</div>
+          <div class="peak-lbl">Total sur la période</div></div>
+        </div>`;
+    }
+  }
+}
+
+function destroyChart(id) {
+  if (state.charts[id]) { state.charts[id].destroy(); delete state.charts[id]; }
+}
+
+function renderTimelineChart(orders) {
+  destroyChart('timeline');
+  const ctx = $('chart-timeline');
+  if (!ctx) return;
+  const days = {};
+  orders.forEach(o => {
+    const k = new Date(o.createdAt).toISOString().split('T')[0];
+    if (!days[k]) days[k] = {created:0, delivered:0};
+    days[k].created++;
+    if (o.status === 'delivered') days[k].delivered++;
+  });
+  const sorted = Object.keys(days).sort();
+  const labels = sorted.map(d => new Date(d).toLocaleDateString('en-US',{day:'2-digit',month:'short'}));
+  state.charts.timeline = new Chart(ctx, {
+    type: 'line',
+    data: {labels, datasets:[
+      {label:'Created', data:sorted.map(d=>days[d].created), borderColor:'#2d6987', backgroundColor:'rgba(45,105,135,.1)', tension:.3, fill:true},
+      {label:'Livré', data:sorted.map(d=>days[d].delivered), borderColor:'#4d7a3a', backgroundColor:'rgba(77,122,58,.1)', tension:.3, fill:true}
+    ]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function renderStatusChart(orders) {
+  destroyChart('status');
+  const ctx = $('chart-status');
+  if (!ctx) return;
+  // 3 segments: Pending, Delivered, and Issue (the latter from the check, not status)
+  const pending = orders.filter(o => o.status === 'pending').length;
+  const delivered = orders.filter(o => o.status === 'delivered').length;
+  const issue = orders.filter(o => !!o.issue).length;
+  state.charts.status = new Chart(ctx, {
+    type: 'doughnut',
+    data: {labels:['En attente','Livré','Issue'], datasets:[{data:[pending, delivered, issue], backgroundColor:['#e85a3c','#4d7a3a','#d99c20'], borderWidth:0}]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11}}}}}
+  });
+}
+
+function renderCarrierChart(orders) {
+  destroyChart('carrier');
+  const ctx = $('chart-carrier');
+  if (!ctx) return;
+  const groups = {};
+  orders.forEach(o => { groups[o.carrier] = (groups[o.carrier]||0)+1; });
+  state.charts.carrier = new Chart(ctx, {
+    type: 'bar',
+    data: {labels:Object.keys(groups), datasets:[{data:Object.values(groups), backgroundColor:'#7c4d8f', borderRadius:8}]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function renderAssigneeChart(orders) {
+  destroyChart('assignee');
+  const ctx = $('chart-assignee');
+  if (!ctx) return;
+  const counts = USERS.map(u => orders.filter(o => o.user === u.id).length);
+  state.charts.assignee = new Chart(ctx, {
+    type: 'bar',
+    data: {labels:USERS.map(u=>u.name), datasets:[{data:counts, backgroundColor:['#2d6987','#d99c20','#4d7a3a','#7c4d8f','#e85a3c','#dd4f3a','#0e8a7a','#b3862e'], borderRadius:8}]},
+    options: {responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+async function quickDone(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = 'delivered';
+  try { await saveAllToSheets(); render(); toast(`Marked delivered`); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
+}
+
+// ADD
+function openAdd() {
+  ['a-ref','a-client','a-tracking','a-note'].forEach(id => $(id).value = '');
+  $('a-carrier').value = 'UPS';
+  state.addStatus = 'pending';
+  state.addAssn = state.currentUser;
+  state.addDocs = {pdf:false, bl:false, label:false, issue:false};
+  state.addSample = false;
+  state.pdfFiles = [];
+  renderPdfList();
+  renderAddPickers();
+  renderAddDocs();
+  renderSampleToggle('a');
+  openModal('m-add');
+}
+
+function renderAddPickers() {
+  $('a-status-pick').innerHTML = STATUSES.map(s => `
+    <div class="spo ${state.addStatus===s.id?'sel':''}" data-s="${s.id}" onclick="state.addStatus='${s.id}';renderAddPickers()">
+      <div class="spo-emoji">${icon(s.icon, 22)}</div><div class="spo-lbl">${s.label}</div>
+    </div>
+  `).join('');
+  $('a-assn-pick').innerHTML = USERS.map(u => `
+    <div class="apo ${state.addAssn===u.id?'sel':''}" onclick="state.addAssn='${u.id}';renderAddPickers()">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderAddDocs() {
+  ['pdf','bl','label','issue'].forEach(k => {
+    const el = $('dp-'+k); const st = $('dp-'+k+'-st');
+    if (!el) return;
+    if (state.addDocs[k]) {
+      el.classList.add('checked');
+      st.textContent = k === 'issue' ? 'signalé' : 'prêt';
+    } else {
+      el.classList.remove('checked');
+      st.textContent = k === 'issue' ? 'aucun' : 'pending';
+    }
+  });
+}
+
+function toggleDoc(k) { state.addDocs[k] = !state.addDocs[k]; renderAddDocs(); }
+
+// PDF MULTI
+function handleDrop(e) {
+  e.preventDefault();
+  $('uz').classList.remove('drag');
+  addFiles(Array.from(e.dataTransfer.files));
+}
+function handleFiles(inp) {
+  addFiles(Array.from(inp.files));
+  inp.value = '';
+}
+function addFiles(files) {
+  const remaining = MAX_PDFS - state.pdfFiles.length;
+  if (remaining <= 0) { toast(`Maximum ${MAX_PDFS} fichiers`, 'error'); return; }
+  const toAdd = files.slice(0, remaining);
+  if (files.length > remaining) toast(`Seulement ${remaining} ajouté(s) (max ${MAX_PDFS})`, 'error');
+  state.pdfFiles.push(...toAdd.map(f => ({file:f, id:uid(), status:'prêt', url:''})));
+  if (state.pdfFiles.length > 0) { state.addDocs.pdf = true; renderAddDocs(); }
+  renderPdfList();
+}
+function removePdf(id) {
+  const gone = state.pdfFiles.find(p=>p.id===id);
+  if (gone && gone.objUrl) { try{URL.revokeObjectURL(gone.objUrl);}catch(e){} }
+  state.pdfFiles = state.pdfFiles.filter(p => p.id !== id);
+  if (state.pdfFiles.length === 0) { state.addDocs.pdf = false; renderAddDocs(); }
+  renderPdfList();
+}
+function renderPdfList() {
+  const el = $('pdf-list');
+  if (!state.pdfFiles.length) { el.innerHTML = ''; return; }
+  el.classList.add('prev-list');
+  el.innerHTML = state.pdfFiles.map(p => {
+    const isImg = p.file.type && p.file.type.startsWith('image/');
+    // make a local object URL once, so user can preview before saving
+    if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+    const thumb = isImg
+      ? `<div class="prev-thumb" onclick="openPreview('${p.id}')"><img src="${p.objUrl}" alt=""></div>`
+      : `<div class="prev-thumb" onclick="openPreview('${p.id}')">${icon('invoice',20)}</div>`;
+    const stTxt = {ready:`${(p.file.size/1024).toFixed(0)} KB`, uploading:'envoi…', uploaded:'enregistré', error:'échec'}[p.status]||'';
+    return `
+      <div class="prev-card">
+        ${thumb}
+        <span class="prev-name" title="${esc(p.file.name)}">${esc(p.file.name)}</span>
+        <span class="prev-size">${stTxt}</span>
+        <button class="prev-eye" onclick="openPreview('${p.id}')" title="Aperçu">${icon('search',14)}</button>
+        ${p.status==='prêt'?`<button class="prev-x" onclick="removePdf('${p.id}')" title="Retirer">${icon('x',13)}</button>`:''}
+      </div>`;
+  }).join('');
+}
+
+// ===== PREVIEW (lightbox) — before-save check =====
+function openPreview(fileId) {
+  const p = state.pdfFiles.find(x => x.id === fileId);
+  if (!p) return;
+  if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+  const body = $('preview-body');
+  $('preview-name').textContent = p.file.name;
+  const isImg = p.file.type && p.file.type.startsWith('image/');
+  if (isImg) body.innerHTML = `<img src="${p.objUrl}" alt="">`;
+  else body.innerHTML = `<iframe src="${p.objUrl}"></iframe>`;
+  $('preview-bg').classList.add('open');
+}
+function closePreview() {
+  $('preview-bg').classList.remove('open');
+  $('preview-body').innerHTML = '';
+}
+
+async function addOrder() {
+  const btn = $('add-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+  
+  const ref = $('a-ref').value.trim();
+  const client = $('a-client').value.trim();
+  const tracking = $('a-tracking').value.trim();
+  
+  // Upload PDFs sequentially
+  const uploadedUrls = [];
+  for (let i = 0; i < state.pdfFiles.length; i++) {
+    const p = state.pdfFiles[i];
+    p.status = 'uploading';
+    renderPdfList();
+    btn.innerHTML = `<span class="loader"></span> Uploading ${i+1}/${state.pdfFiles.length}…`;
+    
+    try {
+      const url = await uploadPDF(p.file, ref || 'order');
+      p.url = url;
+      p.status = 'uploaded';
+      uploadedUrls.push(url);
+      renderPdfList();
+    } catch(e) {
+      p.status = 'error';
+      renderPdfList();
+      toast('Upload failed: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Enregistrer →';
+      return;
+    }
+  }
+  
+  const now = Date.now();
+  const newOrder = {
+    id: uid(),
+    ref, client,
+    carrier: $('a-carrier').value,
+    tracking,
+    status: state.addStatus,
+    note: $('a-note').value.trim(),
+    user: state.addAssn,
+    createdAt: now,
+    updatedAt: now,
+    deliveredAt: state.addStatus === 'delivered' ? now : null,
+    deliveredBy: state.addStatus === 'delivered' ? state.currentUser : '',
+    pdf: state.addDocs.pdf,
+    bl: state.addDocs.bl,
+    label: state.addDocs.label,
+    issue: !!state.addDocs.issue,
+    isSample: !!state.addSample,
+    litigeId: '',
+    pdfUrls: uploadedUrls,
+    issueHistory: state.addDocs.issue ? `[${new Date(now).toISOString()}] ${userName(state.currentUser)} signalé comme problème` : ''
+  };
+  
+  state.orders.unshift(newOrder);
+  
+  try {
+    btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+    await saveAllToSheets();
+    closeModal('m-add');
+    render();
+    toast('Commande enregistrée');
+  } catch(e) {
+    toast('Erreur : ' + e.message, 'error');
+    state.orders.shift();
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer →';
+}
+
+// DETAIL
+function openDetail(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  state.currentId = id;
+
+  $('d-client').textContent = o.client || '(no client)';
+  $('d-ref').textContent = `${o.ref || '(no ref)'} · ${o.carrier} · ${fmtAgo(o.createdAt)}`;
+  $('d-tracking').value = o.tracking || '';
+  $('d-note').value = o.note || '';
+
+  renderDetPdfs();
+  renderTimeline(o);
+
+  state.detStatus = o.status;
+  state.detAssn = o.user;
+  state.detDocs = {pdf: o.pdf, bl: o.bl, label: o.label, issue: !!o.issue};
+  state.detSample = !!o.isSample;
+
+  renderDetPickers();
+  renderDetDocs();
+  renderSampleToggle('d');
+  openModal('m-det');
+}
+
+function renderDetPdfs() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const sect = $('d-pdf-sect');
+  const list = $('d-pdf-links');
+  if (o.pdfUrls && o.pdfUrls.length) {
+    sect.style.display = 'block';
+    list.innerHTML = o.pdfUrls.map((entry, i) => {
+      const url = pdfUrlOf(entry);
+      const nm = pdfNameOf(entry) || `PDF ${i+1}`;
+      return `<div class="pdf-item uploaded" style="margin-bottom:6px">
+        <span class="pdf-item-icon">${icon('invoice',16)}</span>
+        <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
+        <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Retirer ce PDF">${icon('trash',13)}</button>
+      </div>`;
+    }).join('');
+  } else {
+    sect.style.display = 'none';
+    list.innerHTML = '';
+  }
+}
+
+function renderTimeline(o) {
+  const tl = $('d-timeline');
+  if (!tl) return;
+  const items = [];
+  items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.createdAt)}</span> · Créé par <b>${userName(o.user)}</b></div></div>`);
+  if (o.updatedAt && o.updatedAt > o.createdAt + 60000) {
+    items.push(`<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.updatedAt)}</span> · Dernière modif</div></div>`);
+  }
+  if (o.printedAt) {
+    items.push(`<div class="tl-item tl-printed"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(+o.printedAt || new Date(o.printedAt).getTime())}</span> · Imprimé par <b>${userName(o.printedBy) || '—'}</b></div></div>`);
+  }
+  if (o.deliveredAt) {
+    items.push(`<div class="tl-item tl-done"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${fmtDateTime(o.deliveredAt)}</span> · Livré par <b>${userName(o.deliveredBy) || '—'}</b></div></div>`);
+  }
+  if (o.issueHistory) {
+    const entries = o.issueHistory.split('\n').filter(Boolean);
+    entries.forEach(e => {
+      // Parse "[ISO_DATE] actor action" to format nicely
+      const m = e.match(/^\[([^\]]+)\]\s*(.*)$/);
+      if (m) {
+        const when = fmtDateTime(new Date(m[1]).getTime());
+        items.push(`<div class="tl-item tl-issue"><span class="tl-dot"></span><div class="tl-body"><span class="tl-when">${when}</span> · ${esc(m[2])}</div></div>`);
+      } else {
+        items.push(`<div class="tl-item tl-issue"><span class="tl-dot"></span><div class="tl-body">${esc(e)}</div></div>`);
+      }
+    });
+  }
+  tl.innerHTML = items.join('');
+}
+
+function toggleHistory() {
+  const tl = $('d-timeline');
+  const chev = $('ht-chev');
+  const lbl = document.querySelector('.history-toggle .ht-label');
+  if (!tl) return;
+  if (tl.style.display === 'none') {
+    tl.style.display = 'flex';
+    chev.innerHTML = icon('chevronUp', 10);
+    if (lbl) lbl.textContent = 'Hide history';
+  } else {
+    tl.style.display = 'none';
+    chev.innerHTML = icon('chevronDown', 10);
+    if (lbl) lbl.textContent = 'Show history';
+  }
+}
+
+async function removePdfFromOrder(idx) {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o || !o.pdfUrls || !o.pdfUrls[idx]) return;
+  if (!confirm('Remove this PDF? It will be deleted from Drive too.')) return;
+
+  const url = pdfUrlOf(o.pdfUrls[idx]);
+  toast('Removing PDF…');
+
+  // Delete from Drive (best effort — don't block on failure)
+  await deletePdfFromDrive(url);
+
+  // Remove from order
+  o.pdfUrls.splice(idx, 1);
+  if (o.pdfUrls.length === 0) {
+    o.pdf = false;
+    state.detDocs.pdf = false;
+  }
+  o.updatedAt = Date.now();
+
+  try {
+    await saveAllToSheets();
+    renderDetPdfs();
+    renderDetDocs();
+    render();
+    toast('PDF removed');
+  } catch(e) {
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+async function addPdfToOrder(files) {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const current = (o.pdfUrls || []).length;
+  const remaining = MAX_PDFS - current;
+  if (remaining <= 0) {
+    toast(`Max ${MAX_PDFS} PDFs par commande`, 'error');
+    return;
+  }
+  const toUpload = Array.from(files).filter(f => f.type === 'application/pdf').slice(0, remaining);
+  if (toUpload.length === 0) {
+    toast('Only PDF files allowed', 'error');
+    return;
+  }
+
+  if (!o.pdfUrls) o.pdfUrls = [];
+
+  // Show pending placeholders in the list IMMEDIATELY so user sees something happening
+  const sect = $('d-pdf-sect');
+  const list = $('d-pdf-links');
+  sect.style.display = 'block';
+
+  // Render with pending items appended
+  const existingHtml = o.pdfUrls.map((entry, i) => {
+    const url = pdfUrlOf(entry);
+    const nm = pdfNameOf(entry) || `PDF ${i+1}`;
+    return `<div class="pdf-item uploaded" style="margin-bottom:6px">
+      <span class="pdf-item-icon">${icon('invoice',16)}</span>
+      <a href="${url}" target="_blank" class="pdf-item-name" style="color:inherit;text-decoration:none;flex:1" title="${esc(nm)}">${esc(nm)}</a>
+      <button class="pdf-item-x" onclick="removePdfFromOrder(${i})" title="Retirer ce PDF">${icon('trash',13)}</button>
+    </div>`;
+  }).join('');
+  const pendingHtml = toUpload.map((f, i) =>
+    `<div class="pdf-item uploading" id="pending-${i}" style="margin-bottom:6px">
+      <span class="loader"></span>
+      <span class="pdf-item-name">${esc(f.name)}</span>
+      <span class="pdf-item-size">uploading…</span>
+    </div>`
+  ).join('');
+  list.innerHTML = existingHtml + pendingHtml;
+
+  const drop = $('d-pdf-drop');
+  if (drop) drop.classList.add('uploading');
+
+  for (let i = 0; i < toUpload.length; i++) {
+    try {
+      const url = await uploadPDF(toUpload[i], o.ref || 'order');
+      o.pdfUrls.push(url);
+      const pending = $(`pending-${i}`);
+      if (pending) {
+        pending.classList.remove('uploading');
+        pending.classList.add('uploaded');
+        pending.innerHTML = `<span class="pdf-item-icon">${icon('check',16)}</span><span class="pdf-item-name">${esc(toUpload[i].name)}</span><span class="pdf-item-size">saved</span>`;
+      }
+    } catch(e) {
+      const pending = $(`pending-${i}`);
+      if (pending) {
+        pending.classList.remove('uploading');
+        pending.classList.add('error');
+        pending.innerHTML = `<span class="pdf-item-icon">${icon('warning',16)}</span><span class="pdf-item-name">${esc(toUpload[i].name)}</span><span class="pdf-item-size">failed</span>`;
+      }
+      toast('Upload failed: ' + e.message, 'error');
+      if (drop) drop.classList.remove('uploading');
+      return;
+    }
+  }
+
+  o.pdf = true;
+  state.detDocs.pdf = true;
+  o.updatedAt = Date.now();
+
+  try {
+    await saveAllToSheets();
+    if (drop) drop.classList.remove('uploading');
+    renderDetPdfs();
+    renderDetDocs();
+    render();
+    toast(`${toUpload.length} PDF(s) added`);
+  } catch(e) {
+    if (drop) drop.classList.remove('uploading');
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+function handleDetailPdfDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  addPdfToOrder(e.dataTransfer.files);
+}
+function handleDetailPdfDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag');
+}
+function handleDetailPdfDragLeave(e) {
+  e.currentTarget.classList.remove('drag');
+}
+function handleDetailPdfPick(e) {
+  if (e.target.files.length) addPdfToOrder(e.target.files);
+  e.target.value = '';
+}
+
+function renderDetPickers() {
+  $('d-status-pick').innerHTML = STATUSES.map(s => `
+    <div class="spo ${state.detStatus===s.id?'sel':''}" data-s="${s.id}" onclick="state.detStatus='${s.id}';renderDetPickers()">
+      <div class="spo-emoji">${icon(s.icon, 22)}</div><div class="spo-lbl">${s.label}</div>
+    </div>
+  `).join('');
+  $('d-assn-pick').innerHTML = USERS.map(u => `
+    <div class="apo ${state.detAssn===u.id?'sel':''}" onclick="state.detAssn='${u.id}';renderDetPickers()">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderDetDocs() {
+  ['pdf','bl','label','issue'].forEach(k => {
+    const el = $('ddp-'+k); const st = $('ddp-'+k+'-st');
+    if (!el) return;
+    if (state.detDocs[k]) {
+      el.classList.add('checked');
+      st.textContent = k === 'issue' ? 'signalé' : 'prêt';
+    } else {
+      el.classList.remove('checked');
+      st.textContent = k === 'issue' ? 'aucun' : 'pending';
+    }
+  });
+}
+
+function toggleDocDet(k) { state.detDocs[k] = !state.detDocs[k]; renderDetDocs(); }
+
+async function saveOrder() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  const btn = $('det-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+
+  const now = Date.now();
+  const prevStatus = o.status;
+  const newStatus = state.detStatus;
+  const prevIssue = !!o.issue;
+  const newIssue = !!state.detDocs.issue;
+  const actor = userName(state.currentUser);
+
+  // Track issue toggle
+  if (!prevIssue && newIssue) {
+    const entry = `[${new Date(now).toISOString()}] ${actor} signalé comme problème`;
+    o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+  }
+  if (prevIssue && !newIssue) {
+    const entry = `[${new Date(now).toISOString()}] ${actor} problème résolu`;
+    o.issueHistory = o.issueHistory ? (o.issueHistory + '\n' + entry) : entry;
+  }
+
+  // Track status transitions
+  if (prevStatus !== newStatus) {
+    if (newStatus === 'printed' && !o.printedAt) {
+      o.printedAt = now;
+      o.printedBy = state.currentUser;
+    }
+    if (newStatus === 'pending' && prevStatus === 'printed') {
+      // optional revert: keep printedAt log? Clear so it can be reset
+      o.printedAt = '';
+      o.printedBy = '';
+    }
+    if (newStatus === 'delivered') {
+      o.deliveredAt = now;
+      o.deliveredBy = state.currentUser;
+      // if went straight from pending to delivered, also stamp printed
+      if (!o.printedAt) {
+        o.printedAt = now;
+        o.printedBy = state.currentUser;
+      }
+    }
+    if (prevStatus === 'delivered' && newStatus !== 'delivered') {
+      o.deliveredAt = null;
+      o.deliveredBy = '';
+    }
+  }
+
+  o.status = newStatus;
+  o.user = state.detAssn;
+  o.tracking = $('d-tracking').value.trim();
+  o.note = $('d-note').value.trim();
+  o.pdf = state.detDocs.pdf;
+  o.bl = state.detDocs.bl;
+  o.label = state.detDocs.label;
+  o.issue = newIssue;
+  o.isSample = !!state.detSample;
+  o.updatedAt = now;
+
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Commande mise à jour'); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
+
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer';
+}
+
+async function deleteOrder() {
+  const o = state.orders.find(x => x.id === state.currentId);
+  if (!o) return;
+  if (!confirm(`Supprimer cette commande ? Les PDFs seront aussi supprimés de Drive.`)) return;
+
+  // Delete PDFs from Drive first (best effort)
+  if (o.pdfUrls && o.pdfUrls.length) {
+    toast('Suppression des PDFs…');
+    for (const url of o.pdfUrls) {
+      await deletePdfFromDrive(url);
+    }
+  }
+
+  state.orders = state.orders.filter(x => x.id !== state.currentId);
+  try { await saveAllToSheets(); closeModal('m-det'); render(); toast('Supprimé', 'error'); }
+  catch(e) { toast('Erreur : ' + e.message, 'error'); }
+}
+
+function openModal(id) { $(id).classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+    closePreview();
+  }
+});
+
+// ============================================================
+// v4 — SAMPLE (M) TOGGLE
+// ============================================================
+function renderSampleToggle(prefix) {
+  const on = prefix === 'a' ? state.addSample : state.detSample;
+  const tog = $(prefix + '-sample-toggle');
+  if (tog) tog.classList.toggle('on', !!on);
+}
+function toggleSampleAdd() { state.addSample = !state.addSample; renderSampleToggle('a'); }
+function toggleSampleDet() { state.detSample = !state.detSample; renderSampleToggle('d'); }
+
+// ============================================================
+// v4 — LITIGES MODULE
+// ============================================================
+const RES_TYPES = [
+  {id:'replacement', label:'Remplacement produit'},
+  {id:'refund',      label:'Remboursement / Avoir'},
+  {id:'carrier',     label:'Réclamation transporteur'},
+  {id:'restock',     label:'Retour avec frais de restock'},
+  {id:'rejected',    label:'Réclamation refusée'},
+  {id:'wrongitem',   label:'Erreur d\u2019envoi / mauvais produit'},
+  {id:'info',        label:'Information / conseil seulement'},
+  {id:'',            label:'\u2014 Non défini \u2014'}
+];
+const LIT_STATUSES = [
+  {id:'open',    label:'Ouvert',   icon:'pending'},
+  {id:'closed',  label:'Finalisé', icon:'checkCircle'}
+];
+const resTypeLabel = id => (RES_TYPES.find(r=>r.id===id)||{}).label || '\u2014';
+
+// ----- load / save -----
+async function loadLitiges() {
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=listProblems', {method:'GET', redirect:'follow'});
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const rows = data.data || [];
+    // Problems headers: LitigeId,CreatedAt,Client,ContactEmail,Product,Quantity,
+    //  Problem,ResolutionType,Status,Handler,EconomicValue,Deadline,
+    //  Solution,ProgressNote,Remarks,FolderId,FileUrls,UpdatedAt,LinkedOrderId
+    state.litiges = rows.slice(1).filter(r => r[0]).map(row => ({
+      litigeId: row[0]||'',
+      createdAt: row[1] ? new Date(row[1]).getTime() : Date.now(),
+      client: row[2]||'',
+      contactEmail: row[3]||'',
+      product: row[4]!=null ? String(row[4]) : '',
+      quantity: row[5]!=null ? String(row[5]) : '',
+      problem: row[6]||'',
+      resolutionType: row[7]||'',
+      status: row[8]||'open',
+      handler: row[9]||'DI',
+      economicValue: row[10]!=null ? String(row[10]) : '',
+      deadline: row[11]||'',
+      solution: row[12]||'',
+      progressNote: row[13]||'',
+      remarks: row[14]||'',
+      folderId: row[15]||'',
+      fileUrls: row[16] ? parsePdfUrls(String(row[16])) : [],
+      updatedAt: row[17] ? new Date(row[17]).getTime() : null,
+      linkedOrderId: row[18]||''
+    }));
+    renderLitiges();
+  } catch(e) {
+    console.error('Litiges load error:', e);
+    toast('Litiges: ' + e.message, 'error');
+  }
+}
+
+async function saveAllLitiges() {
+  const problems = state.litiges.map(l => ({
+    litigeId: l.litigeId,
+    createdAt: new Date(l.createdAt).toISOString(),
+    client: l.client||'', contactEmail: l.contactEmail||'',
+    product: l.product||'', quantity: l.quantity||'',
+    problem: l.problem||'', resolutionType: l.resolutionType||'',
+    status: l.status||'open', handler: l.handler||'DI',
+    economicValue: l.economicValue||'', deadline: l.deadline||'',
+    solution: l.solution||'', progressNote: l.progressNote||'',
+    remarks: l.remarks||'', folderId: l.folderId||'',
+    fileUrls: (l.fileUrls||[]).join('§§§'),
+    updatedAt: l.updatedAt ? new Date(l.updatedAt).toISOString() : '',
+    linkedOrderId: l.linkedOrderId||''
+  }));
+  await callScript({action:'saveProblems', problems});
+}
+
+// ----- ID generator: L-2026-001 -----
+function nextLitigeId() {
+  const year = new Date().getFullYear();
+  let max = 0;
+  state.litiges.forEach(l => {
+    const m = String(l.litigeId).match(new RegExp('^L-' + year + '-(\\d+)$'));
+    if (m) max = Math.max(max, parseInt(m[1]));
+  });
+  return 'L-' + year + '-' + String(max + 1).padStart(3, '0');
+}
+
+// ----- business-day age + time bar -----
+function bizDaysSince(ts) {
+  let count = 0;
+  const cur = new Date(ts); cur.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  while (cur < today) {
+    cur.setDate(cur.getDate()+1);
+    const d = cur.getDay();
+    if (d!==0 && d!==6) count++;
+  }
+  return count;
+}
+function ageClass(days) { return days <= 2 ? 'g' : days <= 5 ? 'a' : 'r'; }
+function timeBar(days) {
+  const cls = ageClass(days);
+  const pct = Math.min(100, (days/10)*100);
+  return `<div class="tbar tbar-${cls}"><span style="width:${pct}%"></span></div>`;
+}
+
+// ----- render -----
+function renderLitiges() {
+  const open    = state.litiges.filter(l => l.status !== 'closed');
+  const closed  = state.litiges.filter(l => l.status === 'closed');
+  const overdue = open.filter(l => bizDaysSince(l.createdAt) >= 3);
+  const value   = open.reduce((sum,l) => sum + (parseFloat(l.economicValue)||0), 0);
+
+  const navL = $('nav-litiges');
+  if (navL) navL.textContent = open.length;
+
+  $('stats-litiges').innerHTML = `
+    <div class="stat stat-total"><div class="stat-icon">${icon('warning',22)}</div><div class="stat-label">Ouverts</div><div class="stat-value">${open.length}</div></div>
+    <div class="stat stat-issue"><div class="stat-icon">${icon('bell',22)}</div><div class="stat-label">En retard &gt;3j</div><div class="stat-value">${overdue.length}</div></div>
+    <div class="stat stat-delivered"><div class="stat-icon">${icon('checkCircle',22)}</div><div class="stat-label">Finalisés</div><div class="stat-value">${closed.length}</div></div>
+    <div class="stat stat-pending"><div class="stat-icon">${icon('chart',22)}</div><div class="stat-label">Valeur en jeu</div><div class="stat-value">${value? '€'+value.toLocaleString('fr-FR'):'€0'}</div></div>
+  `;
+
+  const c = { open:open.length, mine:open.filter(l=>l.handler===state.currentUser).length,
+              overdue:overdue.length, closed:closed.length };
+  $('chips-litiges').innerHTML = `
+    <button class="chip ${state.litigeFilter==='open'?'active':''}" onclick="setLitigeFilter('open')">Ouverts<span class="chip-count">${c.open}</span></button>
+    <button class="chip ${state.litigeFilter==='mine'?'active':''}" onclick="setLitigeFilter('mine')">À moi<span class="chip-count">${c.mine}</span></button>
+    <button class="chip ${state.litigeFilter==='overdue'?'active':''}" onclick="setLitigeFilter('overdue')">En retard<span class="chip-count">${c.overdue}</span></button>
+    <button class="chip ${state.litigeFilter==='closed'?'active':''}" onclick="setLitigeFilter('closed')">Finalisés<span class="chip-count">${c.closed}</span></button>
+    <button class="chip ${state.litigeFilter==='all'?'active':''}" onclick="setLitigeFilter('all')">Tous<span class="chip-count">${state.litiges.length}</span></button>
+  `;
+
+  let list = state.litiges.slice();
+  if (state.litigeFilter === 'open')    list = list.filter(l => l.status !== 'closed');
+  else if (state.litigeFilter === 'closed') list = list.filter(l => l.status === 'closed');
+  else if (state.litigeFilter === 'mine')   list = list.filter(l => l.handler===state.currentUser && l.status!=='closed');
+  else if (state.litigeFilter === 'overdue') list = list.filter(l => l.status!=='closed' && bizDaysSince(l.createdAt)>=3);
+
+  const q = ($('search-litiges').value||'').toLowerCase();
+  if (q) list = list.filter(l => (l.litigeId+' '+l.client+' '+l.product+' '+l.problem).toLowerCase().includes(q));
+  list.sort((a,b) => b.createdAt - a.createdAt);
+
+  const el = $('litiges-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">${icon('checkCircle',44)}</div><div class="empty-title">Aucun litige</div><div class="empty-sub">Rien à afficher dans cette catégorie</div><button class="btn btn-pri" onclick="openAddLitige()">+ Nouveau litige</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(litigeCard).join('');
+}
+
+function litigeCard(l) {
+  const closed = l.status === 'closed';
+  const days = bizDaysSince(l.createdAt);
+  const ac = ageClass(days);
+  const ageBlock = closed
+    ? `<div class="pill pill-delivered"><span class="pill-dot"></span>Finalisé</div>`
+    : `<div style="flex:1">
+         <div style="display:flex;justify-content:space-between;align-items:center">
+           <span class="lit-age ${ac}">${days} jour${days>1?'s':''} ouvré${days>1?'s':''}</span>
+           ${l.deadline?`<span class="meta-lbl">Limite ${esc(l.deadline)}</span>`:''}
+         </div>${timeBar(days)}
+       </div>`;
+  const val = parseFloat(l.economicValue);
+  const valBadge = val ? `<span class="tracking-pill">€${val.toLocaleString('fr-FR')}</span>` : '';
+  const fileBadge = l.fileUrls && l.fileUrls.length
+    ? `<span class="pdf-count">${icon('paperclip',10)} ${l.fileUrls.length}</span>` : '';
+  return `
+    <div class="card ${closed?'s-delivered':'s-pending'}" onclick="openLitigeDetail('${esc(l.litigeId)}')">
+      <div class="card-head">
+        <div class="card-title-block">
+          <div class="card-ref">${esc(l.litigeId)} ${fileBadge}</div>
+          <div class="card-client">${esc(l.client||'(client inconnu)')}</div>
+        </div>
+        <div class="assn-av av-${l.handler}" title="${userName(l.handler)}">${l.handler}</div>
+      </div>
+      <div class="card-meta">
+        ${l.product?`<div><span class="meta-lbl">Produit</span> ${esc(l.product)}</div>`:''}
+        ${l.resolutionType?`<div><span class="restype">${esc(resTypeLabel(l.resolutionType))}</span></div>`:''}
+        ${valBadge?`<div>${valBadge}</div>`:''}
+      </div>
+      ${l.problem?`<div class="card-comment"><span>${esc(l.problem)}</span></div>`:''}
+      <div class="card-foot">${ageBlock}</div>
+    </div>
+  `;
+}
+
+function setLitigeFilter(f) { state.litigeFilter = f; renderLitiges(); }
+
+// ----- option builders -----
+function fillResType(selId, val) {
+  $(selId).innerHTML = RES_TYPES.map(r => `<option value="${r.id}" ${r.id===val?'selected':''}>${r.label}</option>`).join('');
+}
+function renderLitStatusPick(prefix, current) {
+  const target = prefix==='l' ? 'l-status-pick' : 'ld-status-pick';
+  const stateKey = prefix==='l' ? 'litStatus' : 'detLitStatus';
+  $(target).innerHTML = LIT_STATUSES.map(st => `
+    <div class="spo ${current===st.id?'sel':''}" data-s="${st.id==='open'?'pending':'delivered'}" onclick="state.${stateKey}='${st.id}';renderLitStatusPick('${prefix}','${st.id}')">
+      <div class="spo-emoji">${icon(st.icon,22)}</div><div class="spo-lbl">${st.label}</div>
+    </div>`).join('');
+}
+function renderLitHandlerPick(prefix, current) {
+  const target = prefix==='l' ? 'l-handler-pick' : 'ld-handler-pick';
+  const stateKey = prefix==='l' ? 'litHandler' : 'detLitHandler';
+  $(target).innerHTML = USERS.map(u => `
+    <div class="apo ${current===u.id?'sel':''}" onclick="state.${stateKey}='${u.id}';renderLitHandlerPick('${prefix}','${u.id}')">
+      <div class="assn-av av-${u.id}">${u.id}</div><div class="apo-name">${u.name}</div>
+    </div>`).join('');
+}
+
+// ----- ADD litige -----
+function openAddLitige() {
+  ['l-client','l-email','l-product','l-qty','l-order','l-problem','l-value','l-deadline','l-solution']
+    .forEach(id => { const el=$(id); if(el) el.value=''; });
+  state.litStatus = 'open';
+  state.litHandler = state.currentUser;
+  state.litFiles = [];
+  renderLitigeAddFiles();
+  fillResType('l-restype', '');
+  renderLitStatusPick('l','open');
+  renderLitHandlerPick('l', state.currentUser);
+  openModal('m-litige-add');
+}
+
+// ----- pre-save photo picker for the CREATE modal -----
+function renderLitigeAddFiles() {
+  const el = $('la-files');
+  if (!el) return;
+  if (!state.litFiles || !state.litFiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = state.litFiles.map(p => {
+    const isImg = p.file.type && p.file.type.startsWith('image/');
+    if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+    const thumb = isImg
+      ? `<div class="prev-thumb" onclick="openLitigeAddPreview('${p.id}')"><img src="${p.objUrl}" alt=""></div>`
+      : `<div class="prev-thumb" onclick="openLitigeAddPreview('${p.id}')">${icon('invoice',20)}</div>`;
+    return `<div class="prev-card">
+      ${thumb}
+      <span class="prev-name" title="${esc(p.file.name)}">${esc(p.file.name)}</span>
+      <span class="prev-size">${(p.file.size/1024).toFixed(0)} KB</span>
+      <button class="prev-eye" onclick="openLitigeAddPreview('${p.id}')" title="Aperçu">${icon('search',14)}</button>
+      <button class="prev-x" onclick="removeLitigeAddFile('${p.id}')" title="Retirer">${icon('x',13)}</button>
+    </div>`;
+  }).join('');
+}
+function openLitigeAddPreview(fileId) {
+  const p = state.litFiles.find(x => x.id === fileId);
+  if (!p) return;
+  if (!p.objUrl) p.objUrl = URL.createObjectURL(p.file);
+  $('preview-name').textContent = p.file.name;
+  const isImg = p.file.type && p.file.type.startsWith('image/');
+  $('preview-body').innerHTML = isImg ? `<img src="${p.objUrl}" alt="">` : `<iframe src="${p.objUrl}"></iframe>`;
+  $('preview-bg').classList.add('open');
+}
+function addLitigeAddFiles(files) {
+  const arr = Array.from(files);
+  if (!arr.length) return;
+  if (!state.litFiles) state.litFiles = [];
+  arr.forEach(f => state.litFiles.push({file:f, id:uid(), objUrl:null}));
+  renderLitigeAddFiles();
+}
+function removeLitigeAddFile(id) {
+  const g = (state.litFiles||[]).find(p=>p.id===id);
+  if (g && g.objUrl) { try{URL.revokeObjectURL(g.objUrl);}catch(e){} }
+  state.litFiles = (state.litFiles||[]).filter(p => p.id !== id);
+  renderLitigeAddFiles();
+}
+function handleLitigeAddDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  addLitigeAddFiles(e.dataTransfer.files);
+}
+function handleLitigeAddPick(e) {
+  if (e.target.files.length) addLitigeAddFiles(e.target.files);
+  e.target.value = '';
+}
+
+async function addLitige() {
+  const btn = $('litige-add-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Création…';
+
+  const now = Date.now();
+  const id = nextLitigeId();
+  const client = $('l-client').value.trim();
+  const product = $('l-product').value.trim();
+
+  // 1) create the Drive folder for this litige
+  let folderId = '', folderUrl = '';
+  try {
+    const folderName = `${id} - ${client||'client'} - ${product||'produit'}`;
+    const res = await callScript({action:'createLitigeFolder', folderName});
+    folderId = res.folderId || '';
+    folderUrl = res.folderUrl || '';
+  } catch(e) {
+    toast('Dossier Drive non créé: ' + e.message, 'error');
+    // continue anyway — litige still saved, folder can be retried
+  }
+
+  const litige = {
+    litigeId: id, createdAt: now,
+    client, contactEmail: $('l-email').value.trim(),
+    product, quantity: $('l-qty').value.trim(),
+    problem: $('l-problem').value.trim(),
+    resolutionType: $('l-restype').value,
+    status: state.litStatus, handler: state.litHandler,
+    economicValue: $('l-value').value.trim(),
+    deadline: $('l-deadline').value,
+    solution: $('l-solution').value.trim(),
+    progressNote: '', remarks: '',
+    folderId, fileUrls: [], updatedAt: now,
+    linkedOrderId: $('l-order').value.trim()
+  };
+  state.litiges.unshift(litige);
+
+  // upload any photos chosen before save — needs the folder created above
+  const chosen = state.litFiles || [];
+  if (chosen.length && folderId) {
+    for (let i = 0; i < chosen.length; i++) {
+      const file = chosen[i].file;
+      btn.innerHTML = `<span class="loader"></span> Photo ${i+1}/${chosen.length}…`;
+      try {
+        const base64 = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result.split(',')[1]);
+          r.onerror = () => rej(new Error('Read failed'));
+          r.readAsDataURL(file);
+        });
+        const result = await callScript({
+          action:'uploadLitige', folderId:folderId,
+          fileData:base64, mime:file.type||'application/octet-stream', filename:file.name
+        });
+        litige.fileUrls.push(file.name + '|||' + result.url + '|||' + (result.id||''));
+      } catch(e) {
+        toast('Photo non envoyée : ' + file.name, 'error');
+      }
+    }
+  } else if (chosen.length && !folderId) {
+    toast('Photos non envoyées — dossier Drive absent', 'error');
+  }
+
+  try {
+    btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+    await saveAllLitiges();
+    state.litFiles = [];
+    closeModal('m-litige-add');
+    renderLitiges();
+    toast('Litige ' + id + ' créé');
+  } catch(e) {
+    toast('Erreur: ' + e.message, 'error');
+    state.litiges.shift();
+  }
+  btn.disabled = false;
+  btn.textContent = 'Créer le litige →';
+}
+
+// ----- DETAIL litige -----
+function openLitigeDetail(id) {
+  const l = state.litiges.find(x => x.litigeId === id);
+  if (!l) return;
+  state.currentLitigeId = id;
+
+  $('ld-title').textContent = l.litigeId;
+  const days = bizDaysSince(l.createdAt);
+  $('ld-sub').textContent = `${l.client||'client'} · créé ${fmtAgo(l.createdAt)}` +
+    (l.status==='closed' ? ' · Finalisé' : ` · ${days} j ouvrés`);
+
+  $('ld-client').value  = l.client||'';
+  $('ld-email').value   = l.contactEmail||'';
+  $('ld-product').value = l.product||'';
+  $('ld-qty').value     = l.quantity||'';
+  $('ld-order').value   = l.linkedOrderId||'';
+  $('ld-problem').value = l.problem||'';
+  $('ld-value').value   = l.economicValue||'';
+  $('ld-deadline').value= l.deadline||'';
+  $('ld-solution').value= l.solution||'';
+  $('ld-remarks').value = l.remarks||'';
+
+  fillResType('ld-restype', l.resolutionType);
+  state.detLitStatus = l.status;
+  state.detLitHandler = l.handler;
+  renderLitStatusPick('ld', l.status);
+  renderLitHandlerPick('ld', l.handler);
+
+  // folder link
+  const fs = $('ld-folder-sect');
+  if (l.folderId) {
+    fs.innerHTML = `<a class="litige-folder-link" href="https://drive.google.com/drive/folders/${l.folderId}" target="_blank">${icon('box',14)} Ouvrir le dossier Drive</a>`;
+  } else {
+    fs.innerHTML = `<div class="page-sub" style="color:var(--tomato)">Aucun dossier Drive lié à ce litige.</div>`;
+  }
+
+  renderLitigeFiles();
+  openModal('m-litige-det');
+}
+
+function renderLitigeFiles() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  const el = $('ld-files');
+  if (!l || !l.fileUrls || !l.fileUrls.length) { el.innerHTML = ''; return; }
+  el.innerHTML = l.fileUrls.map((entry, i) => {
+    const url = pdfUrlOf(entry);
+    const nm = pdfNameOf(entry) || ('Fichier ' + (i+1));
+    const did = pdfIdOf(entry);
+    const isImg = isImageName(nm);
+    // Drive thumbnail endpoint — works for images stored in Drive
+    const thumbImg = (isImg && did)
+      ? `<img src="https://drive.google.com/thumbnail?id=${did}&sz=w200" alt="" onerror="this.style.display='none';this.parentNode.classList.add('no-thumb')">`
+      : icon('invoice',20);
+    return `<div class="prev-card">
+      <div class="prev-thumb" onclick="openLitigeFilePreview('${esc(url)}','${esc(nm)}',${isImg})">${thumbImg}</div>
+      <a class="prev-name" href="${url}" target="_blank" title="${esc(nm)}">${esc(nm)}</a>
+      <button class="prev-eye" onclick="openLitigeFilePreview('${esc(url)}','${esc(nm)}',${isImg})" title="Aperçu">${icon('search',14)}</button>
+      <button class="prev-x" onclick="removeLitigeFile(${i})" title="Retirer">${icon('trash',13)}</button>
+    </div>`;
+  }).join('');
+}
+
+// preview an already-uploaded litige file (image inline, else open Drive)
+function openLitigeFilePreview(url, name, isImg) {
+  const body = $('preview-body');
+  $('preview-name').textContent = name;
+  if (isImg) {
+    body.innerHTML = `<iframe src="${url.replace('/view','/preview')}"></iframe>`;
+  } else {
+    body.innerHTML = `<iframe src="${url.replace('/view','/preview')}"></iframe>`;
+  }
+  $('preview-bg').classList.add('open');
+}
+
+async function handleLitigeFiles(files) {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  if (!l.folderId) { toast('Pas de dossier Drive pour ce litige', 'error'); return; }
+  const arr = Array.from(files);
+  if (!arr.length) return;
+
+  const drop = $('ld-drop');
+  if (drop) drop.classList.add('uploading');
+  if (!l.fileUrls) l.fileUrls = [];
+
+  for (const file of arr) {
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('Read failed'));
+        r.readAsDataURL(file);
+      });
+      const result = await callScript({
+        action:'uploadLitige', folderId:l.folderId,
+        fileData:base64, mime:file.type||'application/octet-stream', filename:file.name
+      });
+      l.fileUrls.push(file.name + '|||' + result.url + '|||' + (result.id||''));
+      renderLitigeFiles();
+    } catch(e) {
+      toast('Échec envoi ' + file.name + ': ' + e.message, 'error');
+      if (drop) drop.classList.remove('uploading');
+      return;
+    }
+  }
+  l.updatedAt = Date.now();
+  try {
+    await saveAllLitiges();
+    if (drop) drop.classList.remove('uploading');
+    renderLitigeFiles();
+    renderLitiges();
+    toast(arr.length + ' fichier(s) ajouté(s)');
+  } catch(e) {
+    if (drop) drop.classList.remove('uploading');
+    toast('Erreur: ' + e.message, 'error');
+  }
+}
+function handleLitigeDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  handleLitigeFiles(e.dataTransfer.files);
+}
+function handleLitigePick(e) {
+  if (e.target.files.length) handleLitigeFiles(e.target.files);
+  e.target.value = '';
+}
+
+async function removeLitigeFile(idx) {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l || !l.fileUrls || !l.fileUrls[idx]) return;
+  if (!confirm('Retirer ce fichier ? Il sera aussi supprimé du Drive.')) return;
+  const url = pdfUrlOf(l.fileUrls[idx]);
+  await deletePdfFromDrive(url);
+  l.fileUrls.splice(idx,1);
+  l.updatedAt = Date.now();
+  try { await saveAllLitiges(); renderLitigeFiles(); renderLitiges(); toast('Fichier retiré'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+}
+
+async function saveLitige() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  const btn = $('litige-det-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Enregistrement…';
+
+  l.client = $('ld-client').value.trim();
+  l.contactEmail = $('ld-email').value.trim();
+  l.product = $('ld-product').value.trim();
+  l.quantity = $('ld-qty').value.trim();
+  l.linkedOrderId = $('ld-order').value.trim();
+  l.problem = $('ld-problem').value.trim();
+  l.resolutionType = $('ld-restype').value;
+  l.economicValue = $('ld-value').value.trim();
+  l.deadline = $('ld-deadline').value;
+  l.solution = $('ld-solution').value.trim();
+  l.remarks = $('ld-remarks').value.trim();
+  l.status = state.detLitStatus;
+  l.handler = state.detLitHandler;
+  l.updatedAt = Date.now();
+
+  try { await saveAllLitiges(); closeModal('m-litige-det'); renderLitiges(); toast('Litige enregistré'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer';
+}
+
+async function deleteLitige() {
+  const l = state.litiges.find(x => x.litigeId === state.currentLitigeId);
+  if (!l) return;
+  if (!confirm('Supprimer le litige ' + l.litigeId + ' ?\n\nLe dossier Drive et ses fichiers seront CONSERVÉS (suppression manuelle si besoin).')) return;
+  state.litiges = state.litiges.filter(x => x.litigeId !== state.currentLitigeId);
+  try { await saveAllLitiges(); closeModal('m-litige-det'); renderLitiges(); toast('Litige supprimé', 'error'); }
+  catch(e) { toast('Erreur: ' + e.message, 'error'); }
+}
+
+
+// ============================================================
+// STOCK PENDENTE MODULE
+// ============================================================
+// Stock llega DE GOLPE para todo el SKU (arrivedQty/arrivedDate/arrivedNote a nivel de referencia).
+// Estado del SKU: 'absent' (nada llegó) | 'arrived' (ya hay stock para repartir) | 'sent' (todo enviado).
+// ============================================================
+// STOCK PERSISTENCE — localStorage (mientras no conectemos a Sheets)
+// ============================================================
+const STOCK_STORAGE_KEY = 'export_stock_v1';
+
+const STOCK_INITIAL_DATA = {
+  pendingStocks: [
+    {id:'sk1', sku:'SOL 102', arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[
+      {name:'Jesvy', qty:8, reportedDate:'15 juin', eta:'20 juin', mailPending:true},
+      {name:'Graficon', qty:3, reportedDate:'14 juin', eta:'21 juin', mailPending:true},
+      {name:'PrintX', qty:5, reportedDate:'13 juin', eta:'19 juin', mailPending:false}
+    ]},
+    {id:'sk2', sku:'SOL 105', arrived:true, arrivedQty:100, arrivedDate:'18 juin', arrivedNote:'Lot complet reçu de l\'usine', clients:[
+      {name:'Jesvy', qty:5, reportedDate:'16 juin', eta:'20 juin', mailPending:false},
+      {name:'Graficon', qty:3, reportedDate:'15 juin', eta:'20 juin', mailPending:false},
+      {name:'PrintX', qty:5, reportedDate:'14 juin', eta:'20 juin', mailPending:false}
+    ]},
+    {id:'sk3', sku:'INT 129', arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[
+      {name:'Jesvy', qty:8, reportedDate:'17 juin', eta:'22 juin', mailPending:true}
+    ]}
+  ],
+  historic: [
+    {sku:'SOL 110', clients:'Jesvy', qty:2, sentDate:'17 juin'},
+    {sku:'SOL 108', clients:'PrintX', qty:10, sentDate:'16 juin'}
+  ]
+};
+
+function loadStockState() {
+  try {
+    const raw = localStorage.getItem(STOCK_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        pendingStocks: parsed.pendingStocks || [],
+        historic:      parsed.historic || [],
+        currentSKU: null, allocationChecks: {}, statusFilter: 'all'
+      };
+    }
+  } catch(e) { console.warn('Stock state corrupted, using defaults', e); }
+  // Primera visita → datos demo
+  return {
+    pendingStocks: JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.pendingStocks)),
+    historic:      JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.historic)),
+    currentSKU: null, allocationChecks: {}, statusFilter: 'all'
+  };
+}
+
+function saveStockState() {
+  try {
+    localStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify({
+      pendingStocks: stockState.pendingStocks,
+      historic:      stockState.historic
+    }));
+  } catch(e) { console.error('Failed to save stock', e); toast('Erreur sauvegarde locale', 'error'); }
+}
+
+function resetStockState() {
+  if (!confirm('Effacer toutes les données de stock ?\n\nCette action supprimera toutes les demandes, arrivées et historique. Irréversible.')) return;
+  localStorage.removeItem(STOCK_STORAGE_KEY);
+  stockState = loadStockState();
+  // Empty también los datos demo para que quede realmente vacío
+  stockState.pendingStocks = [];
+  stockState.historic = [];
+  saveStockState();
+  renderStock();
+  toast('Toutes les données stock effacées', 'error');
+}
+
+let stockState = loadStockState();
+
+// unidades ya repartidas (enviadas) de un SKU
+function skuSentQty(skuItem) {
+  return (skuItem.clients||[]).filter(c => c.sent).reduce((s,c) => s + (c.qty||0), 0);
+}
+// unidades libres = lo que llegó - lo ya enviado
+function skuFreeQty(skuItem) {
+  return Math.max(0, (skuItem.arrivedQty||0) - skuSentQty(skuItem));
+}
+// estado global del SKU
+function skuState(skuItem) {
+  const clients = skuItem.clients || [];
+  if (clients.length && clients.every(c => c.sent)) return 'sent';
+  return skuItem.arrived ? 'arrived' : 'absent';
+}
+
+function renderStockSummary() {
+  const el = $('stock-summary');
+  if (!el) return;
+  const skus = stockState.pendingStocks;
+
+  const totalRefs   = skus.length;
+  const absentRefs  = skus.filter(s => skuState(s) === 'absent').length;
+  const arrivedRefs = skus.filter(s => skuState(s) === 'arrived').length;
+  const sentRefs    = skus.filter(s => skuState(s) === 'sent').length;
+
+  // unidades
+  const demand    = skus.reduce((t,s)=> t + s.clients.reduce((x,c)=>x+(c.qty||0),0), 0);
+  const arrivedU  = skus.reduce((t,s)=> t + (s.arrivedQty||0), 0);
+  const freeU     = skus.reduce((t,s)=> t + skuFreeQty(s), 0);
+  // unidades aún faltantes por recibir (demanda no cubierta por llegadas)
+  const missingU  = skus.reduce((t,s)=>{
+    const dem = s.clients.reduce((x,c)=>x+(c.qty||0),0);
+    return t + Math.max(0, dem - (s.arrivedQty||0));
+  }, 0);
+
+  const f = stockState.statusFilter;
+  const sel = k => f===k ? 'box-shadow:0 0 0 2px var(--navy);border-color:var(--navy)' : '';
+  el.innerHTML = `
+    <div class="stat stat-pending" style="${sel('absent')}" onclick="setStockFilter('absent')">
+      <div class="stat-icon">${icon('warning',22)}</div>
+      <div class="stat-label">Références absentes</div>
+      <div class="stat-value">${absentRefs}</div>
+      <div class="stat-trend" style="color:var(--tomato)">${missingU} unités à recevoir</div>
+    </div>
+    <div class="stat" style="${sel('arrived')}" onclick="setStockFilter('arrived')">
+      <div class="stat-icon" style="color:var(--honey);background:var(--honey-soft)">${icon('box',22)}</div>
+      <div class="stat-label">Déjà arrivées</div>
+      <div class="stat-value">${arrivedRefs}</div>
+      <div class="stat-trend" style="color:var(--honey)">${arrivedU} unités · ${freeU} libres</div>
+    </div>
+    <div class="stat stat-delivered" style="${sel('sent')}" onclick="setStockFilter('sent')">
+      <div class="stat-icon">${icon('checkCircle',22)}</div>
+      <div class="stat-label">Expédiées complètes</div>
+      <div class="stat-value">${sentRefs}</div>
+      <div class="stat-trend">sur ${totalRefs} références</div>
+    </div>
+    <div class="stat stat-total" style="${sel('all')}" onclick="setStockFilter('all')">
+      <div class="stat-icon">${icon('chart',22)}</div>
+      <div class="stat-label">Demande totale</div>
+      <div class="stat-value">${demand}</div>
+      <div class="stat-trend">${f==='all'?'unités demandées':'voir toutes ↩'}</div>
+    </div>
+  `;
+}
+
+function setStockFilter(status) {
+  // toggle: si clicas la misma tarjeta activa, vuelve a 'all'
+  stockState.statusFilter = (stockState.statusFilter === status && status !== 'all') ? 'all' : status;
+  renderStock();
+}
+
+function renderStock() {
+  renderStockSummary();
+  const q = ($('search-stock')?.value||'').toLowerCase();
+  const sf = stockState.statusFilter;
+  const filtered = stockState.pendingStocks
+    .filter(item => item.sku.toLowerCase().includes(q))
+    .filter(item => sf === 'all' ? true : skuState(item) === sf);
+  const list = $('stock-list');
+
+  // aviso de filtro activo
+  const filterLabels = {absent:'absentes', arrived:'déjà arrivées', sent:'expédiées complètes'};
+  const banner = (sf !== 'all')
+    ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--navy-soft);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--ink-soft)">
+         <span>Afficher uniquement les références <b>${filterLabels[sf]}</b> (${filtered.length})</span>
+         <button onclick="setStockFilter('all')" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:500">Voir toutes ✕</button>
+       </div>`
+    : '';
+
+  if (filtered.length === 0) {
+    list.innerHTML = banner + `<div class="empty"><div class="empty-emoji">📦</div><div class="empty-title">Aucun résultat</div><div class="empty-sub">${sf!=='all'?'Aucune référence dans cette catégorie':'Aucun SKU ne correspond à votre recherche'}</div></div>`;
+    return;
+  }
+
+  list.innerHTML = banner + filtered.map(skuItem => {
+    const totalQty = skuItem.clients.reduce((sum, c) => sum + (c.qty||0), 0);
+    const statusMap = {absent:'Stock absent', arrived:'Arrivé', sent:'Tout expédié'};
+    const status = skuState(skuItem);
+    const free = skuFreeQty(skuItem);
+    const sentQ = skuSentQty(skuItem);
+    const missing = Math.max(0, totalQty - (skuItem.arrivedQty||0));
+
+    // Bloc grande de arrivée solo si status === 'arrived'
+    let arrivalPanel = '';
+    if (skuItem.arrived) {
+      arrivalPanel = `
+        <div class="stk-arrival">
+          <div class="stk-arr-row">
+            <div class="stk-arr-metric"><div class="stk-arr-num n-arr">${skuItem.arrivedQty}</div><div class="stk-arr-lbl">arrivé</div></div>
+            <div class="stk-arr-sep"></div>
+            <div class="stk-arr-metric"><div class="stk-arr-num n-free">${free}</div><div class="stk-arr-lbl">libres</div></div>
+            <div class="stk-arr-metric"><div class="stk-arr-num n-used">${sentQ}</div><div class="stk-arr-lbl">réparti</div></div>
+            <div class="stk-arr-info">
+              <div class="date">${esc(skuItem.arrivedDate||'—')}</div>
+              ${skuItem.arrivedNote?`<div class="note">"${esc(skuItem.arrivedNote)}"</div>`:''}
+            </div>
+            <button class="stk-arr-edit" onclick="openMarkArrival('${esc(skuItem.sku)}')" title="Modifier arrivée">✎ Modifier</button>
+          </div>
+        </div>`;
+    }
+
+    // Clientes
+    const clientsHtml = skuItem.clients.map((client, idx) => {
+      let cliState = 'absent';
+      if (client.sent) cliState = 'sent';
+      else if (skuItem.arrived) cliState = 'arrived';
+
+      let actionBtn = '';
+      if (client.sent) {
+        actionBtn = `<span class="stk-cli-check">✓ Expédié</span>`;
+      } else if (skuItem.arrived) {
+        actionBtn = `<button class="stk-cli-btn b-send" onclick="openStockAllocation('${esc(skuItem.sku)}')">Expédier ?</button>`;
+      } else {
+        const mailto = client.email ? `mailto:${esc(client.email)}?subject=Rupture de stock ${esc(skuItem.sku)}` : '';
+        const onclickMail = mailto ? `window.location.href='${mailto}'` : `alert('Aucun email enregistré pour ${esc(client.name)}')`;
+        actionBtn = `<button class="stk-cli-btn b-mail ${client.mailPending?'pending':''}" title="${client.email?esc(client.email):'Pas d\'email'}" onclick="${onclickMail}">✉ Mail</button>`;
+      }
+
+      const emailBit = client.email ? `<span class="cli-email" onclick="window.location.href='mailto:${esc(client.email)}'">✉ ${esc(client.email)}</span>` : '';
+      const notesBit = client.notes ? `<div class="stk-cli-notes">${esc(client.notes)}</div>` : '';
+
+      return `
+        <div class="stk-client c-${cliState}">
+          <div class="stk-cli-main">
+            <div class="stk-cli-name">${esc(client.name)} <span class="stk-cli-qty">${client.qty} u.</span></div>
+            <div class="stk-cli-meta">
+              <span>Signalé ${esc(client.reportedDate||'—')}</span>
+              ${client.eta?`<span>· ETA ${esc(client.eta)}</span>`:''}
+              ${emailBit}
+            </div>
+            ${notesBit}
+          </div>
+          <div class="stk-cli-actions">
+            ${actionBtn}
+            <button class="stk-cli-del" onclick="deleteStockClient('${esc(skuItem.sku)}',${idx})" title="Retirer client">${icon('x',13)}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Botón principal + badge en cabecera
+    const badge = `<span class="stk-badge b-${status}"><span class="stk-badge-dot"></span>${statusMap[status]}</span>`;
+    let primaryBtn = '';
+    if (status === 'absent') {
+      primaryBtn = `<button class="stk-btn-primary" onclick="openMarkArrival('${esc(skuItem.sku)}')">✅ Marquer arrivée</button>`;
+    } else if (status === 'arrived' && free > 0) {
+      primaryBtn = `<button class="stk-btn-primary b-send" onclick="openStockAllocation('${esc(skuItem.sku)}')">Expédier →</button>`;
+    }
+
+    const demandLine = `
+      <div class="stk-demand">
+        <span><b>${totalQty}</b> unités demandées</span>
+        <span>· <b>${skuItem.clients.length}</b> client(s)</span>
+        ${missing>0&&!skuItem.arrived?`<span style="color:var(--tomato)">· <b>${missing}</b> à recevoir</span>`:''}
+        ${skuItem.arrived&&free>=totalQty-sentQ?`<span style="color:var(--moss)">· stock suffisant ✓</span>`:''}
+        ${skuItem.arrived&&missing>0?`<span style="color:var(--tomato)">· manque ${missing} u.</span>`:''}
+      </div>`;
+
+    const clientsBlock = skuItem.clients.length ? `
+      <div class="stk-clients">
+        <div class="stk-clients-lbl">Clients (${skuItem.clients.length})</div>
+        ${clientsHtml}
+      </div>` : `<div class="stk-clients"><div class="stk-clients-lbl" style="color:var(--ink-fade);text-align:center;padding:14px 0">Aucun client en attente</div></div>`;
+
+    return `
+      <div class="stk-card st-${status}">
+        <div class="stk-head">
+          <div class="stk-title">
+            <div class="stk-sku">${esc(skuItem.sku)}</div>
+            ${badge}
+          </div>
+          <div class="stk-actions">
+            ${primaryBtn}
+            <button class="stk-btn-icon" onclick="deleteStockSku('${esc(skuItem.sku)}')" title="Supprimer référence">${icon('trash',14)}</button>
+          </div>
+        </div>
+        ${demandLine}
+        ${arrivalPanel}
+        ${clientsBlock}
+      </div>
+    `;
+  }).join('');
+
+  renderStockHistoric();
+}
+
+function renderStockHistoric() {
+  const el = $('stock-historic');
+  if (!stockState.historic || stockState.historic.length === 0) {
+    el.innerHTML = '<div style="color:#928f86;font-size:13px">Aucune expédition enregistrée</div>';
+    return;
+  }
+  el.innerHTML = stockState.historic.map(item => `
+    <div class="historic-item">
+      <div class="historic-item-icon">✅</div>
+      <div class="historic-item-text">
+        <div class="historic-item-main">${esc(item.sku)} → ${esc(item.clients)}</div>
+        <div class="historic-item-sub">${item.qty} unités · Expédié ${item.sentDate}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddStockPending() {
+  ['sa-sku','sa-client','sa-email','sa-qty','sa-eta','sa-notes'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  openModal('m-stock-add');
+}
+
+function addStockPending() {
+  const sku = $('sa-sku').value.trim().toUpperCase();
+  const client = $('sa-client').value.trim();
+  const email = $('sa-email').value.trim();
+  const qty = parseInt($('sa-qty').value) || 0;
+  const eta = $('sa-eta').value;
+  const notes = $('sa-notes').value.trim();
+
+  if (!sku || !client || qty <= 0) {
+    toast('Remplir tous les champs', 'error');
+    return;
+  }
+
+  let skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) {
+    skuItem = {id:uid(), sku, arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[]};
+    stockState.pendingStocks.push(skuItem);
+  }
+
+  // Cada demanda es un pedido independiente — siempre creamos línea nueva,
+  // incluso si el mismo cliente ya tiene una demanda pendiente del mismo SKU.
+  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  skuItem.clients.push({name:client, email, qty, reportedDate:today, eta, notes, mailPending:true});
+
+  saveStockState();
+  closeModal('m-stock-add');
+  renderStock();
+  toast('✅ Demande enregistrée: ' + sku);
+}
+
+// Añadir stock recibido sin necesidad de pendiente previo.
+// Si el SKU no existe → lo crea (sin clientes). Si existe → suma o reemplaza la arrival.
+function openAddStockArrived() {
+  ['aa-sku','aa-qty','aa-note'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  $('aa-date').value = new Date().toISOString().split('T')[0];
+  $('aa-existing-hint').textContent = '';
+  // hint dinámico si la ref ya existe
+  const skuInput = $('aa-sku');
+  skuInput.oninput = () => {
+    const v = skuInput.value.trim().toUpperCase();
+    const existing = stockState.pendingStocks.find(s => s.sku === v);
+    const hint = $('aa-existing-hint');
+    if (existing) {
+      const dem = existing.clients.reduce((x,c)=>x+(c.qty||0),0);
+      if (existing.arrived) {
+        hint.textContent = `⚠ ${v} existe déjà avec ${existing.arrivedQty} unités arrivées. La nouvelle quantité les remplacera.`;
+        hint.style.color = 'var(--tomato)';
+      } else {
+        hint.textContent = `ℹ ${v} existe avec ${dem} unités demandées par ${existing.clients.length} client(s).`;
+        hint.style.color = 'var(--ink-mute)';
+      }
+    } else {
+      hint.textContent = `ℹ Nouvelle référence — sera créée sans clients en attente.`;
+      hint.style.color = 'var(--ink-mute)';
+    }
+  };
+  openModal('m-stock-arrived-add');
+}
+
+function saveAddStockArrived() {
+  const sku = $('aa-sku').value.trim().toUpperCase();
+  const qty = parseInt($('aa-qty').value) || 0;
+  const dateIso = $('aa-date').value;
+  const note = $('aa-note').value.trim();
+
+  if (!sku || qty <= 0) { toast('Référence et quantité obligatoires', 'error'); return; }
+
+  let skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) {
+    skuItem = {id:uid(), sku, arrived:false, arrivedQty:0, arrivedDate:'', arrivedNote:'', clients:[]};
+    stockState.pendingStocks.push(skuItem);
+  }
+  skuItem.arrived = true;
+  skuItem.arrivedQty = qty;
+  skuItem.arrivedDate = dateIso
+    ? new Date(dateIso+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})
+    : new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  skuItem.arrivedNote = note;
+
+  saveStockState();
+  closeModal('m-stock-arrived-add');
+  renderStock();
+  toast(`✅ ${qty} unités de ${sku} enregistrées`);
+}
+
+function openMarkArrival(sku) {
+  stockState.currentSKU = sku;
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  const demand = skuItem.clients.reduce((s,c)=>s+(c.qty||0),0);
+  $('ar-sku-lbl').textContent = `${sku} · ${demand} unités demandées par ${skuItem.clients.length} client(s)`;
+  // pre-fill si ya había llegada (modo editar)
+  $('ar-qty').value  = skuItem.arrivedQty || '';
+  $('ar-date').value = isoFromLabel(skuItem.arrivedDate) || new Date().toISOString().split('T')[0];
+  $('ar-note').value = skuItem.arrivedNote || '';
+  $('ar-demand-hint').textContent = `Demande totale enregistrée: ${demand} unités. Idéal que ce montant arrive au moins pour tout couvrir.`;
+  openModal('m-stock-arrival');
+}
+
+// convierte "18 jun" → '' (no reversible fiable); si viene ISO lo respeta
+function isoFromLabel(lbl) {
+  if (!lbl) return '';
+  // si ya es ISO (YYYY-MM-DD) lo devuelve
+  if (/^\d{4}-\d{2}-\d{2}$/.test(lbl)) return lbl;
+  return '';
+}
+
+function deleteStockSku(sku) {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  if (!confirm(`Supprimer la référence ${sku} et ses ${skuItem.clients.length} client(s) ? Action irréversible.`)) return;
+  stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
+  saveStockState();
+  renderStock();
+  toast(`Référence ${sku} supprimée`, 'error');
+}
+
+function deleteStockClient(sku, idx) {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+  const client = skuItem.clients[idx];
+  if (!client) return;
+  if (!confirm(`Retirer cette demande de ${client.name} (${client.qty} u.) de ${sku} ?`)) return;
+  skuItem.clients.splice(idx, 1);
+  if (skuItem.clients.length === 0) {
+    stockState.pendingStocks = stockState.pendingStocks.filter(s => s.sku !== sku);
+    toast(`${client.name} retiré · ${sku} supprimée (sans clients)`, 'error');
+  } else {
+    toast(`${client.name} retiré de ${sku}`, 'error');
+  }
+  saveStockState();
+  renderStock();
+}
+
+function saveMarkArrival() {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === stockState.currentSKU);
+  if (!skuItem) return;
+  const qty = parseInt($('ar-qty').value) || 0;
+  const dateIso = $('ar-date').value;
+  const note = $('ar-note').value.trim();
+
+  if (qty <= 0) { toast('Indiquer la quantité arrivée', 'error'); return; }
+
+  skuItem.arrived = true;
+  skuItem.arrivedQty = qty;
+  skuItem.arrivedDate = dateIso
+    ? new Date(dateIso+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})
+    : new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  skuItem.arrivedNote = note;
+
+  saveStockState();
+  closeModal('m-stock-arrival');
+  renderStock();
+  toast(`✅ ${qty} unités de ${skuItem.sku} arrivées`);
+}
+
+function openStockAllocation(sku) {
+  stockState.currentSKU = sku;
+  const skuItem = stockState.pendingStocks.find(s => s.sku === sku);
+  if (!skuItem) return;
+
+  // allocationChecks ahora usa el índice absoluto del array clients como key
+  stockState.allocationChecks = {};
+  skuItem.clients.forEach((c, i) => { if (!c.sent) stockState.allocationChecks[i] = true; });
+
+  const free = skuFreeQty(skuItem);
+  const list = $('allocation-list');
+  const pendingIndices = skuItem.clients.map((c,i)=>({c,i})).filter(x => !x.c.sent);
+  list.innerHTML = `
+    <div style="background:#fbf0dd;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:#9a630f">
+      <b>${free}</b> unités libres de <b>${esc(sku)}</b> à répartir
+    </div>
+    ${pendingIndices.map(({c, i}) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid #e7e3d9">
+        <input type="checkbox" id="check-${i}" checked onchange="stockState.allocationChecks[${i}] = this.checked" style="width:18px;height:18px;cursor:pointer">
+        <label for="check-${i}" style="flex:1;cursor:pointer">
+          <div style="font-weight:500;font-size:14px;color:#1c1b18;margin-bottom:2px">${esc(c.name)} <span style="font-family:'JetBrains Mono';font-size:11px;background:#f0f0f0;padding:1px 6px;border-radius:4px;color:#56544c;margin-left:4px">${c.qty} u.</span></div>
+          <div style="font-size:11px;color:#928f86">Signalé ${esc(c.reportedDate||'—')}${c.eta?` · ETA ${esc(c.eta)}`:''}</div>
+        </label>
+      </div>
+    `).join('')}
+    ${pendingIndices.length===0?'<div style="color:#928f86;font-size:13px;padding:8px 0">Tous les clients ont déjà reçu leur envoi.</div>':''}
+  `;
+
+  openModal('m-stock-allocation');
+}
+
+function confirmStockAllocation() {
+  const skuItem = stockState.pendingStocks.find(s => s.sku === stockState.currentSKU);
+  if (!skuItem) return;
+
+  const selectedIdx = Object.entries(stockState.allocationChecks)
+    .filter(([_, checked]) => checked)
+    .map(([i]) => parseInt(i));
+
+  if (!selectedIdx.length) { toast('Sélectionner au moins un client', 'error'); return; }
+
+  const need = selectedIdx.reduce((s, i) => s + (skuItem.clients[i]?.qty || 0), 0);
+  const free = skuFreeQty(skuItem);
+  if (need > free) {
+    toast(`Stock insuffisant: ${need} demandés, ${free} libres`, 'error');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  selectedIdx.forEach(i => { if (skuItem.clients[i]) skuItem.clients[i].sent = true; });
+
+  const selectedNames = selectedIdx.map(i => skuItem.clients[i].name);
+  stockState.historic.unshift({sku: skuItem.sku, clients: selectedNames.join(', '), qty: need, sentDate: today});
+
+  saveStockState();
+  closeModal('m-stock-allocation');
+  renderStock();
+  toast(`✅ Expédié à: ${selectedNames.join(', ')} (${need} unités)`);
+}
+
+function init() {
+  renderIdentity();
+  loadFromSheets();
+  loadLitiges();
+  renderStock();
+  setInterval(loadFromSheets, 30000);
+  setInterval(loadLitiges, 60000);
+  // repaint board every 60s so aging timers advance without full reload
+  setInterval(() => { if ($('view-today')?.closest('.view')?.classList.contains('active') !== false) renderBoard(); }, 60000);
+}
+
+if (checkAuth()) {
+  $('lock-screen').classList.add('hidden');
+  $('app-shell').style.display = 'grid';
+  init();
+}
+</script>
+</body>
+</html>
