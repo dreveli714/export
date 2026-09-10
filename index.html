@@ -3163,12 +3163,14 @@ async function saveStockToServer() {
     historic:      stockState.historic
   });
   try {
-    // POST con action en query y payload en body
+    // POST con Content-Type: application/x-www-form-urlencoded → NO preflight CORS
+    // Apps Script recibe el payload en e.parameter.payload
+    const body = new URLSearchParams();
+    body.append('payload', payload);
     const resp = await fetch(SCRIPT_URL + '?action=saveStock', {
       method: 'POST',
       redirect: 'follow',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'}, // evita preflight CORS
-      body: payload
+      body: body
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
