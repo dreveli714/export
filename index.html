@@ -406,7 +406,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 /* Stock card redesigned — estado clarísimo, un solo color dominante por card */
 .stk-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:transform .15s var(--ease),box-shadow .15s var(--ease);box-shadow:var(--sh-sm);position:relative}
 .stk-card:hover{box-shadow:var(--sh-md)}
-.stk-card.st-absent  {border-top:4px solid var(--tomato)}
+.stk-card.st-absent  {border-top:4px solid #a89a7c}
 .stk-card.st-arrived {border-top:4px solid var(--honey)}
 .stk-card.st-sent    {border-top:4px solid var(--moss)}
 
@@ -414,11 +414,11 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .stk-title{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
 .stk-sku{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
 .stk-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
-.stk-badge.b-absent  {background:var(--tomato-soft);color:#8B2C23}
+.stk-badge.b-absent  {background:#f0ece0;color:#6b6248}
 .stk-badge.b-arrived {background:var(--honey-soft);color:#9a630f}
 .stk-badge.b-sent    {background:var(--moss-soft);color:#137551}
 .stk-badge-dot{width:6px;height:6px;border-radius:50%}
-.stk-badge.b-absent .stk-badge-dot{background:var(--tomato)}
+.stk-badge.b-absent .stk-badge-dot{background:#a89a7c}
 .stk-badge.b-arrived .stk-badge-dot{background:var(--honey)}
 .stk-badge.b-sent .stk-badge-dot{background:var(--moss)}
 .stk-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -454,7 +454,7 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 .stk-clients-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:600;padding:0 4px 4px}
 .stk-client{background:var(--paper-2);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-left:3px solid var(--ink-fade);transition:background .12s}
 .stk-client:hover{background:var(--paper-3)}
-.stk-client.c-absent  {border-left-color:var(--tomato)}
+.stk-client.c-absent  {border-left-color:#a89a7c}
 .stk-client.c-arrived {border-left-color:var(--honey)}
 .stk-client.c-sent    {border-left-color:var(--moss);opacity:.65}
 .stk-cli-main{flex:1;min-width:0}
@@ -632,10 +632,15 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
         <div class="greeting">Inventaire</div>
         <h1 class="page-title">Ruptures de <span class="accent">stock</span></h1>
         <div class="page-sub">Suivi des références en attente · Répartition intelligente</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+          <span id="stock-sync-badge" style="display:inline-block;padding:3px 10px;border-radius:var(--r-full);font-size:11px;font-weight:600;background:#e4f4ec;color:#137551">✓ Synchronisé</span>
+          <button onclick="loadStockFromServer()" title="Recharger depuis Google Sheets" style="background:transparent;border:none;color:var(--ink-mute);cursor:pointer;font-size:12px;padding:2px 6px">🔄 Actualiser</button>
+        </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="stk-reset-btn" onclick="exportStockPDF()" title="Générer PDF des références manquantes" style="color:var(--ocean);border-color:var(--ocean)">📄 Export PDF</button>
         <button class="stk-reset-btn" onclick="resetStockState()" title="Effacer toutes les données de stock">🗑 Tout effacer</button>
-        <button class="add-btn" onclick="openAddStockPending()" style="background:var(--tomato)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle demande</button>
+        <button class="add-btn" onclick="openAddStockPending()" style="background:#a89a7c"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Nouvelle demande</button>
         <button class="add-btn" onclick="openAddStockArrived()" style="background:var(--honey)"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Ajouter stock reçu</button>
       </div>
     </div>
@@ -1741,7 +1746,7 @@ function switchView(v, el) {
   if (v === 'all') renderAll();
   if (v === 'analytics') renderStatistiques();
   if (v === 'litiges') renderLitiges();
-  if (v === 'stock') renderStock();
+  if (v === 'stock') { renderStock(); if (!stockRemoteFetched) loadStockFromServer(); }
 }
 
 function render() { renderStats(); renderChips(); renderBoard(); }
@@ -3074,7 +3079,35 @@ const STOCK_INITIAL_DATA = {
   ]
 };
 
+// ==== Sync stock a Google Sheets (Apps Script) ====
+// Estrategia: localStorage sirve de cache + fallback offline.
+// - Al abrir vista Stock: intenta cargar del servidor. Si falla, usa cache local.
+// - Cada mutación: guarda local INMEDIATO (UI responsive) + push al servidor con debounce 1s.
+// - Un indicador visual muestra el estado de sincronización.
+
+let stockSyncStatus = 'idle'; // 'idle' | 'saving' | 'error' | 'offline'
+let stockSaveTimer = null;
+let stockRemoteFetched = false; // primera carga desde servidor
+
+function updateSyncBadge(status, msg) {
+  stockSyncStatus = status;
+  const el = $('stock-sync-badge');
+  if (!el) return;
+  const map = {
+    idle:    {t:'✓ Synchronisé',   c:'#137551', bg:'#e4f4ec'},
+    saving:  {t:'⟳ Sauvegarde…',   c:'#9a630f', bg:'#fbf0dd'},
+    error:   {t:'⚠ Erreur sync',   c:'#dd4f3a', bg:'#fcebe7'},
+    offline: {t:'⚠ Hors ligne',    c:'#6b6248', bg:'#f0ece0'},
+  };
+  const conf = map[status] || map.idle;
+  el.textContent = msg || conf.t;
+  el.style.color = conf.c;
+  el.style.background = conf.bg;
+}
+
 function loadStockState() {
+  // Sincrono: siempre devuelve del cache/local o de los datos demo.
+  // La carga remota se hace después con loadStockFromServer().
   try {
     const raw = localStorage.getItem(STOCK_STORAGE_KEY);
     if (raw) {
@@ -3085,8 +3118,7 @@ function loadStockState() {
         currentSKU: null, allocationChecks: {}, statusFilter: 'all', clientFilter: ''
       };
     }
-  } catch(e) { console.warn('Stock state corrupted, using defaults', e); }
-  // Primera visita → datos demo
+  } catch(e) { console.warn('Stock cache corrupt', e); }
   return {
     pendingStocks: JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.pendingStocks)),
     historic:      JSON.parse(JSON.stringify(STOCK_INITIAL_DATA.historic)),
@@ -3094,20 +3126,218 @@ function loadStockState() {
   };
 }
 
+async function loadStockFromServer() {
+  updateSyncBadge('saving', '⟳ Chargement…');
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=listStock', {method:'GET', redirect:'follow'});
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (!data || !Array.isArray(data.pendingStocks)) {
+      // Servidor vacío → primera vez: envía los datos actuales locales
+      if (stockState.pendingStocks.length > 0) {
+        await saveStockToServer();
+      }
+    } else {
+      // Servidor tiene datos → los usamos como source of truth
+      stockState.pendingStocks = data.pendingStocks;
+      stockState.historic = data.historic || [];
+      // Cache local
+      localStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify({
+        pendingStocks: stockState.pendingStocks,
+        historic:      stockState.historic
+      }));
+    }
+    stockRemoteFetched = true;
+    updateSyncBadge('idle');
+    renderStock();
+  } catch (err) {
+    console.warn('Load stock from server failed:', err);
+    updateSyncBadge('offline', '⚠ Hors ligne (cache local)');
+  }
+}
+
+async function saveStockToServer() {
+  updateSyncBadge('saving');
+  const payload = JSON.stringify({
+    pendingStocks: stockState.pendingStocks,
+    historic:      stockState.historic
+  });
+  try {
+    // POST con action en query y payload en body
+    const resp = await fetch(SCRIPT_URL + '?action=saveStock', {
+      method: 'POST',
+      redirect: 'follow',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'}, // evita preflight CORS
+      body: payload
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.ok === false) throw new Error(data.error || 'server refused');
+    updateSyncBadge('idle');
+  } catch (err) {
+    console.warn('Save stock to server failed:', err);
+    updateSyncBadge('error', '⚠ Non synchronisé');
+  }
+}
+
 function saveStockState() {
+  // Siempre cache local inmediato (UI nunca espera al servidor)
   try {
     localStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify({
       pendingStocks: stockState.pendingStocks,
       historic:      stockState.historic
     }));
-  } catch(e) { console.error('Failed to save stock', e); toast('Erreur sauvegarde locale', 'error'); }
+  } catch(e) { console.error('Failed to save stock local', e); }
+  // Push al servidor con debounce (evita spam si el user hace varios cambios rápido)
+  if (stockSaveTimer) clearTimeout(stockSaveTimer);
+  stockSaveTimer = setTimeout(saveStockToServer, 800);
+}
+
+// Genera PDF de las referencias que aún faltan (absent + arrived con clientes pendientes)
+function exportStockPDF() {
+  // Solo referencias con demanda no cubierta
+  const rows = [];
+  stockState.pendingStocks.forEach((s, i) => {
+    const pendingClients = s.clients.filter(c => !c.sent);
+    if (pendingClients.length === 0) return;
+    const totalRolls = pendingClients.reduce((t,c) => t + (c.rolls||c.qty||0), 0);
+    // agrupar por dimensión para mostrar compacto
+    const byDim = {};
+    pendingClients.forEach(c => {
+      const key = `${c.height||'—'} × ${c.length||'—'}`;
+      byDim[key] = (byDim[key]||0) + (c.rolls||c.qty||0);
+    });
+    rows.push({
+      num: String(i+1).padStart(2,'0'),
+      sku: s.sku,
+      totalRolls,
+      byDim,
+      clients: pendingClients,
+      etaIso: s.etaIso,
+      arrived: s.arrived,
+      arrivedQty: s.arrivedQty||0,
+      free: skuFreeQty(s),
+    });
+  });
+
+  if (rows.length === 0) {
+    toast('Aucune référence en attente à exporter', 'error');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'long', year:'numeric'});
+  const totalRolls = rows.reduce((t,r) => t + r.totalRolls, 0);
+
+  const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Rapport stock — ${today}</title>
+<style>
+  @page { size: A4; margin: 18mm 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1c1b18; font-size: 11pt; line-height: 1.4; }
+  header { border-bottom: 2px solid #1c1b18; padding-bottom: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end; }
+  h1 { font-size: 20pt; font-weight: 700; letter-spacing: -0.02em; }
+  .meta { text-align: right; font-size: 9pt; color: #666; line-height: 1.5; }
+  .summary { background: #f6f4ef; border: 1px solid #e7e3d9; border-radius: 6px; padding: 10px 14px; margin-bottom: 20px; display: flex; gap: 24px; }
+  .summary div { font-size: 10pt; }
+  .summary b { display: block; font-size: 16pt; font-weight: 700; color: #1c1b18; }
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  th { background: #1c1b18; color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid #e7e3d9; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafaf7; }
+  .num { font-family: 'Courier New', monospace; color: #928f86; font-weight: 700; font-size: 9pt; }
+  .sku { font-weight: 700; font-size: 12pt; }
+  .qty { font-family: 'Courier New', monospace; font-weight: 700; font-size: 13pt; color: #9a630f; }
+  .dim { font-family: 'Courier New', monospace; font-size: 9pt; color: #56544c; }
+  .clients { font-size: 9pt; color: #56544c; }
+  .eta-late { color: #dd4f3a; font-weight: 700; }
+  .eta-soon { color: #e0922a; font-weight: 600; }
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 8pt; font-weight: 700; text-transform: uppercase; }
+  .st-absent { background: #f0ece0; color: #6b6248; }
+  .st-arrived { background: #fbf0dd; color: #9a630f; }
+  footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #e7e3d9; font-size: 8pt; color: #928f86; text-align: center; }
+  @media print { .no-print { display: none; } }
+  .no-print { position: fixed; top: 10px; right: 10px; z-index: 999; }
+  .no-print button { padding: 10px 20px; background: #3551e0; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="no-print"><button onclick="window.print()">🖨 Imprimer / Enregistrer PDF</button></div>
+  <header>
+    <div>
+      <h1>Rapport de stock manquant</h1>
+      <div style="font-size:10pt;color:#666;margin-top:4px">Réflectiv — Références en attente</div>
+    </div>
+    <div class="meta">
+      <div><b>${today}</b></div>
+      <div>${rows.length} référence(s) · ${totalRolls} rouleau(x) à recevoir</div>
+    </div>
+  </header>
+  <div class="summary">
+    <div>Références en attente<b>${rows.length}</b></div>
+    <div>Rouleaux totaux<b>${totalRolls}</b></div>
+    <div>Absent (stock 0)<b>${rows.filter(r=>!r.arrived).length}</b></div>
+    <div>Partiel (arrivé)<b>${rows.filter(r=>r.arrived).length}</b></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px">#</th>
+        <th style="width:100px">Référence</th>
+        <th>État</th>
+        <th style="width:70px">Total</th>
+        <th>Dimensions demandées</th>
+        <th>Clients en attente</th>
+        <th style="width:100px">ETA</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(r => {
+        const dimStr = Object.entries(r.byDim).map(([d,q]) => `${q} × (${d})`).join('<br>');
+        const clientStr = r.clients.map(c => `${esc(c.name)} (${c.rolls||c.qty||0} r.)`).join(', ');
+        let etaCell = '—';
+        if (r.arrived) {
+          etaCell = `<span class="st-arrived status">Arrivé partiel</span><br><span style="font-size:8pt;color:#666">Libres: ${r.free}</span>`;
+        } else if (r.etaIso) {
+          const e = etaLabel(r.etaIso);
+          const cls = e.urgent ? (daysUntil(r.etaIso)<0?'eta-late':'eta-soon') : '';
+          etaCell = `<span class="${cls}">${fmtDateShort(r.etaIso)}<br><span style="font-size:8pt">${e.text}</span></span>`;
+        }
+        const stateBadge = r.arrived
+          ? '<span class="status st-arrived">Partiel</span>'
+          : '<span class="status st-absent">Absent</span>';
+        return `
+          <tr>
+            <td class="num">${r.num}</td>
+            <td class="sku">${esc(r.sku)}</td>
+            <td>${stateBadge}</td>
+            <td class="qty">${r.totalRolls}</td>
+            <td class="dim">${dimStr}</td>
+            <td class="clients">${clientStr}</td>
+            <td>${etaCell}</td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  </table>
+  <footer>Généré depuis Reflectiv Export Dashboard · ${today}</footer>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));</` + `script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { toast('Popup bloqué — autoriser les popups pour ce site', 'error'); return; }
+  w.document.write(html);
+  w.document.close();
+  toast(`📄 PDF généré — ${rows.length} référence(s)`);
 }
 
 function resetStockState() {
-  if (!confirm('Effacer toutes les données de stock ?\n\nCette action supprimera toutes les demandes, arrivées et historique. Irréversible.')) return;
+  if (!confirm('Effacer toutes les données de stock ?\n\n⚠ ATTENTION: cette action supprime les données sur tous les postes (Google Sheets synchronisé). Irréversible.')) return;
   localStorage.removeItem(STOCK_STORAGE_KEY);
-  stockState = loadStockState();
-  // Empty también los datos demo para que quede realmente vacío
   stockState.pendingStocks = [];
   stockState.historic = [];
   saveStockState();
@@ -3159,7 +3389,7 @@ function renderStockSummary() {
       <div class="stat-icon">${icon('warning',22)}</div>
       <div class="stat-label">Références absentes</div>
       <div class="stat-value">${absentRefs}</div>
-      <div class="stat-trend" style="color:var(--tomato)">${missingU} unités à recevoir</div>
+      <div class="stat-trend" style="color:#9a630f">${missingU} unités à recevoir</div>
     </div>
     <div class="stat" style="${sel('arrived')}" onclick="setStockFilter('arrived')">
       <div class="stat-icon" style="color:var(--honey);background:var(--honey-soft)">${icon('box',22)}</div>
@@ -3238,7 +3468,7 @@ function renderStock() {
     return;
   }
 
-  list.innerHTML = banner + filtered.map(skuItem => {
+  list.innerHTML = banner + filtered.map((skuItem, cardIdx) => {
     const totalQty = skuItem.clients.reduce((sum, c) => sum + (c.qty||0), 0);
     const statusMap = {absent:'Stock absent', arrived:'Arrivé', sent:'Tout expédié'};
     const status = skuState(skuItem);
@@ -3322,15 +3552,17 @@ function renderStock() {
       primaryBtn = `<button class="stk-btn-primary" onclick="openMarkArrival('${esc(skuItem.sku)}')">✅ Marquer arrivée</button>`;
     } else if (status === 'arrived' && free > 0) {
       primaryBtn = `<button class="stk-btn-primary b-send" onclick="openStockAllocation('${esc(skuItem.sku)}')">Expédier →</button>`;
+    } else if (status === 'arrived' && free === 0) {
+      primaryBtn = `<button class="stk-btn-primary" onclick="openMarkArrival('${esc(skuItem.sku)}')" style="background:#a89a7c">✎ Modifier arrivée</button>`;
     }
 
     const demandLine = `
       <div class="stk-demand">
         <span><b>${totalQty}</b> unités demandées</span>
         <span>· <b>${skuItem.clients.length}</b> client(s)</span>
-        ${missing>0&&!skuItem.arrived?`<span style="color:var(--tomato)">· <b>${missing}</b> à recevoir</span>`:''}
+        ${missing>0&&!skuItem.arrived?`<span style="color:#9a630f">· <b>${missing}</b> à recevoir</span>`:''}
         ${skuItem.arrived&&free>=totalQty-sentQ?`<span style="color:var(--moss)">· stock suffisant ✓</span>`:''}
-        ${skuItem.arrived&&missing>0?`<span style="color:var(--tomato)">· manque ${missing} u.</span>`:''}
+        ${skuItem.arrived&&missing>0?`<span style="color:#9a630f">· manque ${missing} u.</span>`:''}
         ${(!skuItem.arrived && skuItem.etaIso)?(()=>{const e=etaLabel(skuItem.etaIso);return `<span style="color:${e.color};font-weight:${e.urgent?'700':'500'}">· 📅 ETA ${fmtDateShort(skuItem.etaIso)} <span style="font-size:11px">(${e.text})</span></span>`;})():''}
       </div>`;
 
@@ -3344,6 +3576,7 @@ function renderStock() {
       <div class="stk-card st-${status}">
         <div class="stk-head">
           <div class="stk-title">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--ink-mute);background:var(--paper-2);padding:3px 7px;border-radius:6px;letter-spacing:.02em">#${String(cardIdx+1).padStart(2,'0')}</span>
             <div class="stk-sku">${esc(skuItem.sku)}</div>
             ${badge}
           </div>
@@ -3688,9 +3921,14 @@ function init() {
   renderIdentity();
   loadFromSheets();
   loadLitiges();
+  loadStockFromServer();
   renderStock();
   setInterval(loadFromSheets, 30000);
   setInterval(loadLitiges, 60000);
+  // Re-fetch stock cada 45s si la pestaña Stock está visible
+  setInterval(() => {
+    if ($('view-stock')?.classList.contains('active')) loadStockFromServer();
+  }, 45000);
   // repaint board every 60s so aging timers advance without full reload
   setInterval(() => { if ($('view-today')?.closest('.view')?.classList.contains('active') !== false) renderBoard(); }, 60000);
 }
